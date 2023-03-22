@@ -1,5 +1,7 @@
 package main.java.it.polimi.ingsw.Model;
 
+/**
+ * */
 public enum Tile {
     GREEN1,
     GREEN2,

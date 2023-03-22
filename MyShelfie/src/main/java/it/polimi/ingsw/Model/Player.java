@@ -1,18 +1,21 @@
 package main.java.it.polimi.ingsw.Model;
 
+/**
+ **/
 public class Player {
-    int numTurn;
-    String nickame;
-    boolean connected;
-    int[] pointsCommonGoal = new int[2];
-    Tile[] pickedTiles = new Tile[3];
-    int selectedColumn;
-    Shelf shelf;
-    Model model;
-    PersonalGoal personalGoal;
+    private int numTurn;
+    private String nickame;
+    private boolean connected;
+    private int[] pointsCommonGoal;
+    private Tile[] pickedTiles;
+    private int selectedColumn;
+    private Shelf shelf;
+    private Model model;
+    private PersonalGoal personalGoal;
 
     public void Player(String nick){
-
+        pickedTiles = new Tile[3];
+        pointsCommonGoal = new int[2];
     }
 
     public void pickFromBoard(int x, int y){
@@ -31,4 +34,39 @@ public class Player {
 
     }
 
+    public int getNumTurn(){
+
+    }
+
+    public String getNickame() {
+
+    }
+
+    public boolean isConnected() {
+
+    }
+
+    public int[] getPointsCommonGoal() {
+
+    }
+
+    public Tile[] getPickedTiles() {
+
+    }
+
+    public int getSelectedColumn() {
+
+    }
+
+    public Shelf getShelf() {
+
+    }
+
+    public Model getModel() {
+
+    }
+
+    public PersonalGoal getPersonalGoal() {
+
+    }
 }
