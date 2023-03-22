@@ -4,11 +4,11 @@ package main.java.it.polimi.ingsw.Model;
 import java.util.Map;
 
 public class Board {
-
     private Map<Tile, Integer> tilesRemaining;
     private Tile[][] tiles;
+    private int numPlayers;
 
-    public Board() {
+    public Board(int numPlayers) {
 
     }
 
@@ -22,4 +22,11 @@ public class Board {
 
     }
 
+    public Map<Tile, Integer> getTilesRemaining() {
+
+    }
+
+    public Tile[][] getTiles() {
+
+    }
 }
