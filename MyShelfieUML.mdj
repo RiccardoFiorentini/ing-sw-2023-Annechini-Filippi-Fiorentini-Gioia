@@ -9,7 +9,7 @@
 			"_parent": {
 				"$ref": "AAAAAAFF+h6SjaM2Hec="
 			},
-			"name": "Model",
+			"name": "main.java.it.polimi.ingsw.Model",
 			"ownedElements": [
 				{
 					"_type": "UMLClassDiagram",
