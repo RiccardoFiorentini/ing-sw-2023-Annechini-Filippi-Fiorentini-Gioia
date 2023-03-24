@@ -3,8 +3,8 @@ package main.java.it.polimi.ingsw.Model;
 /**
  **/
 public class Player {
-    private int numTurn;
-    private String nickame;
+    private int turnId;
+    private String nickname;
     private boolean connected;
     private int[] pointsCommonGoal;
     private Tile[] pickedTiles;
@@ -26,23 +26,19 @@ public class Player {
 
     }
 
-    public void endTurn(){
-
-    }
-
     public void writeMessage(Player receiver, String text){
 
     }
 
-    public int getNumTurn(){
-
-    }
-
-    public String getNickame() {
-
-    }
-
     public boolean isConnected() {
+
+    }
+
+    public int getTurnId(){
+
+    }
+
+    public String getNickname() {
 
     }
 
