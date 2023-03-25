@@ -3,114 +3,46 @@ package main.java.it.polimi.ingsw.Model;
 public abstract class CommonGoal {
     private int pointsLeft;
     private int numPlayers;
+    /**
+     * Class's constructor
+     * @author Alessandro Annechini
+     * @param numPlayers The number of players
+     */
     public CommonGoal(int numPlayers){
-
+        this.numPlayers=numPlayers;
+        pointsLeft=8;
     }
+
+    /**
+     * This method checks if a shelf satisfies the specific common goal
+     * @author Alessandro Annechini
+     * @param shelf The shelf to be checked
+     * @return True if the shelf satisfies the constraints, false otherwise
+     */
     public abstract boolean check(Shelf shelf);
 
     public int getPointsLeft() {
-
+        return pointsLeft;
     }
 
+    /**
+     * This method returns the points obtained by achieving this common goal, decreasing the number of points remaining
+     * @author Alessandro Annechini
+     * @return The amount of points won by the invoker
+     */
     public int pullPoints(){
-
-    }
-}
-
-public class CommonGoal1 extends CommonGoal{
-    public CommonGoal1(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal2 extends CommonGoal{
-    public CommonGoal2(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal3 extends CommonGoal{
-    public CommonGoal3(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal4 extends CommonGoal{
-    public CommonGoal4(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal5 extends CommonGoal{
-    public CommonGoal5(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal6 extends CommonGoal{
-    public CommonGoal6(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal7 extends CommonGoal{
-    public CommonGoal7(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal8 extends CommonGoal{
-    public CommonGoal8(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal9 extends CommonGoal{
-    public CommonGoal9(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal10 extends CommonGoal{
-    public CommonGoal10(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal11 extends CommonGoal{
-    public CommonGoal11(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
-    }
-}
-public class CommonGoal12 extends CommonGoal{
-    public CommonGoal12(int numPlayers){
-        super(numPlayers);
-    }
-    public boolean check(Shelf shelf){
-
+        int ret=pointsLeft;
+        if(numPlayers==4){
+            if(pointsLeft>0) pointsLeft-=2;
+        }
+        else if (numPlayers==3) {
+            if(pointsLeft>4) pointsLeft-=2;
+            else pointsLeft = 0;
+        }
+        else if (numPlayers==2) {
+            if(pointsLeft>0) pointsLeft-=4;
+        }
+        return ret;
     }
 }
 
