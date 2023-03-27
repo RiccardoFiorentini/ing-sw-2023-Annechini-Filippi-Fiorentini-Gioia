@@ -17,6 +17,13 @@ public class Player {
     private PersonalGoal personalGoal;
     private boolean pickableTiles[][];
 
+
+
+
+
+
+
+
     /**
      * Class's constructor
      * @author Fiorentini Riccardo
@@ -96,9 +103,15 @@ public class Player {
                 isCorrect = pickableTiles[x.get(i)][y.get(i)];
             }
             if(numPicked == 3 && isCorrect){
-                isCorrect = (x.get(0) == x.get(1) && x.get(1) == x.get(2)) || (y.get(0) == y.get(1) && y.get(1) == y.get(2));
+                isCorrect = (x.get(0) == x.get(1) && x.get(1) == x.get(2)) || (x.get(0) - x.get(1) < 3 && x.get(1) - x.get(2) < 3 && x.get(0) - x.get(2) < 3 );
+                if(!isCorrect){
+                    isCorrect = (y.get(0) == y.get(1) && y.get(1) == y.get(2)) || (y.get(0) - y.get(1) < 3 && y.get(1) - y.get(2) < 3 && y.get(0) - y.get(2) < 3 );
+                }
             }else if(numPicked == 2 && isCorrect){
-                isCorrect = (x.get(0) == x.get(1)) || (y.get(0) == y.get(1));
+                isCorrect = (x.get(0) == x.get(1)) || (x.get(0) - x.get(1) < 2);
+                if(!isCorrect){
+                    isCorrect = (y.get(0) == y.get(1)) || (y.get(0) - y.get(1) < 2);
+                }
             }
             return isCorrect;
         }else {
