@@ -9,7 +9,6 @@ public class Board {
     private Tile[][] tiles;
     private int numPlayers;
 
-
     /**
      * Class' constructor
      * @author Pasquale Gioia
@@ -64,10 +63,10 @@ public class Board {
                 tiles[8][5]=Tile.BLOCKED;
                 tiles[5][0]=Tile.BLOCKED;
 
-                tiles[1][5]=Tile.BLOCKED;
-                tiles[5][7]=Tile.BLOCKED;
-                tiles[7][3]=Tile.BLOCKED;
-                tiles[3][1]=Tile.BLOCKED;
+                tiles[0][4]=Tile.BLOCKED;
+                tiles[4][8]=Tile.BLOCKED;
+                tiles[8][4]=Tile.BLOCKED;
+                tiles[4][0]=Tile.BLOCKED;
         }
 
 

@@ -1,6 +1,7 @@
 package main.java.it.polimi.ingsw.Model;
 
 /**
+ * @author Fiorentini Riccardo
  * */
 public enum Tile {
     GREEN1,
