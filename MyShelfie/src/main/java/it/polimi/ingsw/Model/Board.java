@@ -1,6 +1,7 @@
 package main.java.it.polimi.ingsw.Model;
 
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -18,6 +19,7 @@ public class Board {
     public Board(int numPlayers) {
         tiles = new Tile[9][9];
         this.numPlayers = numPlayers;
+        tilesRemaining = new HashMap<>();
 
         //Board initialization without considering numPlayers
         for(int i=0; i<9; i++){
@@ -112,40 +114,47 @@ public class Board {
      *
      */
     public boolean checkFill(){
-        boolean[][] checkFreeSides;
-        checkFreeSides = new boolean[9][9];
+        boolean[][] checkPickable;
+        checkPickable = new boolean[9][9];
 
-        //checkFreeSides[i][j] is true if the tile has at least 1 "free" side
+        //checkPickable[i][j] is true if the tile has at least 1 "free" side
         for(int i=0; i<9; i++) {
             for (int j=0; j<9; j++) {
-                if(i==0 || j==0 || i==8 || j==8) //Corner tiles
-                    checkFreeSides[i][j] = true;
+                //Empty and Blocked tiles should not be pickable
+                if(!tiles[i][j].isFree()) {
 
-                else if(tiles[i+1][j]==Tile.EMPTY || tiles[i][j+1]==Tile.EMPTY ||
-                        tiles[i-1][j]==Tile.EMPTY || tiles[i][j-1]==Tile.EMPTY)
-                    checkFreeSides[i][j] = true;
-                else
-                    checkFreeSides[i][j] = false;
+                    //Corner tiles (8 tiles, if not blocked)
+                    if (i == 0 || j == 0 || i == 8 || j == 8)
+                        checkPickable[i][j] = true;
+
+                    else if (tiles[i+1][j].isFree() || tiles[i-1][j].isFree() ||
+                            tiles[i][j+1].isFree() || tiles[i][j-1].isFree())
+                        checkPickable[i][j] = true;
+
+                    else
+                        checkPickable[i][j] = false;
+
+                } else
+                    checkPickable[i][j] = false;
             }
         }
 
         /*The board needs to be refilled if
             none of the tiles that have at least 1 free side
             has any close (up, down, right, left) tile that has at least 1 free side
-
-
         */
 
-        for(int i=1; i<8; i++){
-            for(int j=1; j<8; j++){
-                if(     tiles[i][j]!=Tile.EMPTY && tiles[i][j]!=Tile.BLOCKED &&
-                        ((/*i+1<9 && */ tiles[i+1][j]!=Tile.EMPTY && tiles[i+1][j]!=Tile.BLOCKED && checkFreeSides[i+1][j]) ||
-                        (/*j+1<9 && */  tiles[i][j+1]!=Tile.EMPTY && tiles[i][j+1]!=Tile.BLOCKED && checkFreeSides[i][j+1]) ||
-                        (/*i-1 >=0 &&*/ tiles[i-1][j]!=Tile.EMPTY && tiles[i-1][j]!=Tile.BLOCKED && checkFreeSides[i-1][j]) ||
-                        (/*j-1 >=0 &&*/ tiles[i][j-1]!=Tile.EMPTY && tiles[i][j-1]!=Tile.BLOCKED) && checkFreeSides[i][j-1]))
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++){
+                if(     checkPickable[i][j] &&
+                        (i+1<9 && checkPickable[i+1][j]) ||
+                        (j+1<9 && checkPickable[i][j+1]) ||
+                        (i-1>=0 && checkPickable[i-1][j]) ||
+                        (j-1>=0 && checkPickable[i][j-1]))
                     return false;
             }
         }
+
         return true;
     }
 

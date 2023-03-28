@@ -23,7 +23,7 @@ public class CommonGoal7 extends CommonGoal{
         for(i=5;i>=0 && !notFullRow;i--){
             typesFound = new HashSet<>();
             for(j=0;j<5 && !notFullRow;j++){
-                if(shelf.getTile(i,j).isEmpty())
+                if(shelf.getTile(i,j).isFree())
                     notFullRow=true;
                 else{
                     typesFound.add(shelf.getTile(i,j).getColor());

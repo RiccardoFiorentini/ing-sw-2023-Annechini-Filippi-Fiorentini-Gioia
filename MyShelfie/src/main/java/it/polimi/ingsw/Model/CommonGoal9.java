@@ -23,7 +23,7 @@ public class CommonGoal9 extends CommonGoal{
         int i,j;
         for(i=0;i<6;i++){
             for(j=0;j<5;j++){
-                if(!shelf.getTile(i,j).isEmpty()){
+                if(!shelf.getTile(i,j).isFree()){
                     occur.put(shelf.getTile(i,j).getColor(),occur.get(shelf.getTile(i,j).getColor())+1);
                 }
             }

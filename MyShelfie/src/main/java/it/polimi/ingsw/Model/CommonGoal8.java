@@ -11,7 +11,7 @@ public class CommonGoal8 extends CommonGoal{
         tiles of the same color
          */
 
-        return !shelf.getTile(0, 0).isEmpty() &&
+        return !shelf.getTile(0, 0).isFree() &&
                 shelf.getTile(0, 0).equals(shelf.getTile(0, 4)) &&
                 shelf.getTile(0, 0).equals(shelf.getTile(5, 0)) &&
                 shelf.getTile(0, 0).equals(shelf.getTile(5, 4));

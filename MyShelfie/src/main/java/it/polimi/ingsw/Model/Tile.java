@@ -49,7 +49,7 @@ public enum Tile {
      * @author Alessandro Annechini
      * @return True if the tile is empty, false otherwise
      */
-    boolean isEmpty(){
+    boolean isFree(){
         return color==TileColor.EMPTY || color==TileColor.BLOCKED;
     }
 }

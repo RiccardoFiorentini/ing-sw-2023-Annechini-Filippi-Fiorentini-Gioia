@@ -85,7 +85,7 @@ public class CommonGoal4 extends CommonGoal{
         int i,j;
         for(i=0;i<6;i++){
             for(j=0;j<5;j++){
-                if(shelf.getTile(i,j).isEmpty()) checked[i][j]=1;
+                if(shelf.getTile(i,j).isFree()) checked[i][j]=1;
                 else checked[i][j]=0;
             }
         }

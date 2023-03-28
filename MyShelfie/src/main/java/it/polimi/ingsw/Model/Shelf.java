@@ -56,7 +56,7 @@ public class Shelf {
 
         for(i=0;i<6;i++){
             for(j=0;j<5;j++){
-                if(tiles[i][j].isEmpty()) checked[i][j]=1;
+                if(tiles[i][j].isFree()) checked[i][j]=1;
                 else checked[i][j]=0;
             }
         }
@@ -103,4 +103,5 @@ public class Shelf {
     public Tile getTile(int row, int col) {
         return tiles[row][col];
     }
+
 }

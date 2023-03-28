@@ -13,7 +13,7 @@ public class CommonGoal10 extends CommonGoal{
 
         for(i=0;i<4;i++){
             for(j=0;j<3;j++){
-                if(!shelf.getTile(i,j).isEmpty() &&
+                if(!shelf.getTile(i,j).isFree() &&
                         shelf.getTile(i,j).equals(shelf.getTile(i,j+2)) &&
                         shelf.getTile(i,j).equals(shelf.getTile(i+1,j+1)) &&
                         shelf.getTile(i,j).equals(shelf.getTile(i+2,j)) &&

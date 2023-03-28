@@ -27,7 +27,7 @@ public class CommonGoal1 extends CommonGoal{
 
         for(i=0;i<6;i++){
             for(j=0;j<5;j++){
-                if(shelf.getTile(i,j).isEmpty()) checked[i][j]=1;
+                if(shelf.getTile(i,j).isFree()) checked[i][j]=1;
                 else checked[i][j]=0;
             }
         }
@@ -57,7 +57,7 @@ public class CommonGoal1 extends CommonGoal{
 
         for(i=0;i<6;i++){
             for(j=0;j<5;j++){
-                if(shelf.getTile(i,j).isEmpty()) checked[i][j]=1;
+                if(shelf.getTile(i,j).isFree()) checked[i][j]=1;
                 else checked[i][j]=0;
             }
         }
