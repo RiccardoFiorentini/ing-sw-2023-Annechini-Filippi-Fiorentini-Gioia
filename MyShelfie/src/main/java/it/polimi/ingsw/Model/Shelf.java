@@ -6,7 +6,7 @@ public class Shelf {
     private int spacesLeft;
 
     /**
-     * Class's constructor
+     * Class' constructor
      * @author Alessandro Annechini
      */
     public Shelf(){
@@ -56,7 +56,7 @@ public class Shelf {
 
         for(i=0;i<6;i++){
             for(j=0;j<5;j++){
-                if(tiles[i][j]==Tile.EMPTY) checked[i][j]=1;
+                if(tiles[i][j].isEmpty()) checked[i][j]=1;
                 else checked[i][j]=0;
             }
         }
@@ -86,13 +86,13 @@ public class Shelf {
     private int recursiveCheck(int row,int col,int[][] checked){
         int groupDim = 1;
         checked[row][col]=1;
-        if(row > 0 && checked[row-1][col]==0 && Model.equalsTiles(tiles[row][col],tiles[row-1][col]))
+        if(row > 0 && checked[row-1][col]==0 && tiles[row][col].equals(tiles[row-1][col]))
             groupDim += recursiveCheck(row-1,col,checked);
-        if(row < 5 && checked[row+1][col]==0 && Model.equalsTiles(tiles[row][col],tiles[row+1][col]))
+        if(row < 5 && checked[row+1][col]==0 && tiles[row][col].equals(tiles[row+1][col]))
             groupDim += recursiveCheck(row+1,col,checked);
-        if(col > 0 && checked[row][col-1]==0 && Model.equalsTiles(tiles[row][col],tiles[row][col-1]))
+        if(col > 0 && checked[row][col-1]==0 && tiles[row][col].equals(tiles[row][col-1]))
             groupDim += recursiveCheck(row,col-1,checked);
-        if(col < 4 && checked[row][col+1]==0 && Model.equalsTiles(tiles[row][col],tiles[row][col+1]))
+        if(col < 4 && checked[row][col+1]==0 && tiles[row][col].equals(tiles[row][col+1]))
             groupDim += recursiveCheck(row,col+1,checked);
         return groupDim;
     }

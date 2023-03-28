@@ -63,7 +63,7 @@ public class Player {
                 if(tmp[i][j] != BLOCKED ){
                     if((i>0 && tmp[i-1][j] == BLOCKED) || (j>0 && tmp[i][j-1] == BLOCKED)){
                         pickableTiles[i][j] = true;
-                    }else if ((i<8 && tmp[i+1][j] == EMPTY) || (j<8 && tmp[i][j+1] == EMPTY)) {
+                    }else if ((i<8 && tmp[i+1][j] == BLOCKED) || (j<8 && tmp[i][j+1] == BLOCKED)) {
                         pickableTiles[i][j] = true;
                     }else if ((i>0 && tmp[i-1][j] == EMPTY) || (j>0 && tmp[i][j-1] == EMPTY)) {
                         pickableTiles[i][j] = true;
@@ -117,13 +117,13 @@ public class Player {
                     for(int j = 0; j<9; j++){
                         if(pickableTiles[i][j] && i!=x && j!=y){
                             pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && i==x && Math.abs(i-x) >= numPickableTiles){
+                        }else if(pickableTiles[i][j] && i==x && Math.abs(j-y) >= numPickableTiles){
                             pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && j==y && Math.abs(j-y) >= numPickableTiles){
+                        }else if(pickableTiles[i][j] && j==y && Math.abs(i-x) >= numPickableTiles){
                             pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && i==x && Math.abs(i-x) == 2 && !pickableTiles[(i+x)/2][j]){
+                        }else if(pickableTiles[i][j] && i==x && Math.abs(j-y) == 2 && !pickableTiles[i][(j+y)/2]){
                             pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && j==y && Math.abs(j-y) == 2 && !pickableTiles[i][(j+y)/2]){
+                        }else if(pickableTiles[i][j] && j==y && Math.abs(i-x) == 2 && !pickableTiles[(i+x)/2][j]){
                             pickableTiles[i][j] = false;
                         }
                     }
@@ -158,6 +158,8 @@ public class Player {
         if(index>=0 && index <= 2 && pickedTiles[index] != EMPTY){
             this.shelf.putTile(pickedTiles[index], this.selectedColumn);
             pickedTiles[index] = EMPTY;
+            if(pickedTiles[0] == EMPTY && pickedTiles[1] == EMPTY && pickedTiles[2] == EMPTY)
+                model.nextTurn();
         }
     }
 
@@ -243,4 +245,5 @@ public class Player {
     public boolean[][] getPickableTiles() {
         return pickableTiles;
     }
+
 }
