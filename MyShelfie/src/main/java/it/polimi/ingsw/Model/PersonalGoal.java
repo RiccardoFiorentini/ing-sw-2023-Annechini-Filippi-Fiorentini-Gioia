@@ -1,13 +1,32 @@
 package main.java.it.polimi.ingsw.Model;
 
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
 
-public abstract class PersonalGoal {
-    protected int[] xGoals;
-    protected int[] yGoals;
-    private final TileColor[] colourGoals =
+public class PersonalGoal {
+    private int[] xGoals;
+    private int[] yGoals;
+    private final TileColor[] colorGoals =
             {TileColor.GREEN, TileColor.BLUE, TileColor.PINK, TileColor.WHITE, TileColor.ORANGE, TileColor.CYAN};
 
+    public PersonalGoal(int index) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader("config/PersonalGoals.txt"));
+        String line = new String("");
+        for (int i = 0; line != null && i < 2 * (index - 1); i++) {
+            line = reader.readLine();
+        }
+        try {
+            xGoals = Arrays.stream(reader.readLine().split(",")).mapToInt(Integer::parseInt).toArray();
+            yGoals = Arrays.stream(reader.readLine().split(",")).mapToInt(Integer::parseInt).toArray();
+        } catch(NumberFormatException e) {
+            System.out.println("Error while reading PersonalGoals.txt");
+        }
+
+    }
 
 
     /**
@@ -19,7 +38,7 @@ public abstract class PersonalGoal {
     public int getPoints(Shelf shelf){
         int points=0, result=0;
         for(int i=0; i<6; i++)
-            if(shelf.getTile(xGoals[i],yGoals[i]).getColor() == colourGoals[i])
+            if(shelf.getTile(xGoals[i],yGoals[i]).getColor() == colorGoals[i])
                 points++;
 
         switch (points) {

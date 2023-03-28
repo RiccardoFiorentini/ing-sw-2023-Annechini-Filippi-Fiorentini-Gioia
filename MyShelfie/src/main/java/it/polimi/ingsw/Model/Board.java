@@ -1,9 +1,11 @@
 package main.java.it.polimi.ingsw.Model;
 
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 public class Board {
     private Map<Tile, Integer> tilesRemaining;
@@ -16,62 +18,32 @@ public class Board {
      * @param numPlayers is the number of players that joined the game
      *
      */
-    public Board(int numPlayers) {
-        tiles = new Tile[9][9];
+    public Board(int numPlayers) throws IOException {
+
         this.numPlayers = numPlayers;
         tilesRemaining = new HashMap<>();
 
-        //Board initialization without considering numPlayers
-        for(int i=0; i<9; i++){
-            for(int j=0; j<9; j++){
-                if      ((!(i<4 && j<3) || (i==3 && j==2)) &&
-                        (!(i<3 && j>4) || (i==2 && j==5)) &&
-                        (!(i>4 && j>5) ||  (i==5 && j==6)) &&
-                        (!(i>5 && j<4) || (i==6 && j==3)))
-
-                    tiles[i][j] = Tile.EMPTY;
-                else
-                    tiles[i][j] = Tile.BLOCKED;
+        //Board initialization
+        int dimR, dimC;
+        BufferedReader reader = new BufferedReader(new FileReader("config/Board.txt"));
+        String line;
+        int[] tmpArr;
+        int i,j;
+        line = reader.readLine();
+        dimR = Integer.parseInt(line);
+        line = reader.readLine();
+        dimC = Integer.parseInt(line);
+        tiles = new Tile[dimR][dimC];
+        i=0;
+        line = reader.readLine();
+        while(i<dimR && line!=null){
+            tmpArr= Arrays.stream(reader.readLine().split(",")).mapToInt(Integer::parseInt).toArray();
+            for(j=0; j<dimC; j++){
+                tiles[i][j] = tmpArr[j]>0 && tmpArr[j] <= numPlayers ? Tile.EMPTY : Tile.BLOCKED;
             }
+            i++;
+            line = reader.readLine();
         }
-
-        //Board initialization considering numPlayers -- removed redundant initialization
-        switch(numPlayers){
-            case 4:
-                tiles[2][6]=Tile.EMPTY;
-                tiles[6][6]=Tile.EMPTY;
-                tiles[6][2]=Tile.EMPTY;
-                tiles[2][2]=Tile.EMPTY;
-
-                tiles[1][5]=Tile.EMPTY;
-                tiles[5][7]=Tile.EMPTY;
-                tiles[7][3]=Tile.EMPTY;
-                tiles[3][1]=Tile.EMPTY;
-
-            case 3:
-                tiles[2][6]=Tile.EMPTY;
-                tiles[6][6]=Tile.EMPTY;
-                tiles[6][2]=Tile.EMPTY;
-                tiles[2][2]=Tile.EMPTY;
-
-                tiles[0][4]=Tile.BLOCKED;
-                tiles[4][8]=Tile.BLOCKED;
-                tiles[8][4]=Tile.BLOCKED;
-                tiles[4][0]=Tile.BLOCKED;
-            
-            default:
-                tiles[0][3]=Tile.BLOCKED;
-                tiles[3][8]=Tile.BLOCKED;
-                tiles[8][5]=Tile.BLOCKED;
-                tiles[5][0]=Tile.BLOCKED;
-
-                tiles[0][4]=Tile.BLOCKED;
-                tiles[4][8]=Tile.BLOCKED;
-                tiles[8][4]=Tile.BLOCKED;
-                tiles[4][0]=Tile.BLOCKED;
-        }
-
-
 
         //Bag initialization
         for(Tile t: Tile.values()){
@@ -80,9 +52,10 @@ public class Board {
                     t == Tile.ORANGE1 || t == Tile.CYAN1)
                 tilesRemaining.put(t, 8);
 
-            else
+            else if(!t.isFree())
                 tilesRemaining.put(t, 7);
         }
+        refill();
     }
 
     /**
@@ -93,17 +66,21 @@ public class Board {
     public void refill(){
         Random rTile = new Random();
         int rTileIndex;
+        List<Tile> tileRem = new ArrayList<>();
+        for(Tile t : tilesRemaining.keySet()){
+            if(tilesRemaining.get(t)>0)
+                tileRem.add(t);
+        }
 
-        for(int i=0; i<9;i++)
-            for(int j=0; j<9; j++)
+
+        for(int i=0; i<9 && tileRem.size()>0;i++)
+            for(int j=0; j<9 && tileRem.size()>0; j++)
                 if(tiles[i][j] == Tile.EMPTY) {
-                    //Might be an infinite loop if no tiles are left in the bag to refill?
-                    do {
-                        rTileIndex = rTile.nextInt(Tile.values().length - 2);
-                    } while( tilesRemaining.get(Tile.values()[rTileIndex]) <= 0 );
-
-                    tiles[i][j] = Tile.values()[rTileIndex];
-                    tilesRemaining.put(Tile.values()[rTileIndex], tilesRemaining.get(Tile.values()[rTileIndex]) -1);
+                    rTileIndex = rTile.nextInt(tileRem.size());
+                    tiles[i][j] = tileRem.get(rTileIndex);
+                    tilesRemaining.put(tileRem.get(rTileIndex), tilesRemaining.get(tileRem.get(rTileIndex)) -1);
+                    if(tilesRemaining.get(tileRem.get(rTileIndex))<=0)
+                        tileRem.remove(rTileIndex);
                 }
     }
 

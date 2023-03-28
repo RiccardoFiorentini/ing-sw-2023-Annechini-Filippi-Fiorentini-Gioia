@@ -1,5 +1,6 @@
 package main.java.it.polimi.ingsw.Model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 public class Model {
@@ -20,7 +21,7 @@ public class Model {
      * @param gameId is the id of the game choose by the Controller (useful for multiple games)
      * @param players is the list of players sent from the Controller
      */
-    public Model(int gameId, List<Player> players){
+    public Model(int gameId, List<Player> players) throws IOException {
         this.gameId = gameId;
         this.players = players;
         numPlayers = players.size();
@@ -174,35 +175,10 @@ public class Model {
      * @author Nicole Filippi
      * @param values is a list of different random integers
      */
-    private void initPersonalGoal(List<Integer> values){
+    private void initPersonalGoal(List<Integer> values) throws IOException {
         for(int i=0; i< values.size(); i++)
         {
-            switch (values.get(i)){
-                case 1 :
-                    players.get(i).setPersonalGoal(new PersonalGoal1());
-                case 2 :
-                    players.get(i).setPersonalGoal(new PersonalGoal2());
-                case 3 :
-                    players.get(i).setPersonalGoal(new PersonalGoal3());
-                case 4 :
-                    players.get(i).setPersonalGoal(new PersonalGoal4());
-                case 5 :
-                    players.get(i).setPersonalGoal(new PersonalGoal5());
-                case 6 :
-                    players.get(i).setPersonalGoal(new PersonalGoal6());
-                case 7 :
-                    players.get(i).setPersonalGoal(new PersonalGoal7());
-                case 8 :
-                    players.get(i).setPersonalGoal(new PersonalGoal8());
-                case 9 :
-                    players.get(i).setPersonalGoal(new PersonalGoal9());
-                case 10 :
-                    players.get(i).setPersonalGoal(new PersonalGoal10());
-                case 11 :
-                    players.get(i).setPersonalGoal(new PersonalGoal11());
-                case 12 :
-                    players.get(i).setPersonalGoal(new PersonalGoal12());
-            }
+            players.get(i).setPersonalGoal(new PersonalGoal(i));
         }
 
     }
