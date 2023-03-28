@@ -9,8 +9,8 @@ public class CommonGoal6 extends CommonGoal{
     }
     public boolean check(Shelf shelf) {
         int rowFound=0;
-        Set<Tile> typesFound;
-        boolean alreadyFound,notFullRow;
+        Set<TileColor> typesFound;
+        boolean notFullRow;
         int i,j;
 
         /*
@@ -20,19 +20,13 @@ public class CommonGoal6 extends CommonGoal{
          */
 
         notFullRow=false;
-        for(i=0;i<6 && !notFullRow;i++){
+        for(i=5;i>=0 && !notFullRow;i--){
             typesFound = new HashSet<>();
             for(j=0;j<5 && !notFullRow;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY)
+                if(shelf.getTile(i,j).isEmpty())
                     notFullRow=true;
                 else{
-                    alreadyFound=false;
-                    for(Tile t : typesFound){
-                        if(Model.equalsTiles(shelf.getTile(i,j),t))
-                            alreadyFound = true;
-                    }
-                    if(!alreadyFound)
-                        typesFound.add(shelf.getTile(i,j));
+                    typesFound.add(shelf.getTile(i,j).getColor());
                 }
             }
             if(typesFound.size() >= 5 && !notFullRow){

@@ -8,12 +8,12 @@ public class CommonGoal8 extends CommonGoal{
 
         /*
         This method checks if the four corners of the shelf contain
-        tiles of the same colour
+        tiles of the same color
          */
 
-        return shelf.getTile(0, 0) != Tile.EMPTY && shelf.getTile(0, 4) != Tile.EMPTY &&
-                Model.equalsTiles(shelf.getTile(0, 0), shelf.getTile(0, 4)) &&
-                Model.equalsTiles(shelf.getTile(0, 0), shelf.getTile(5, 0)) &&
-                Model.equalsTiles(shelf.getTile(0, 0), shelf.getTile(5, 4));
+        return !shelf.getTile(0, 0).isEmpty() &&
+                shelf.getTile(0, 0).equals(shelf.getTile(0, 4)) &&
+                shelf.getTile(0, 0).equals(shelf.getTile(5, 0)) &&
+                shelf.getTile(0, 0).equals(shelf.getTile(5, 4));
     }
 }

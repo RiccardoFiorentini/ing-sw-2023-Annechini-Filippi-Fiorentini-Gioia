@@ -5,7 +5,6 @@ public class CommonGoal4 extends CommonGoal{
         super(numPlayers);
     }
     public boolean check(Shelf shelf) {
-        int i,j;
         int[][] checked = new int[6][5];
         int foundDuo;
 
@@ -17,102 +16,79 @@ public class CommonGoal4 extends CommonGoal{
         */
 
         //VERTICAL TOP DOWN - HORIZONTAL TOP DOWN
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundDuo=countDuo(shelf,true,false,checked,0);
         foundDuo=countDuo(shelf,false,false,checked,foundDuo);
         if(foundDuo>=6)
             return true;
 
         //VERTICAL TOP DOWN - HORIZONTAL BOTTOM UP
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundDuo=countDuo(shelf,true,false,checked,0);
         foundDuo=countDuo(shelf,false,true,checked,foundDuo);
         if(foundDuo>=6)
             return true;
 
         //VERTICAL BOTTOM UP - HORIZONTAL TOP DOWN
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundDuo=countDuo(shelf,true,true,checked,0);
         foundDuo=countDuo(shelf,false,false,checked,foundDuo);
         if(foundDuo>=6)
             return true;
 
         //VERTICAL BOTTOM UP - HORIZONTAL BOTTOM UP
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundDuo=countDuo(shelf,true,true,checked,0);
         foundDuo=countDuo(shelf,false,true,checked,foundDuo);
         if(foundDuo>=6)
             return true;
 
         //HORIZONTAL TOP DOWN - VERTICAL TOP DOWN
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundDuo=countDuo(shelf,false,false,checked,0);
         foundDuo=countDuo(shelf,true,false,checked,foundDuo);
         if(foundDuo>=6)
             return true;
 
         //HORIZONTAL TOP DOWN - VERTICAL BOTTOM UP
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundDuo=countDuo(shelf,false,false,checked,0);
         foundDuo=countDuo(shelf,true,true,checked,foundDuo);
         if(foundDuo>=6)
             return true;
 
         //HORIZONTAL BOTTOM UP - VERTICAL TOP DOWN
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundDuo=countDuo(shelf,false,true,checked,0);
         foundDuo=countDuo(shelf,true,false,checked,foundDuo);
         if(foundDuo>=6)
             return true;
 
         //HORIZONTAL BOTTOM UP - VERTICAL BOTTOM UP
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundDuo=countDuo(shelf,false,true,checked,0);
         foundDuo=countDuo(shelf,true,true,checked,foundDuo);
         if(foundDuo>=6)
             return true;
 
         return false;
+    }
+
+    /**
+     * This auxiliary method resets the "checked" matrix
+     * @author Alessandro Annechini
+     * @param shelf The shelf to be checked
+     * @param checked The matrix to be reset
+     */
+
+    private void resetTable(Shelf shelf, int[][] checked){
+        int i,j;
+        for(i=0;i<6;i++){
+            for(j=0;j<5;j++){
+                if(shelf.getTile(i,j).isEmpty()) checked[i][j]=1;
+                else checked[i][j]=0;
+            }
+        }
     }
 
     /**
@@ -138,7 +114,7 @@ public class CommonGoal4 extends CommonGoal{
             for(i=5-step_row;i>=0;i--){
                 for(j=4-step_col;j>=0;j--){
                     if(checked[i][j]==0 && checked[i+step_row][j+step_col]==0){
-                        if(Model.equalsTiles(shelf.getTile(i,j),shelf.getTile(i+step_row,j+step_col))){
+                        if(shelf.getTile(i,j).equals(shelf.getTile(i+step_row,j+step_col))){
                             checked[i][j]=1;
                             checked[i+step_row][j+step_col]=1;
                             foundDuo++;
@@ -153,7 +129,7 @@ public class CommonGoal4 extends CommonGoal{
             for(i=0;i<6-step_row;i++){
                 for(j=0;j<5-step_col;j++){
                     if(checked[i][j]==0 && checked[i+step_row][j+step_col]==0){
-                        if(Model.equalsTiles(shelf.getTile(i,j),shelf.getTile(i+step_row,j+step_col))){
+                        if(shelf.getTile(i,j).equals(shelf.getTile(i+step_row,j+step_col))){
                             checked[i][j]=1;
                             checked[i+step_row][j+step_col]=1;
                             foundDuo++;

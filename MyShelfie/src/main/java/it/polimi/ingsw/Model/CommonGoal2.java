@@ -18,7 +18,7 @@ public class CommonGoal2 extends CommonGoal{
                 valid = true;
                 for(j=0;j<5 && valid;j++){
                     for(k=j+1; k<6 && valid; k++){
-                        valid = !Model.equalsTiles(shelf.getTile(j,i),shelf.getTile(k,i));
+                        valid = !shelf.getTile(j,i).equals(shelf.getTile(k,i));
                     }
                 }
                 if(valid){

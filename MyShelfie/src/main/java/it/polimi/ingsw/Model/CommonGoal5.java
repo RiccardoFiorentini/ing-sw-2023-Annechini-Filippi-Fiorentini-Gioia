@@ -9,8 +9,7 @@ public class CommonGoal5 extends CommonGoal{
     }
     public boolean check(Shelf shelf) {
         int colFound=0;
-        Set<Tile> typesFound;
-        boolean alreadyFound;
+        Set<TileColor> typesFound;
 
         /*
         This method has to find 3 columns with at most 3 different colours
@@ -22,13 +21,7 @@ public class CommonGoal5 extends CommonGoal{
             if(shelf.spaceInCol(j)==0){
                 typesFound = new HashSet<>();
                 for(i=0;i<6;i++){
-                    alreadyFound=false;
-                    for(Tile t : typesFound){
-                        if(Model.equalsTiles(shelf.getTile(i,j),t))
-                            alreadyFound = true;
-                    }
-                    if(!alreadyFound)
-                        typesFound.add(shelf.getTile(i,j));
+                    typesFound.add(shelf.getTile(i,j).getColor());
                 }
                 if(typesFound.size() <= 3){
                     colFound++;

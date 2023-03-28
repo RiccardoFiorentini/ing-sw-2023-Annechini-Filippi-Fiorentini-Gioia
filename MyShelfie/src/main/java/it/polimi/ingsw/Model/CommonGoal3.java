@@ -5,7 +5,6 @@ public class CommonGoal3 extends CommonGoal{
         super(numPlayers);
     }
     public boolean check(Shelf shelf) {
-        int i,j;
         int[][] checked = new int[6][5];
         int foundQuad;
 
@@ -17,102 +16,79 @@ public class CommonGoal3 extends CommonGoal{
         */
 
         //VERTICAL TOP DOWN - HORIZONTAL TOP DOWN
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundQuad=countQuad(shelf,true,false,checked,0);
         foundQuad=countQuad(shelf,false,false,checked,foundQuad);
         if(foundQuad>=4)
             return true;
 
         //VERTICAL TOP DOWN - HORIZONTAL BOTTOM UP
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundQuad=countQuad(shelf,true,false,checked,0);
         foundQuad=countQuad(shelf,false,true,checked,foundQuad);
         if(foundQuad>=4)
             return true;
 
         //VERTICAL BOTTOM UP - HORIZONTAL TOP DOWN
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundQuad=countQuad(shelf,true,true,checked,0);
         foundQuad=countQuad(shelf,false,false,checked,foundQuad);
         if(foundQuad>=4)
             return true;
 
         //VERTICAL BOTTOM UP - HORIZONTAL BOTTOM UP
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundQuad=countQuad(shelf,true,true,checked,0);
         foundQuad=countQuad(shelf,false,true,checked,foundQuad);
         if(foundQuad>=4)
             return true;
 
         //HORIZONTAL TOP DOWN - VERTICAL TOP DOWN
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundQuad=countQuad(shelf,false,false,checked,0);
         foundQuad=countQuad(shelf,true,false,checked,foundQuad);
         if(foundQuad>=4)
             return true;
 
         //HORIZONTAL TOP DOWN - VERTICAL BOTTOM UP
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundQuad=countQuad(shelf,false,false,checked,0);
         foundQuad=countQuad(shelf,true,true,checked,foundQuad);
         if(foundQuad>=4)
             return true;
 
         //HORIZONTAL BOTTOM UP - VERTICAL TOP DOWN
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundQuad=countQuad(shelf,false,true,checked,0);
         foundQuad=countQuad(shelf,true,false,checked,foundQuad);
         if(foundQuad>=4)
             return true;
 
         //HORIZONTAL BOTTOM UP - VERTICAL BOTTOM UP
-        for(i=0;i<6;i++){
-            for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)==Tile.EMPTY) checked[i][j]=1;
-                else checked[i][j]=0;
-            }
-        }
+        resetTable(shelf,checked);
         foundQuad=countQuad(shelf,false,true,checked,0);
         foundQuad=countQuad(shelf,true,true,checked,foundQuad);
         if(foundQuad>=4)
             return true;
 
         return false;
+    }
+
+    /**
+     * This auxiliary method resets the "checked" matrix
+     * @author Alessandro Annechini
+     * @param shelf The shelf to be checked
+     * @param checked The matrix to be reset
+     */
+
+    private void resetTable(Shelf shelf, int[][] checked){
+        int i,j;
+        for(i=0;i<6;i++){
+            for(j=0;j<5;j++){
+                if(shelf.getTile(i,j).isEmpty()) checked[i][j]=1;
+                else checked[i][j]=0;
+            }
+        }
     }
 
     /**
@@ -138,9 +114,9 @@ public class CommonGoal3 extends CommonGoal{
             for(i=5-3*step_row;i>=0;i--){
                 for(j=4-3*step_col;j>=0;j--){
                     if(checked[i][j]==0 && checked[i+step_row][j+step_col]==0 && checked[i+2*step_row][j+2*step_col]==0 && checked[i+3*step_row][j+3*step_col]==0){
-                        if(Model.equalsTiles(shelf.getTile(i,j),shelf.getTile(i+step_row,j+step_col)) &&
-                                Model.equalsTiles(shelf.getTile(i,j),shelf.getTile(i+2*step_row,j+2*step_col))&&
-                                Model.equalsTiles(shelf.getTile(i,j),shelf.getTile(i+3*step_row,j+3*step_col))){
+                        if(shelf.getTile(i,j).equals(shelf.getTile(i+step_row,j+step_col)) &&
+                                shelf.getTile(i,j).equals(shelf.getTile(i+2*step_row,j+2*step_col))&&
+                                shelf.getTile(i,j).equals(shelf.getTile(i+3*step_row,j+3*step_col))){
                             checked[i][j]=1;
                             checked[i+step_row][j+step_col]=1;
                             checked[i+2*step_row][j+2*step_col]=1;
@@ -157,9 +133,9 @@ public class CommonGoal3 extends CommonGoal{
             for(i=0;i<6-3*step_row;i++){
                 for(j=0;j<5-3*step_col;j++){
                     if(checked[i][j]==0 && checked[i+step_row][j+step_col]==0 && checked[i+2*step_row][j+2*step_col]==0 && checked[i+3*step_row][j+3*step_col]==0){
-                        if(Model.equalsTiles(shelf.getTile(i,j),shelf.getTile(i+step_row,j+step_col)) &&
-                                Model.equalsTiles(shelf.getTile(i,j),shelf.getTile(i+2*step_row,j+2*step_col))&&
-                                Model.equalsTiles(shelf.getTile(i,j),shelf.getTile(i+3*step_row,j+3*step_col))){
+                        if(shelf.getTile(i,j).equals(shelf.getTile(i+step_row,j+step_col)) &&
+                                shelf.getTile(i,j).equals(shelf.getTile(i+2*step_row,j+2*step_col))&&
+                                shelf.getTile(i,j).equals(shelf.getTile(i+3*step_row,j+3*step_col))){
                             checked[i][j]=1;
                             checked[i+step_row][j+step_col]=1;
                             checked[i+2*step_row][j+2*step_col]=1;

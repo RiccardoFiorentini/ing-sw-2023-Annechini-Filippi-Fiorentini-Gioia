@@ -14,27 +14,22 @@ public class CommonGoal9 extends CommonGoal{
         if there are at least 8 tiles of the same color
          */
 
-        Map<Tile,Integer> occur = new HashMap<>();
-        occur.put(Tile.BLUE1,0);
-        occur.put(Tile.CYAN1,0);
-        occur.put(Tile.GREEN1,0);
-        occur.put(Tile.WHITE1,0);
-        occur.put(Tile.ORANGE1,0);
-        occur.put(Tile.PINK1,0);
+        Map<TileColor,Integer> occur = new HashMap<>();
+        for(TileColor tc : TileColor.values()){
+            if(tc!=TileColor.EMPTY && tc!=TileColor.BLOCKED)
+                occur.put(tc,0);
+        }
 
         int i,j;
         for(i=0;i<6;i++){
             for(j=0;j<5;j++){
-                if(shelf.getTile(i,j)!=Tile.EMPTY){
-                    for(Tile t : occur.keySet()){
-                        if(Model.equalsTiles(shelf.getTile(i,j),t))
-                            occur.put(t,occur.get(t)+1);
-                    }
+                if(!shelf.getTile(i,j).isEmpty()){
+                    occur.put(shelf.getTile(i,j).getColor(),occur.get(shelf.getTile(i,j).getColor())+1);
                 }
             }
         }
-        for(Tile t : occur.keySet()){
-            if(occur.get(t)>=8)
+        for(TileColor tc : occur.keySet()){
+            if(occur.get(tc)>=8)
                 return true;
         }
         return false;
