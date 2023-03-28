@@ -5,9 +5,9 @@ import java.util.List;
 /**
  **/
 public class Message {
-    private Player sender;
-    private List<Player> receiver;
-    private String text;
+    private final Player sender;
+    private final List<Player> receiver;
+    private final String text;
 
     /**
      * Class's constructor

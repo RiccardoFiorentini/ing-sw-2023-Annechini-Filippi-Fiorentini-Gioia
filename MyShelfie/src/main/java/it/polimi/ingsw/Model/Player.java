@@ -7,6 +7,13 @@ import static main.java.it.polimi.ingsw.Model.Tile.EMPTY;
 
 public class Player {
     private int turnId;
+
+    //coordinates of first and last tiles selected
+    private int x1;
+    private int y1;
+    private int x2;
+    private int y2;
+
     private String nickname;
     private boolean connected;
     private int[] pointsCommonGoal;
@@ -15,14 +22,8 @@ public class Player {
     private Shelf shelf;
     private Model model;
     private PersonalGoal personalGoal;
+    private int numPickableTiles;
     private boolean pickableTiles[][];
-
-
-
-
-
-
-
 
     /**
      * Class's constructor
@@ -31,117 +32,132 @@ public class Player {
      * @param model
      * @param goal is the personal goal assigned to the player
      * */
-    public void Player(String nickname, Model model, PersonalGoal  goal){
-        pickedTiles = new Tile[] {EMPTY, EMPTY, EMPTY};
-        pointsCommonGoal = new int[2];
+    public void Player(String nickname, Model model, PersonalGoal  goal, int id){
+        this.pickedTiles = new Tile[] {EMPTY, EMPTY, EMPTY};
+        this.pointsCommonGoal = new int[] {0, 0};
         this.nickname = nickname;
-        //turnId chi lo stabilisce?
-        connected = true;
-        shelf = new Shelf();
+        this.turnId = id;
+        this.connected = true;
+        this.shelf = new Shelf();
         this.model = model;
         this.personalGoal = goal;
-        pickableTiles = new boolean[9][9];
+        this.pickableTiles = new boolean[9][9];
+        this.numPickableTiles = 0;
+        this.selectedColumn = -1;
+        this.x1 = -1;
+        this.y1 = -1;
+        this.x2 = -1;
+        this.y2 = -1;
+    }
 
-        Tile tmp[][];
+    /**
+     * Method to set all the variables when the player starts a new turn
+     * @author Fiorentini Riccardo
+     * */
+    void beginTurn(){
+        //Initialization of the boolean matrix describing the pickable tiles on the board
+        Tile [][] tmp;
         tmp = model.getBoard().getTiles();
         for(int i = 0; i < 9; i++){
             for(int j = 0; j < 9; j++){
                 if(tmp[i][j] != BLOCKED ){
                     if((i>0 && tmp[i-1][j] == BLOCKED) || (j>0 && tmp[i][j-1] == BLOCKED)){
                         pickableTiles[i][j] = true;
-                    } else if ((i>0 && tmp[i-1][j] == EMPTY) || (j>0 && tmp[i][j-1] == EMPTY)) {
+                    }else if ((i<8 && tmp[i+1][j] == EMPTY) || (j<8 && tmp[i][j+1] == EMPTY)) {
                         pickableTiles[i][j] = true;
-                    } else if ((i<8 && tmp[i+1][j] == EMPTY) || (j<8 && tmp[i][j+1] == EMPTY)) {
+                    }else if ((i>0 && tmp[i-1][j] == EMPTY) || (j>0 && tmp[i][j-1] == EMPTY)) {
+                        pickableTiles[i][j] = true;
+                    }else if ((i<8 && tmp[i+1][j] == EMPTY) || (j<8 && tmp[i][j+1] == EMPTY)) {
+                        pickableTiles[i][j] = true;
+                    }else if((i == 0 || j == 0) && (tmp[i][j] != EMPTY && tmp[i][j] != BLOCKED)){
                         pickableTiles[i][j] = true;
                     }
                 }
             }
         }
+
+        //parameter initialization
+        this.numPickableTiles = 0;
+        this.selectedColumn = -1;
+        pickedTiles[0] = EMPTY;
+        pickedTiles[1] = EMPTY;
+        pickedTiles[2] = EMPTY;
+        this.x1 = -1;
+        this.y1 = -1;
+        this.x2 = -1;
+        this.y2 = -1;
     }
 
     /**
-     * Method that set the column where the player will put the tiles and initializes the matrix for
+     * Method that set the column where the player will put the tiles and max number of pickable tiles
      * @author Fiorentini Riccardo
      * @param column
      * */
     public void setSelectedColumn(int column){
         this.selectedColumn = column;
-        Tile tmp[][];
-        tmp = model.getBoard().getTiles();
-        for(int i = 0; i < 9; i++){
-            for(int j = 0; j < 9; j++){
-                if(tmp[i][j] != BLOCKED ){
-                    if((i>0 && tmp[i-1][j] == BLOCKED) || (j>0 && tmp[i][j-1] == BLOCKED)){
-                        pickableTiles[i][j] = true;
-                    } else if ((i>0 && tmp[i-1][j] == EMPTY) || (j>0 && tmp[i][j-1] == EMPTY)) {
-                        pickableTiles[i][j] = true;
-                    } else if ((i<8 && tmp[i+1][j] == EMPTY) || (j<8 && tmp[i][j+1] == EMPTY)) {
-                        pickableTiles[i][j] = true;
-                    }else{
-                        pickableTiles[i][j] = true;
+        if(shelf.spaceInCol(this.selectedColumn) < 3){
+            this.numPickableTiles = shelf.spaceInCol(this.selectedColumn); //set the max number of tiles that the player can pick
+        }else{
+            this.numPickableTiles = 3;
+        }
+    }
+
+    /**
+     * Method to select tiles, both first and last. It does the checks and initializes the buffer.
+     * @author Fiorentini Riccardo
+     * @param x
+     * @param y
+     * */
+    public void selectTile(int x, int y){
+        if(this.x1 == -1){ //if it's the firs valid tile selected
+            if(pickableTiles[x][y]){ //if it's valid it sets the first tile and update the pickableTiles matrix
+                this.x1 = x;
+                this.y1 = y;
+                for(int i = 0; i<9; i++){
+                    for(int j = 0; j<9; j++){
+                        if(pickableTiles[i][j] && i!=x && j!=y){
+                            pickableTiles[i][j] = false;
+                        }else if(pickableTiles[i][j] && i==x && Math.abs(i-x) >= numPickableTiles){
+                            pickableTiles[i][j] = false;
+                        }else if(pickableTiles[i][j] && j==y && Math.abs(j-y) >= numPickableTiles){
+                            pickableTiles[i][j] = false;
+                        }else if(pickableTiles[i][j] && i==x && Math.abs(i-x) == 2 && !pickableTiles[(i+x)/2][j]){
+                            pickableTiles[i][j] = false;
+                        }else if(pickableTiles[i][j] && j==y && Math.abs(j-y) == 2 && !pickableTiles[i][(j+y)/2]){
+                            pickableTiles[i][j] = false;
+                        }
+                    }
+                }
+            }
+        }else{
+            if(pickableTiles[x][y]) { //if the last tile selected is valid it set the last tile and put the selected tiles in the buffer
+                this.x2 = x;
+                this.y2 = y;
+                if(this.x1 == this.x2){
+                    int min = Math.min(this.y1, this.y2);
+                    for(int i = min; i <= Math.max(this.y1, this.y2); i++){
+                        pickedTiles[i-min] = this.model.getBoard().pickTile(this.x1, i);
+                    }
+                }else{
+                    int min = Math.min(this.x1, this.x2);
+                    for(int i = min; i <= Math.max(this.x1, this.x2); i++){
+                        pickedTiles[i-min] = this.model.getBoard().pickTile(i, this.y1);
                     }
                 }
             }
         }
-        pickedTiles[0] = EMPTY;
-        pickedTiles[1] = EMPTY;
-        pickedTiles[2] = EMPTY;
     }
 
-    /**
-     * Method to check if the selected tiles are pickable,
-     * the order in the lists is the order of insertion in the column (lower the index lower the position in the column)
-     * @author Fiorentini Riccardo
-     * @param x list of x coordinates
-     * @param y list of y coordinates
-     * */
-    private boolean checkSelectedTiles(List<Integer> x, List<Integer> y){
-        int numPicked = x.size();
-        boolean isCorrect = true;
-        if(numPicked <= shelf.spaceInCol(selectedColumn) && numPicked <= 3){
-            for(int i = 0; i<numPicked && isCorrect; i++){
-                isCorrect = pickableTiles[x.get(i)][y.get(i)];
-            }
-            if(numPicked == 3 && isCorrect){
-                isCorrect = (x.get(0) == x.get(1) && x.get(1) == x.get(2)) || (x.get(0) - x.get(1) < 3 && x.get(1) - x.get(2) < 3 && x.get(0) - x.get(2) < 3 );
-                if(!isCorrect){
-                    isCorrect = (y.get(0) == y.get(1) && y.get(1) == y.get(2)) || (y.get(0) - y.get(1) < 3 && y.get(1) - y.get(2) < 3 && y.get(0) - y.get(2) < 3 );
-                }
-            }else if(numPicked == 2 && isCorrect){
-                isCorrect = (x.get(0) == x.get(1)) || (x.get(0) - x.get(1) < 2);
-                if(!isCorrect){
-                    isCorrect = (y.get(0) == y.get(1)) || (y.get(0) - y.get(1) < 2);
-                }
-            }
-            return isCorrect;
-        }else {
-            return false;
-        }
-    }
 
     /**
-     * Method that actually pick the tiles from the board,
+     * Method to put the selected tiles in the shelf from the buffer
      * @author Fiorentini Riccardo
-     * @param x list of x coordinates
-     * @param y list of y coordinates
+     * @param index
      * */
-    public void pickFromBoard(List<Integer> x, List<Integer> y){
-        if(checkSelectedTiles(x, y)){
-            for(int i = 0; i<x.size(); i++){
-                pickedTiles[i] = model.getBoard().pickTile(x.get(i), y.get(i));
-            }
-        }
-    }
-
-    /**
-     * Method to put the selected tiles in the shelf
-     * @author Fiorentini Riccardo
-     * */
-    public void putInColumn(){
-        int i = 0;
-        while(pickedTiles[i] != EMPTY){
-            this.shelf.putTile(pickedTiles[i], this.selectedColumn);
-            i++;
+    public void putInColumn(int index){
+        if(index>=0 && index <= 2 && pickedTiles[index] != EMPTY){
+            this.shelf.putTile(pickedTiles[index], this.selectedColumn);
+            pickedTiles[index] = EMPTY;
         }
     }
 
@@ -159,6 +175,14 @@ public class Player {
                 model.getChat().writeMessage(this, receiver.get(i), text);
             }
         }
+    }
+
+    public void setPointsCommonGoal(int index, int point){
+        this.pointsCommonGoal[index] = point;
+    }
+
+    public void setPersonalGoal(PersonalGoal goal){
+        this.personalGoal = goal;
     }
 
     public boolean isConnected() {
@@ -195,5 +219,28 @@ public class Player {
 
     public PersonalGoal getPersonalGoal() {
         return personalGoal;
+    }
+
+    public int getX1(){
+        return x1;
+    }
+
+    public int getX2(){
+        return x2;
+    }
+
+    public int getY1(){
+        return y1;
+    }
+    public int getY2(){
+        return y2;
+    }
+
+    public int getNumPickableTiles(){
+        return numPickableTiles;
+    }
+
+    public boolean[][] getPickableTiles() {
+        return pickableTiles;
     }
 }
