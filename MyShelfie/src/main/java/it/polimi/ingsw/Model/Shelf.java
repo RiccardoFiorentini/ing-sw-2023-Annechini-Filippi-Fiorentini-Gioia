@@ -28,6 +28,7 @@ public class Shelf {
      * @author Alessandro Annechini
      * @param tile the tile to be inserted
      * @param col the selected column
+     * @throws FullColumnException when the player tries to put a tile in a full column
      */
     public void putTile(Tile tile, int col) throws FullColumnException {
         if(spacesForCol[col]<=0) throw new FullColumnException();

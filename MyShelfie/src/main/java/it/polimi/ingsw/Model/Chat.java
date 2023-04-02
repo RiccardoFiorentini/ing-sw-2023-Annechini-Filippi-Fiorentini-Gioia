@@ -1,5 +1,7 @@
 package main.java.it.polimi.ingsw.Model;
 
+import main.java.it.polimi.ingsw.ModelExceptions.IncorrectMessageException;
+
 import java.util.ArrayList;
 import java.util.List;
 public class Chat {
@@ -22,8 +24,11 @@ public class Chat {
      * @param sender is the player who is sending the message
      * @param receiver is the player who receives the message
      * @param text is the body of the message
+     * @throws IncorrectMessageException when the text of the message is empty
     */
-    public void writeMessage(Player sender, Player receiver, String text){ //eccezione?????
+    public void writeMessage(Player sender, Player receiver, String text) throws IncorrectMessageException {
+        if(text.length()==0)
+            throw new IncorrectMessageException();
         List<Player> rec= new ArrayList<>();
         rec.add(receiver);
         Message m = new Message(sender, rec, text);
@@ -35,8 +40,11 @@ public class Chat {
      * @author Nicole Filippi
      * @param sender is the player who is sending the message
      * @param text is the body of the message
+     * @throws IncorrectMessageException when the text of the message is empty
      */
-    public void writeMessage(Player sender, String text){
+    public void writeMessage(Player sender, String text) throws IncorrectMessageException{
+        if(text.length()==0)
+            throw new IncorrectMessageException();
         Message m = new Message(sender, players, text);
         messages.add(m);
     }

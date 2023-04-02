@@ -2,6 +2,8 @@ package main.java.it.polimi.ingsw.Model;
 
 import main.java.it.polimi.ingsw.ModelExceptions.FullColumnException;
 
+import main.java.it.polimi.ingsw.ModelExceptions.IncorrectMessageException;
+
 import java.util.List;
 
 import static main.java.it.polimi.ingsw.Model.Tile.BLOCKED;
@@ -171,7 +173,7 @@ public class Player {
      * @param receiver list of player I am texting to
      * @param text message I am sending
      * */
-    public void writeMessage(List<Player> receiver, String text){
+    public void writeMessage(List<Player> receiver, String text) throws IncorrectMessageException {
         if(receiver.size() == this.model.getNumPlayers()){
             model.getChat().writeMessage(this, text);
         }else{
