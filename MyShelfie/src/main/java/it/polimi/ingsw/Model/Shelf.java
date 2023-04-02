@@ -1,5 +1,7 @@
 package main.java.it.polimi.ingsw.Model;
 
+import main.java.it.polimi.ingsw.ModelExceptions.FullColumnException;
+
 public class Shelf {
     private Tile[][] tiles;
     private int[] spacesForCol;
@@ -27,7 +29,8 @@ public class Shelf {
      * @param tile the tile to be inserted
      * @param col the selected column
      */
-    public void putTile(Tile tile, int col){
+    public void putTile(Tile tile, int col) throws FullColumnException {
+        if(spacesForCol[col]<=0) throw new FullColumnException();
         spacesForCol[col]--;
         spacesLeft--;
         tiles[spacesForCol[col]][col] = tile;
@@ -61,8 +64,8 @@ public class Shelf {
             }
         }
         totPoints=0;
-        for(i=0;i<5;i++){
-            for(j=0;j<6;j++){
+        for(i=0;i<6;i++){
+            for(j=0;j<5;j++){
                 if(checked[i][j]==0){
                     tmpGroup = recursiveCheck(i,j,checked);
                     if(tmpGroup==3) totPoints+=2;

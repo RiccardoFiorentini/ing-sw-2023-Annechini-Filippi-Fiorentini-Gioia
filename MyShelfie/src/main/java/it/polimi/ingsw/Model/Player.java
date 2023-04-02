@@ -1,5 +1,7 @@
 package main.java.it.polimi.ingsw.Model;
 
+import main.java.it.polimi.ingsw.ModelExceptions.FullColumnException;
+
 import java.util.List;
 
 import static main.java.it.polimi.ingsw.Model.Tile.BLOCKED;
@@ -154,7 +156,7 @@ public class Player {
      * @author Fiorentini Riccardo
      * @param index
      * */
-    public void putInColumn(int index){
+    public void putInColumn(int index) throws FullColumnException {
         if(index>=0 && index <= 2 && pickedTiles[index] != EMPTY){
             this.shelf.putTile(pickedTiles[index], this.selectedColumn);
             pickedTiles[index] = EMPTY;
