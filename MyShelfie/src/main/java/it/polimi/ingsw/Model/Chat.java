@@ -27,7 +27,7 @@ public class Chat {
      * @throws IncorrectMessageException when the text of the message is empty
     */
     public void writeMessage(Player sender, Player receiver, String text) throws IncorrectMessageException {
-        if(text.length()==0)
+        if(text.length()==0 || !players.contains(receiver))
             throw new IncorrectMessageException();
         List<Player> rec= new ArrayList<>();
         rec.add(receiver);

@@ -2,7 +2,6 @@ package main.java.it.polimi.ingsw.Model;
 
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
@@ -13,6 +12,12 @@ public class PersonalGoal {
     private final TileColor[] colorGoals =
             {TileColor.GREEN, TileColor.BLUE, TileColor.PINK, TileColor.WHITE, TileColor.ORANGE, TileColor.CYAN};
 
+    /**
+     * Class' constructor
+     * @author Pasquale Gioia, Nicole Filippi
+     * @param index The index of the personal goal
+     * @throws IOException Error while reading "PersonalGoals.txt"
+     */
     public PersonalGoal(int index) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader("config/PersonalGoals.txt"));
         String line = new String("");
