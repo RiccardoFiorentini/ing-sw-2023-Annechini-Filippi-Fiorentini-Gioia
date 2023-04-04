@@ -1,8 +1,10 @@
 package main.java.it.polimi.ingsw.Model;
 
 
+import main.java.it.polimi.ingsw.ModelExceptions.NotPickableException;
+import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
+
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -16,9 +18,9 @@ public class Board {
      * Class' constructor
      * @author Pasquale Gioia
      * @param numPlayers is the number of players that joined the game
-     *
+     * @throws IOException Error while reading "Board.txt"
      */
-    public Board(int numPlayers) throws IOException {
+    public Board(int numPlayers) throws IOException, NotToRefillException {
 
         this.numPlayers = numPlayers;
         tilesRemaining = new HashMap<>();
@@ -55,15 +57,20 @@ public class Board {
             else if(!t.isFree())
                 tilesRemaining.put(t, 7);
         }
+
+        //First board refill
         refill();
     }
 
     /**
      * Refills the board and decreases the amount of tiles left in the bag
      * @author Pasquale Gioia
-     *
+     * @throws NotToRefillException When the board doesn't really need to be refilled
      */
-    public void refill(){
+    public void refill() throws NotToRefillException {
+        if(!checkFill())
+            throw new NotToRefillException();
+
         Random rTile = new Random();
         int rTileIndex;
         List<Tile> tileRem = new ArrayList<>();
@@ -140,11 +147,15 @@ public class Board {
      * @author Pasquale Gioia
      * @param x_Tile is the row of the selected tile from the board
      * @param y_Tile is the column of the selected tile from the board
+     * @throws NotPickableException when the selected tile is empty or blocked
      * @return A specific selected tile
      *
      */
-    public Tile pickTile(int x_Tile, int y_Tile){
+    public Tile pickTile(int x_Tile, int y_Tile) throws NotPickableException {
         Tile pickedTile = tiles[x_Tile][y_Tile];
+        if(pickedTile.isFree())
+            throw new NotPickableException();
+
         tiles[x_Tile][y_Tile] = Tile.EMPTY;
 
         return pickedTile;

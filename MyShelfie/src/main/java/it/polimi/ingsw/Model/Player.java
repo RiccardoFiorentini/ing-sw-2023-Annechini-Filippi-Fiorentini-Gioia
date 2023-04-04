@@ -1,8 +1,9 @@
 package main.java.it.polimi.ingsw.Model;
 
 import main.java.it.polimi.ingsw.ModelExceptions.FullColumnException;
-
 import main.java.it.polimi.ingsw.ModelExceptions.IncorrectMessageException;
+import main.java.it.polimi.ingsw.ModelExceptions.NotPickableException;
+import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
 
 import java.util.List;
 
@@ -112,7 +113,7 @@ public class Player {
      * @param x
      * @param y
      * */
-    public void selectTile(int x, int y){
+    public void selectTile(int x, int y) throws NotPickableException {
         if(this.x1 == -1){ //if it's the firs valid tile selected
             if(pickableTiles[x][y]){ //if it's valid it sets the first tile and update the pickableTiles matrix
                 this.x1 = x;
@@ -158,7 +159,7 @@ public class Player {
      * @author Fiorentini Riccardo
      * @param index
      * */
-    public void putInColumn(int index) throws FullColumnException {
+    public void putInColumn(int index) throws FullColumnException, NotToRefillException {
         if(index>=0 && index <= 2 && pickedTiles[index] != EMPTY){
             this.shelf.putTile(pickedTiles[index], this.selectedColumn);
             pickedTiles[index] = EMPTY;
