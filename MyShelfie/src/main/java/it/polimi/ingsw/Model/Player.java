@@ -1,9 +1,6 @@
 package main.java.it.polimi.ingsw.Model;
 
-import main.java.it.polimi.ingsw.ModelExceptions.FullColumnException;
-import main.java.it.polimi.ingsw.ModelExceptions.IncorrectMessageException;
-import main.java.it.polimi.ingsw.ModelExceptions.NotPickableException;
-import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
+import main.java.it.polimi.ingsw.ModelExceptions.*;
 
 import java.util.List;
 
@@ -28,16 +25,15 @@ public class Player {
     private Model model;
     private PersonalGoal personalGoal;
     private int numPickableTiles;
-    private boolean pickableTiles[][];
+    private boolean[][] pickableTiles;
 
     /**
      * Class's constructor
      * @author Fiorentini Riccardo
-     * @param nickname
-     * @param model
-     * @param goal is the personal goal assigned to the player
+     * @param nickname name of the player, unique in the match
+     * @param model associated with the match the player is playin
      * */
-    public void Player(String nickname, Model model, PersonalGoal  goal, int id){
+    public void Player(String nickname, Model model, int id){
         this.pickedTiles = new Tile[] {EMPTY, EMPTY, EMPTY};
         this.pointsCommonGoal = new int[] {0, 0};
         this.nickname = nickname;
@@ -45,7 +41,7 @@ public class Player {
         this.connected = true;
         this.shelf = new Shelf();
         this.model = model;
-        this.personalGoal = goal;
+        this.personalGoal = null;
         this.pickableTiles = new boolean[9][9];
         this.numPickableTiles = 0;
         this.selectedColumn = -1;
@@ -58,8 +54,12 @@ public class Player {
     /**
      * Method to set all the variables when the player starts a new turn
      * @author Fiorentini Riccardo
+     * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
-    void beginTurn(){
+    void beginTurn() throws WrongTurnException{
+        if(this.model.getTurnId() != this.turnId){
+            throw new WrongTurnException();
+        }
         //Initialization of the boolean matrix describing the pickable tiles on the board
         Tile [][] tmp;
         tmp = model.getBoard().getTiles();
@@ -96,9 +96,20 @@ public class Player {
     /**
      * Method that set the column where the player will put the tiles and max number of pickable tiles
      * @author Fiorentini Riccardo
-     * @param column
+     * @param column where the player wants to put the tiles
+     * @throws WrongPhaseException when the player tries to select the column when it's already selected
+     * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
-    public void setSelectedColumn(int column){
+    public void setSelectedColumn(int column) throws WrongTurnException, WrongPhaseException {
+
+        if(this.selectedColumn != -1){
+            throw new WrongPhaseException();
+        }
+
+        if(this.model.getTurnId() != this.turnId){
+            throw new WrongTurnException();
+        }
+
         this.selectedColumn = column;
         if(shelf.spaceInCol(this.selectedColumn) < 3){
             this.numPickableTiles = shelf.spaceInCol(this.selectedColumn); //set the max number of tiles that the player can pick
@@ -110,10 +121,22 @@ public class Player {
     /**
      * Method to select tiles, both first and last. It does the checks and initializes the buffer.
      * @author Fiorentini Riccardo
-     * @param x
-     * @param y
+     * @param x coordinate x of the selected tile
+     * @param y cooridante y of the selected tile
+     * @throws WrongPhaseException when the player tries to select the tiles when they are already selected or
+     *                             before the selection of the column
+     * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
-    public void selectTile(int x, int y) throws NotPickableException {
+    public void selectTile(int x, int y) throws NotPickableException, WrongPhaseException, WrongTurnException {
+
+        if(this.selectedColumn == -1 || (this.x1 != -1 && this.x2 != -1)){
+            throw new WrongPhaseException();
+        }
+
+        if(this.model.getTurnId() != this.turnId){
+            throw new WrongTurnException();
+        }
+
         if(this.x1 == -1){ //if it's the firs valid tile selected
             if(pickableTiles[x][y]){ //if it's valid it sets the first tile and update the pickableTiles matrix
                 this.x1 = x;
@@ -157,9 +180,21 @@ public class Player {
     /**
      * Method to put the selected tiles in the shelf from the buffer
      * @author Fiorentini Riccardo
-     * @param index
+     * @param index of the buffer where the player wants to select the tile to put in the shelf.
+     * @throws WrongPhaseException when the player tries to put a tile in the shelf before selecting the tiles on the board
+     *                             or before selecting the column where he will put them.
+     * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
-    public void putInColumn(int index) throws FullColumnException, NotToRefillException {
+    public void putInColumn(int index) throws FullColumnException, NotToRefillException, WrongTurnException, WrongPhaseException {
+
+        if(this.selectedColumn == -1 || this.x1 == -1 || this.x2 == -1){
+            throw new WrongPhaseException();
+        }
+
+        if(this.model.getTurnId() != this.turnId){
+            throw new WrongTurnException();
+        }
+
         if(index>=0 && index <= 2 && pickedTiles[index] != EMPTY){
             this.shelf.putTile(pickedTiles[index], this.selectedColumn);
             pickedTiles[index] = EMPTY;

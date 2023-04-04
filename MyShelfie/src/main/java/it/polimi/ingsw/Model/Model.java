@@ -1,6 +1,7 @@
 package main.java.it.polimi.ingsw.Model;
 
 import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
+import main.java.it.polimi.ingsw.ModelExceptions.WrongTurnException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class Model {
      * @param gameId is the id of the game choose by the Controller (useful for multiple games)
      * @param players is the list of players sent from the Controller
      */
-    public Model(int gameId, List<Player> players) throws IOException, NotToRefillException {
+    public Model(int gameId, List<Player> players) throws IOException, NotToRefillException, WrongTurnException {
         this.gameId = gameId;
         this.players = players;
         numPlayers = players.size();
@@ -76,7 +77,7 @@ public class Model {
      * Method that is called at the end of a turn, before the turn passes to the next player
      * @author Nicole Filippi
      */
-    public void nextTurn() throws NotToRefillException {
+    public void nextTurn() throws NotToRefillException, WrongTurnException {
         if(players.get(turnId).getPointsCommonGoal()[0]==0 && commonGoals[0].check(players.get(turnId).getShelf())){
             players.get(turnId).setPointsCommonGoal(0, commonGoals[0].pullPoints());
         }
