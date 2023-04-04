@@ -19,8 +19,8 @@ public class PersonalGoal {
      * @throws IOException Error while reading "PersonalGoals.txt"
      */
     public PersonalGoal(int index) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("config/PersonalGoals.txt"));
-        String line = new String("");
+        BufferedReader reader = new BufferedReader(new FileReader("MyShelfie/config/PersonalGoals.txt"));
+        String line = "";
         for (int i = 0; line != null && i < 2 * (index - 1); i++) {
             line = reader.readLine();
         }
@@ -41,7 +41,7 @@ public class PersonalGoal {
      * @return scored points through personal goal
      */
     public int getPoints(Shelf shelf){
-        int points=0, result=0;
+        int points=0, result;
         for(int i=0; i<6; i++)
             if(shelf.getTile(xGoals[i],yGoals[i]).getColor() == colorGoals[i])
                 points++;

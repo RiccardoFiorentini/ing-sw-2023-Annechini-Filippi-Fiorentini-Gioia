@@ -1,6 +1,7 @@
 package main.java.it.polimi.ingsw.Model;
 
 
+import main.java.it.polimi.ingsw.ModelExceptions.NotPickableException;
 import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
 
 import java.io.BufferedReader;
@@ -26,7 +27,7 @@ public class Board {
 
         //Board initialization
         int dimR, dimC;
-        BufferedReader reader = new BufferedReader(new FileReader("config/Board.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("MyShelfie/config/Board.txt"));
         String line;
         int[] tmpArr;
         int i,j;
@@ -38,7 +39,7 @@ public class Board {
         i=0;
         line = reader.readLine();
         while(i<dimR && line!=null){
-            tmpArr= Arrays.stream(reader.readLine().split(",")).mapToInt(Integer::parseInt).toArray();
+            tmpArr= Arrays.stream(line.split(",")).mapToInt(Integer::parseInt).toArray();
             for(j=0; j<dimC; j++){
                 tiles[i][j] = tmpArr[j]>0 && tmpArr[j] <= numPlayers ? Tile.EMPTY : Tile.BLOCKED;
             }
@@ -56,15 +57,20 @@ public class Board {
             else if(!t.isFree())
                 tilesRemaining.put(t, 7);
         }
+
+        //First board refill
         refill();
     }
 
     /**
      * Refills the board and decreases the amount of tiles left in the bag
      * @author Pasquale Gioia
-     *
+     * @throws NotToRefillException when the board doesn't really need to be refilled
      */
-    public void refill(){
+    public void refill() throws NotToRefillException{
+        if(!checkFill())
+            throw new NotToRefillException();
+
         Random rTile = new Random();
         int rTileIndex;
         List<Tile> tileRem = new ArrayList<>();
@@ -141,11 +147,15 @@ public class Board {
      * @author Pasquale Gioia
      * @param x_Tile is the row of the selected tile from the board
      * @param y_Tile is the column of the selected tile from the board
+     * @throws NotPickableException when the selected tile is empty or blocked
      * @return A specific selected tile
      *
      */
-    public Tile pickTile(int x_Tile, int y_Tile){
+    public Tile pickTile(int x_Tile, int y_Tile) throws NotPickableException {
         Tile pickedTile = tiles[x_Tile][y_Tile];
+        if(pickedTile.isFree())
+            throw new NotPickableException();
+
         tiles[x_Tile][y_Tile] = Tile.EMPTY;
 
         return pickedTile;
