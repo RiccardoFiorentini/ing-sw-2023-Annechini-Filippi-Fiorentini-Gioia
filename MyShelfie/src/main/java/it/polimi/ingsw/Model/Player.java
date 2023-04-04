@@ -33,7 +33,7 @@ public class Player {
      * @param nickname name of the player, unique in the match
      * @param model associated with the match the player is playin
      * */
-    public void Player(String nickname, Model model, int id){
+    public Player(String nickname, Model model, int id){
         this.pickedTiles = new Tile[] {EMPTY, EMPTY, EMPTY};
         this.pointsCommonGoal = new int[] {0, 0};
         this.nickname = nickname;
