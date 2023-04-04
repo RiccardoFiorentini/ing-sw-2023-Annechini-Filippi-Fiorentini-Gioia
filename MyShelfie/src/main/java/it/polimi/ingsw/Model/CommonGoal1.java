@@ -43,6 +43,8 @@ public class CommonGoal1 extends CommonGoal{
                         checked[i][j+1]=1;
                         checked[i+1][j+1]=1;
                         foundSquares.put(shelf.getTile(i,j).getColor(),foundSquares.get(shelf.getTile(i,j).getColor())+1);
+                        if(foundSquares.get(shelf.getTile(i,j).getColor())>=2)
+                            return true;
                     }
                 }
             }
@@ -74,6 +76,8 @@ public class CommonGoal1 extends CommonGoal{
                         checked[i][j+1]=1;
                         checked[i+1][j+1]=1;
                         foundSquares.put(shelf.getTile(i,j).getColor(),foundSquares.get(shelf.getTile(i,j).getColor())+1);
+                        if(foundSquares.get(shelf.getTile(i,j).getColor())>=2)
+                            return true;
                     }
                 }
             }
