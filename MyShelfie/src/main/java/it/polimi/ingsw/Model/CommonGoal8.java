@@ -16,4 +16,9 @@ public class CommonGoal8 extends CommonGoal{
                 shelf.getTile(0, 0).equals(shelf.getTile(5, 0)) &&
                 shelf.getTile(0, 0).equals(shelf.getTile(5, 4));
     }
+
+    @Override
+    public int getIndex() {
+        return 8;
+    }
 }

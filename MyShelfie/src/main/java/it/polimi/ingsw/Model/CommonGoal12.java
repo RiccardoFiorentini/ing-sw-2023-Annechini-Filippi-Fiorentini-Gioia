@@ -24,4 +24,9 @@ public class CommonGoal12 extends CommonGoal{
         }
         return true;
     }
+
+    @Override
+    public int getIndex() {
+        return 12;
+    }
 }

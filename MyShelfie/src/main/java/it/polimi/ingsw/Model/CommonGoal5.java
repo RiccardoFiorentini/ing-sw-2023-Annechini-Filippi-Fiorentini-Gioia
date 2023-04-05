@@ -32,4 +32,9 @@ public class CommonGoal5 extends CommonGoal{
         }
         return false;
     }
+
+    @Override
+    public int getIndex() {
+        return 5;
+    }
 }

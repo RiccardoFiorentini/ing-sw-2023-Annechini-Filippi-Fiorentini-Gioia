@@ -44,5 +44,12 @@ public abstract class CommonGoal {
         }
         return ret;
     }
+
+    /**
+     * This method returns the index N in CommonGoalN
+     * @author Nicole Filippi
+     * @return the index of the Common Goal (from 1 to 12)
+     */
+    public abstract int getIndex();
 }
 

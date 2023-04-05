@@ -121,7 +121,7 @@ public class Player {
      * Method to select tiles, both first and last. It does the checks and initializes the buffer.
      * @author Fiorentini Riccardo
      * @param x coordinate x of the selected tile
-     * @param y cooridante y of the selected tile
+     * @param y coordinate y of the selected tile
      * @throws WrongPhaseException when the player tries to select the tiles when they are already selected or
      *                             before the selection of the column
      * @throws WrongTurnException when the player tries to do an action when it's not his turn

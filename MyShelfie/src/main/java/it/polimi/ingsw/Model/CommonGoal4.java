@@ -120,4 +120,9 @@ public class CommonGoal4 extends CommonGoal{
         }
         return counter>=6;
     }
+
+    @Override
+    public int getIndex() {
+        return 4;
+    }
 }

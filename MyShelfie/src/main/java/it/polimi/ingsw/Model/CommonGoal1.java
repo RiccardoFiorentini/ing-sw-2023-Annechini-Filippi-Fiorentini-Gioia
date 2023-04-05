@@ -7,6 +7,7 @@ public class CommonGoal1 extends CommonGoal{
     public CommonGoal1(int numPlayers){
         super(numPlayers);
     }
+
     public boolean check(Shelf shelf){
         int i,j;
         int[][] checked = new int[6][5];
@@ -83,5 +84,10 @@ public class CommonGoal1 extends CommonGoal{
             }
         }
         return false;
+    }
+
+    @Override
+    public int getIndex() {
+        return 1;
     }
 }

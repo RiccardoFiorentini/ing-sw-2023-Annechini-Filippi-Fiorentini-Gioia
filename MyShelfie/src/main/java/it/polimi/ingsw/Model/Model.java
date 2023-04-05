@@ -27,15 +27,21 @@ public class Model {
     public Model(int gameId, List<Player> players) throws IOException, NotToRefillException, WrongTurnException {
         this.gameId = gameId;
         this.players = players;
+
         numPlayers = players.size();
+
+        for(int i=0; i<numPlayers; i++){
+            players.get(i).setTurnId(i);
+            players.get(i).setModel(this);
+        }
 
         double doubleRandomNumber;
         int randomNumber;
         List<Integer> valuesPG = new ArrayList<>();
 
         for(int i=0; i<numPlayers; i++){
-            doubleRandomNumber = Math.random() * 12;
-            randomNumber = (int)doubleRandomNumber+1;
+            doubleRandomNumber = Math.random() * 12; //from 0 to 11
+            randomNumber = (int)doubleRandomNumber+1; //value from 1 to 12
             while(valuesPG.contains(randomNumber)){
                 doubleRandomNumber = Math.random() * 12;
                 randomNumber = (int)doubleRandomNumber+1;
@@ -47,7 +53,7 @@ public class Model {
         board = new Board(numPlayers);
         firstToEnd = -1;
 
-        doubleRandomNumber = Math.random() * 4;
+        doubleRandomNumber = Math.random() * numPlayers; //from 0 to numPlayers-1
         randomNumber = (int)doubleRandomNumber;
         firstToStart = randomNumber;
         turnId = randomNumber;
@@ -55,8 +61,8 @@ public class Model {
         commonGoals = new CommonGoal[2];
         int[] valuesCG = new int[2];
 
-        doubleRandomNumber = Math.random() * 12;
-        randomNumber = (int)doubleRandomNumber+1;
+        doubleRandomNumber = Math.random() * 12; //from 0 to 11
+        randomNumber = (int)doubleRandomNumber+1; //value from 1 to 12
         doubleRandomNumber = Math.random() * 12;
         int randomNumber2 = (int)doubleRandomNumber+1;
         while(randomNumber2==randomNumber){
@@ -90,7 +96,7 @@ public class Model {
 
         turnId = (turnId+1)%numPlayers;     //next player
 
-        if(firstToEnd>-1 && turnId==firstToStart) {         //the play is finished
+        if(firstToEnd>-1 && turnId==firstToStart) {         //the game is finished
             int points;
             for(int i=0; i<numPlayers; i++){
                 points=0;
@@ -142,31 +148,42 @@ public class Model {
      */
     private void initCommonGoal(int[] values){
 
-        for(int i=0; i< values.length; i++)
+        for(int i=0; i<values.length; i++)
         {
             switch (values[i]){
                 case 1 :
                     commonGoals[i] = new CommonGoal1(numPlayers);
+                    break;
                 case 2 :
                     commonGoals[i] = new CommonGoal2(numPlayers);
+                    break;
                 case 3 :
                     commonGoals[i] = new CommonGoal3(numPlayers);
+                    break;
                 case 4 :
                     commonGoals[i] = new CommonGoal4(numPlayers);
+                    break;
                 case 5 :
                     commonGoals[i] = new CommonGoal5(numPlayers);
+                    break;
                 case 6 :
                     commonGoals[i] = new CommonGoal6(numPlayers);
+                    break;
                 case 7 :
                     commonGoals[i] = new CommonGoal7(numPlayers);
+                    break;
                 case 8 :
                     commonGoals[i] = new CommonGoal8(numPlayers);
+                    break;
                 case 9 :
                     commonGoals[i] = new CommonGoal9(numPlayers);
+                    break;
                 case 10 :
                     commonGoals[i] = new CommonGoal10(numPlayers);
+                    break;
                 case 11 :
                     commonGoals[i] = new CommonGoal11(numPlayers);
+                    break;
                 case 12 :
                     commonGoals[i] = new CommonGoal12(numPlayers);
             }
@@ -179,9 +196,9 @@ public class Model {
      * @param values is a list of different random integers
      */
     private void initPersonalGoal(List<Integer> values) throws IOException {
-        for(int i=0; i< values.size(); i++)
+        for(int i=0; i<values.size(); i++)
         {
-            players.get(i).setPersonalGoal(new PersonalGoal(i));
+            players.get(i).setPersonalGoal(new PersonalGoal(values.get(i)));
         }
 
     }

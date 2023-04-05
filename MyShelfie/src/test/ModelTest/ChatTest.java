@@ -15,14 +15,17 @@ public class ChatTest {
     @BeforeAll
     public static void setUpClass(){
         players=new ArrayList<>();
-        players.add(new Player("Nicole", null, 0));
-        players.add(new Player("Alessandro", null, 1));
-        players.add(new Player("Pasquale", null, 2));
-        players.add(new Player("Riccardo", null, 3));
+        players.add(new Player("Nicole"));
+        players.add(new Player("Alessandro"));
+        players.add(new Player("Pasquale"));
+        players.add(new Player("Riccardo"));
+        for(int i=0; i<4; i++){
+            players.get(i).setTurnId(i);
+        }
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp(){
         chat = new Chat(players);
     }
 
@@ -67,7 +70,7 @@ public class ChatTest {
     @Test
     public void callExceptionWrongReceiver(){
         try{
-            chat.writeMessage(players.get(0), new Player("Pippo", null, 4), "message");
+            chat.writeMessage(players.get(0), new Player("Pippo"), "message");
             fail();
         }catch(IncorrectMessageException e){
         }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class PersonalGoal {
+    private int index;
     private int[] xGoals;
     private int[] yGoals;
     private final TileColor[] colorGoals =
@@ -19,7 +20,8 @@ public class PersonalGoal {
      * @throws IOException Error while reading "PersonalGoals.txt"
      */
     public PersonalGoal(int index) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("MyShelfie/config/PersonalGoals.txt"));
+        this.index=index;
+        BufferedReader reader = new BufferedReader(new FileReader("MyShelfie/config/PersonalGoal.txt"));
         String line = "";
         for (int i = 0; line != null && i < 2 * (index - 1); i++) {
             line = reader.readLine();
@@ -66,5 +68,8 @@ public class PersonalGoal {
         return result;
     }
 
+    public int getIndex() {
+        return index;
+    }
 }
 
