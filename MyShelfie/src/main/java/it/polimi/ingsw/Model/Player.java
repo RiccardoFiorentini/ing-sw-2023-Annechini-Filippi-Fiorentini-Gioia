@@ -31,16 +31,15 @@ public class Player {
      * Class's constructor
      * @author Fiorentini Riccardo
      * @param nickname name of the player, unique in the match
-     * @param model associated with the match the player is playin
      * */
-    public Player(String nickname, Model model, int id){
+    public Player(String nickname){
         this.pickedTiles = new Tile[] {EMPTY, EMPTY, EMPTY};
         this.pointsCommonGoal = new int[] {0, 0};
         this.nickname = nickname;
-        this.turnId = id;
+        this.turnId = -1;
         this.connected = true;
         this.shelf = new Shelf();
-        this.model = model;
+        this.model = null;
         this.personalGoal = null;
         this.pickableTiles = new boolean[9][9];
         this.numPickableTiles = 0;
@@ -56,7 +55,7 @@ public class Player {
      * @author Fiorentini Riccardo
      * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
-    void beginTurn() throws WrongTurnException{
+    public void beginTurn() throws WrongTurnException{
         if(this.model.getTurnId() != this.turnId){
             throw new WrongTurnException();
         }
@@ -261,6 +260,14 @@ public class Player {
 
     public PersonalGoal getPersonalGoal() {
         return personalGoal;
+    }
+
+    public void setModel(Model model) {
+        this.model = model;
+    }
+
+    public void setTurnId(int turnId) {
+        this.turnId = turnId;
     }
 
     public int getX1(){
