@@ -2,6 +2,7 @@ package test.ModelTest;
 
 import main.java.it.polimi.ingsw.Model.Board;
 import main.java.it.polimi.ingsw.Model.Tile;
+import main.java.it.polimi.ingsw.ModelExceptions.NotPickableException;
 import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
 import org.junit.jupiter.api.Test;
 
@@ -11,100 +12,187 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 public class BoardTest {
+    Board board;
 
     @Test
-    public void BoardConstructor2Players() throws NotToRefillException, IOException {
-        Board b2 = new Board(2);
-        assertTrue(b2.getTiles()[5][0]==Tile.BLOCKED &&
-                b2.getTiles()[6][6]==Tile.BLOCKED &&
-                b2.getTiles()[6][2]==Tile.BLOCKED &&
-                b2.getTiles()[8][5]==Tile.BLOCKED &&
-                b2.getTiles()[0][3]==Tile.BLOCKED &&
-                b2.getTiles()[2][2]==Tile.BLOCKED &&
-                b2.getTiles()[2][6]==Tile.BLOCKED &&
-                b2.getTiles()[3][8]==Tile.BLOCKED &&
-
-
-                b2.getTiles()[0][4]==Tile.BLOCKED &&
-                b2.getTiles()[1][5]==Tile.BLOCKED &&
-                b2.getTiles()[3][1]==Tile.BLOCKED &&
-                b2.getTiles()[4][0]==Tile.BLOCKED &&
-                b2.getTiles()[7][3]==Tile.BLOCKED &&
-                b2.getTiles()[8][4]==Tile.BLOCKED &&
-                b2.getTiles()[5][8]==Tile.BLOCKED &&
-                b2.getTiles()[4][8]==Tile.BLOCKED
-        );
-    }
-    @Test
-    public void BoardConstructor3Players() throws NotToRefillException, IOException {
-        Board b3 = new Board(3);
-        assertFalse(b3.getTiles()[5][0].isFree());
-        assertFalse(b3.getTiles()[6][6].isFree());
-        assertFalse (b3.getTiles()[6][2].isFree()); 
-        assertFalse (b3.getTiles()[8][5].isFree()); 
-        assertFalse (b3.getTiles()[0][3].isFree()); 
-        assertFalse (b3.getTiles()[2][2].isFree()); 
-        assertFalse (b3.getTiles()[2][6].isFree()); 
-        assertFalse (b3.getTiles()[3][8].isFree());
-        assertSame(b3.getTiles()[0][4], Tile.BLOCKED);
-        assertSame(b3.getTiles()[1][5], Tile.BLOCKED);
-        assertSame(b3.getTiles()[3][1], Tile.BLOCKED);
-        assertSame(b3.getTiles()[4][0], Tile.BLOCKED);
-        assertSame(b3.getTiles()[7][3], Tile.BLOCKED);
-        assertSame(b3.getTiles()[8][4], Tile.BLOCKED);
-        assertSame(b3.getTiles()[5][8], Tile.BLOCKED);
-        assertSame(b3.getTiles()[4][8], Tile.BLOCKED);
-
-    }
-    @Test
-    public void BoardConstructor4Players() throws NotToRefillException, IOException {
-        Board b4 = new Board(4);
-        assertFalse(b4.getTiles()[5][0].isFree());
-        assertFalse(b4.getTiles()[6][6].isFree());
-        assertFalse(b4.getTiles()[6][2].isFree());
-        assertFalse(b4.getTiles()[8][5].isFree());
-        assertFalse(b4.getTiles()[0][3].isFree());
-        assertFalse(b4.getTiles()[2][2].isFree());
-        assertFalse(b4.getTiles()[2][6].isFree());
-        assertFalse(b4.getTiles()[3][8].isFree());
-        assertFalse(b4.getTiles()[0][4].isFree());
-        assertFalse(b4.getTiles()[1][5].isFree());
-        assertFalse(b4.getTiles()[3][1].isFree());
-        assertFalse(b4.getTiles()[4][0].isFree());
-        assertFalse(b4.getTiles()[7][3].isFree());
-        assertFalse(b4.getTiles()[8][4].isFree());
-        assertFalse(b4.getTiles()[5][7].isFree());
-        assertFalse(b4.getTiles()[4][8].isFree());
-    }
-
-    @Test
-    public void BoardRefill() throws NotToRefillException, IOException {
-        for(int numPlayers=2; numPlayers<5; numPlayers++){
-            Board board = new Board(numPlayers);
-            switch(numPlayers){
-                case 2:
-
-                case 3:
-
-                case 4:
-
+    public void boardConstructor2Players() throws NotToRefillException, IOException {
+        board = new Board(2);
+        int[][] t2Board = new int[9][9];
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++){
+                if      ((i<4 && j<3 && !(i==3 && j==2)) ||
+                        (i<3 && j>4 && !(i==2 && j==5)) ||
+                        (i>5 && j<4 && !(i==6 && j==3)) ||
+                        (i>4 && j>5 && !(i==5 && j==6)) ||
+                        (i==0 || i==8 || j==0 || j==8)) {
+                    t2Board[i][j] = 0;
+                    assertSame(board.getTiles()[i][j], Tile.BLOCKED);
+                }
+                else {
+                    t2Board[i][j] = 1;
+                    assertFalse(board.getTiles()[i][j].isFree());
+                }
             }
+        }
+    }
+    @Test
+    public void boardConstructor3Players() throws NotToRefillException, IOException {
+        board = new Board(3);
+        int[][] t3Board = new int[9][9];
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++){
+                if      ((i<4 && j<3 && !(i==3 && j==2) && !(i==2 && j==2)) ||
+                        (i<3 && j>4 && !(i==2 && j==5) && !(i==2 && j==6)) ||
+                        (i>5 && j<4 && !(i==6 && j==3) && !(i==6 && j==2)) ||
+                        (i>4 && j>5 && !(i==5 && j==6) && !(i==6 && j==6)) ||
+                        (i==0 && j==4) || (i==4 && j==0) || (i==4 && j==8) || (i==8 && j==4)) {
+                    t3Board[i][j] = 0;
+                    assertSame(board.getTiles()[i][j], Tile.BLOCKED);
+                }
+                else {
+                    t3Board[i][j] = 1;
+                    assertFalse(board.getTiles()[i][j].isFree());
+                }
+            }
+        }
+    }
+    @Test
+    public void boardConstructor4Players() throws NotToRefillException, IOException {
+        board = new Board(4);
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++){
+                if      (((i<4 && j<3 && !(i==3 && j==2) && !(i==2 && j==2) && !(i==3 && j==1)) ||
+                        (i<3 && j>4 && !(i==2 && j==5) && !(i==2 && j==6) && !(i==1 && j==5)) ||
+                        (i>5 && j<4 && !(i==6 && j==3) && !(i==6 && j==2) && !(i==7 && j==3)) ||
+                        (i>4 && j>5 && !(i==5 && j==6) && !(i==6 && j==6)) && !(i==5 && j==7)))
+                {
+                    assertEquals(board.getTiles()[i][j], Tile.BLOCKED);
+                }
+                else {
+                    assertFalse(board.getTiles()[i][j].isFree());
+                }
+            }
+        }
+    }
 
 
-            //Tests if board is correctly refilled
+
+    @Test
+    public void pickTile() throws NotPickableException, NotToRefillException, IOException {
+        board = new Board(2);
+        Tile pickedTile = board.pickTile(3, 3);
+        assertTrue(board.getTiles()[3][3] == Tile.EMPTY);
+        assertFalse(pickedTile.isFree());
+
+    }
+
+    @Test
+    public void callPickEmptyTileException() throws NotToRefillException, IOException, NotPickableException {
+        board = new Board(2);
+        Tile pickedTile = board.pickTile(3,3);
+
+        try{
+            pickedTile = board.pickTile(3,3);
+            fail();
+        } catch (NotPickableException e) {
         }
     }
 
     @Test
-    public void CheckRefill(){
-        //Tests if refill check works
+    public void callPickBlockedTileException() throws  NotToRefillException, IOException {
+        board = new Board(2);
+        Tile pickedTile;
+        try{
+            pickedTile = board.pickTile(2,2);
+            fail();
+        } catch (NotPickableException e){
+        }
     }
 
     @Test
-    public void CheckRefillCornerCases(){
-        //Tests refill corner cases
+    public void checkToRefill() throws NotToRefillException, IOException, NotPickableException {
+        Tile pickedTile;
+        Board board2 = new Board(2);
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++){
+                if(!board2.getTiles()[i][j].isFree() && !(i==3 && j==3) && !(i==4 && j==4))
+                        pickedTile = board2.pickTile(i, j);
+            }
+        }
+        assertTrue(board2.checkFill());
     }
 
+    @Test
+    public void checkNotToRefill() throws NotToRefillException, IOException, NotPickableException{
+        Tile pickedTile;
+        Board board2 = new Board(2);
+
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++)
+                if(!board2.getTiles()[i][j].isFree() && !(i==3 && j==3) && !(i==3 && j==4))
+                    pickedTile = board2.pickTile(i, j);
+        }
+        assertFalse(board2.checkFill());
+    }
+
+    @Test
+    public void callRefillException() throws IOException, NotPickableException, NotToRefillException {
+        board = new Board(2);
+        Tile pickedTile;
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++)
+                if(!board.getTiles()[i][j].isFree() && !(i==3 && j==3) && !(i==3 && j==4))
+                    pickedTile = board.pickTile(i, j);
+        }
+        try{
+            board.refill();
+            fail();
+        } catch (NotToRefillException e){
+        }
+    }
+
+    @Test
+    public void boardRefillAction() throws NotToRefillException, IOException, NotPickableException {
+        Board boardGeneric = new Board(2);
+        Tile pickedTile;
+
+        int [][] t2_tmp_Board = new int[9][9];
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++){
+                if(!boardGeneric.getTiles()[i][j].isFree())
+                    t2_tmp_Board[i][j] = 1;
+                else
+                    t2_tmp_Board[i][j] = 0;
+            }
+        }
+
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++){
+                if(!boardGeneric.getTiles()[i][j].isFree() && !(i==3 && j==3) && !(i==4 && j==4)) {
+                    pickedTile = boardGeneric.pickTile(i, j);
+                    t2_tmp_Board[i][j] = -1;
+                }
+            }
+        }
+        Tile[][] beforeRefillTiles = new Tile[9][9];
+        for(int i=0; i<9; i++)
+            for(int j=0; j<9; j++)
+                beforeRefillTiles[i][j] = boardGeneric.getTiles()[i][j];
+
+        try{
+            boardGeneric.refill();
+        } catch (NotToRefillException e){}
+
+        for(int i=0; i<9; i++){
+            for (int j=0; j<9; j++){
+                if(t2_tmp_Board[i][j]==-1)
+                    assertFalse(boardGeneric.getTiles()[i][j].isFree());
+                if(t2_tmp_Board[i][j]==1)
+                    assertTrue(boardGeneric.getTiles()[i][j] == beforeRefillTiles[i][j]);
+            }
+        }
+
+    }
 
 
 

@@ -130,12 +130,13 @@ public class Board {
 
         for(int i=0; i<9; i++){
             for(int j=0; j<9; j++){
-                if(     checkPickable[i][j] &&
+                if(     checkPickable[i][j] && (
                         (i+1<9 && checkPickable[i+1][j]) ||
                         (j+1<9 && checkPickable[i][j+1]) ||
                         (i-1>=0 && checkPickable[i-1][j]) ||
-                        (j-1>=0 && checkPickable[i][j-1]))
+                        (j-1>=0 && checkPickable[i][j-1])))
                     return false;
+
             }
         }
 
