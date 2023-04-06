@@ -4,7 +4,6 @@ import main.java.it.polimi.ingsw.ModelExceptions.*;
 
 import java.util.List;
 
-import static main.java.it.polimi.ingsw.Model.Tile.BLOCKED;
 import static main.java.it.polimi.ingsw.Model.Tile.EMPTY;
 
 public class Player {
@@ -64,18 +63,16 @@ public class Player {
         tmp = model.getBoard().getTiles();
         for(int i = 0; i < 9; i++){
             for(int j = 0; j < 9; j++){
-                if(tmp[i][j] != BLOCKED ){
-                    if((i>0 && tmp[i-1][j] == BLOCKED) || (j>0 && tmp[i][j-1] == BLOCKED)){
+                if(!tmp[i][j].isFree()){
+                    if((i == 0 || j == 0 || i == 8 || j == 8) && !(tmp[i][j].isFree())){
                         pickableTiles[i][j] = true;
-                    }else if ((i<8 && tmp[i+1][j] == BLOCKED) || (j<8 && tmp[i][j+1] == BLOCKED)) {
+                    }else if ((i<8 && tmp[i+1][j].isFree()) || (j<8 && tmp[i][j+1].isFree())) {
                         pickableTiles[i][j] = true;
-                    }else if ((i>0 && tmp[i-1][j] == EMPTY) || (j>0 && tmp[i][j-1] == EMPTY)) {
-                        pickableTiles[i][j] = true;
-                    }else if ((i<8 && tmp[i+1][j] == EMPTY) || (j<8 && tmp[i][j+1] == EMPTY)) {
-                        pickableTiles[i][j] = true;
-                    }else if((i == 0 || j == 0) && (tmp[i][j] != EMPTY && tmp[i][j] != BLOCKED)){
+                    }else if((i>0 && tmp[i-1][j].isFree()) || (j>0 && tmp[i][j-1].isFree())){
                         pickableTiles[i][j] = true;
                     }
+                }else{
+                    pickableTiles[i][j] = false;
                 }
             }
         }
@@ -200,6 +197,7 @@ public class Player {
             if(pickedTiles[0] == EMPTY && pickedTiles[1] == EMPTY && pickedTiles[2] == EMPTY)
                 model.nextTurn();
         }
+
     }
 
     /**
