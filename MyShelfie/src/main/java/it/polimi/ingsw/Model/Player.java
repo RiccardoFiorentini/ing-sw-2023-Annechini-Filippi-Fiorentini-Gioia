@@ -1,5 +1,6 @@
 package main.java.it.polimi.ingsw.Model;
 
+import main.java.it.polimi.ingsw.Connection.VirtualView;
 import main.java.it.polimi.ingsw.ModelExceptions.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class Player {
     private PersonalGoal personalGoal;
     private int numPickableTiles;
     private boolean[][] pickableTiles;
+    private VirtualView virtualView;
 
     /**
      * Class's constructor
@@ -291,4 +293,20 @@ public class Player {
         return pickableTiles;
     }
 
+    public void setVirtualView(VirtualView virtualView) {
+        this.virtualView = virtualView;
+    }
+
+    public VirtualView getVirtualView() {
+        return virtualView;
+    }
+
+    public void disconnect(){
+        connected = false;
+        // Tells model to change turn if necessary
+    }
+
+    public void reconnect(){
+        connected = true;
+    }
 }

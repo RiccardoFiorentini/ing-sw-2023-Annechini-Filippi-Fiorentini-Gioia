@@ -1,11 +1,15 @@
 package main.java.it.polimi.ingsw.Connection;
 
+import main.java.it.polimi.ingsw.Controller.Server;
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 public class RMIWelcomeServerImpl extends UnicastRemoteObject implements RMIWelcomeServer {
-
-    public RMIWelcomeServerImpl() throws RemoteException {
+    private Server server;
+    public RMIWelcomeServerImpl(Server server) throws RemoteException {
+        this.server = server;
     }
 
     public void setConnection(RMIClientConnection rmiClient) throws RemoteException {
@@ -19,6 +23,14 @@ public class RMIWelcomeServerImpl extends UnicastRemoteObject implements RMIWelc
             ...
 
          */
-
+        ServerConnectionHandlerRMI rmiServer = new ServerConnectionHandlerRMI(rmiClient);
+        rmiClient.setRMIServer(rmiServer);
+        VirtualView virtualView = new VirtualView(server);
+        virtualView.setServerConnectionHandler(rmiServer);
+        List<VirtualView> vvlist = server.getVirtualViews();
+        synchronized (vvlist){
+            vvlist.add(virtualView);
+        }
+        virtualView.start();
     }
 }
