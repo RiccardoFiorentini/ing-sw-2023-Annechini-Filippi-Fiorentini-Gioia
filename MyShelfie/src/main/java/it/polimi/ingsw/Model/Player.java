@@ -117,13 +117,13 @@ public class Player {
     /**
      * Method to select tiles, both first and last. It does the checks and initializes the buffer.
      * @author Fiorentini Riccardo
-     * @param x coordinate x of the selected tile
-     * @param y coordinate y of the selected tile
+     * @param row coordinate y of the selected tile
+     * @param col coordinate x of the selected tile
      * @throws WrongPhaseException when the player tries to select the tiles when they are already selected or
      *                             before the selection of the column
      * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
-    public void selectTile(int x, int y) throws NotPickableException, WrongPhaseException, WrongTurnException {
+    public void selectTile(int row, int col) throws NotPickableException, WrongPhaseException, WrongTurnException {
 
         if(this.selectedColumn == -1 || (this.x1 != -1 && this.x2 != -1)){
             throw new WrongPhaseException();
@@ -133,39 +133,39 @@ public class Player {
             throw new WrongTurnException();
         }
 
-        if(this.x1 == -1){ //if it's the firs valid tile selected
-            if(pickableTiles[x][y]){ //if it's valid it sets the first tile and update the pickableTiles matrix
-                this.x1 = x;
-                this.y1 = y;
+        if(this.x1 == -1){ //if it's the first valid tile selected
+            if(pickableTiles[row][col]){ //if it's valid it sets the first tile and update the pickableTiles matrix
+                this.x1 = col;
+                this.y1 = row;
                 for(int i = 0; i<9; i++){
                     for(int j = 0; j<9; j++){
-                        if(pickableTiles[i][j] && i!=x && j!=y){
+                        if(pickableTiles[i][j] && i!=row && j!=col){
                             pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && i==x && Math.abs(j-y) >= numPickableTiles){
+                        }else if(pickableTiles[i][j] && i==row && Math.abs(j-col) >= numPickableTiles){
                             pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && j==y && Math.abs(i-x) >= numPickableTiles){
+                        }else if(pickableTiles[i][j] && j==col && Math.abs(i-row) >= numPickableTiles){
                             pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && i==x && Math.abs(j-y) == 2 && !pickableTiles[i][(j+y)/2]){
+                        }else if(pickableTiles[i][j] && i==row && Math.abs(j-col) == 2 && !pickableTiles[i][(j+col)/2]){
                             pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && j==y && Math.abs(i-x) == 2 && !pickableTiles[(i+x)/2][j]){
+                        }else if(pickableTiles[i][j] && j==col && Math.abs(i-row) == 2 && !pickableTiles[(i+row)/2][j]){
                             pickableTiles[i][j] = false;
                         }
                     }
                 }
             }
         }else{
-            if(pickableTiles[x][y]) { //if the last tile selected is valid it set the last tile and put the selected tiles in the buffer
-                this.x2 = x;
-                this.y2 = y;
+            if(pickableTiles[row][col]) { //if the last tile selected is valid it set the last tile and put the selected tiles in the buffer
+                this.x2 = col;
+                this.y2 = row;
                 if(this.x1 == this.x2){
                     int min = Math.min(this.y1, this.y2);
                     for(int i = min; i <= Math.max(this.y1, this.y2); i++){
-                        pickedTiles[i-min] = this.model.getBoard().pickTile(this.x1, i);
+                        pickedTiles[i-min] = this.model.getBoard().pickTile(i, this.x1);
                     }
                 }else{
                     int min = Math.min(this.x1, this.x2);
                     for(int i = min; i <= Math.max(this.x1, this.x2); i++){
-                        pickedTiles[i-min] = this.model.getBoard().pickTile(i, this.y1);
+                        pickedTiles[i-min] = this.model.getBoard().pickTile(this.y1, i);
                     }
                 }
             }

@@ -21,7 +21,7 @@ public class PlayerTest {
     boolean[][] pickableTiles;
 
     @BeforeEach
-    public void stetUp(){
+    public void setUp(){
         AllPlayer = new ArrayList<Player>();
         AllPlayer.add(new Player("Admin1"));
         AllPlayer.add(new Player("Admin2"));
@@ -169,8 +169,8 @@ public class PlayerTest {
                 }
             }
 
-            assertTrue(AllPlayer.get(model.getTurnId()).getX1() == 0 &&
-                    AllPlayer.get(model.getTurnId()).getY1() == 3);
+            assertTrue(AllPlayer.get(model.getTurnId()).getX1() == 3 &&
+                    AllPlayer.get(model.getTurnId()).getY1() == 0);
             AllPlayer.get(model.getTurnId()).selectTile(0,4);
 
             assertSame(AllPlayer.get(model.getTurnId()).getPickedTiles()[0], buffer[0]);
@@ -275,8 +275,8 @@ public class PlayerTest {
                 }
             }
 
-            assertTrue(AllPlayer.get(model.getTurnId()).getX1() == 4 &&
-                    AllPlayer.get(model.getTurnId()).getY1() == 8);
+            assertTrue(AllPlayer.get(model.getTurnId()).getX1() == 8 &&
+                    AllPlayer.get(model.getTurnId()).getY1() == 4);
             AllPlayer.get(model.getTurnId()).selectTile(4,8);
 
             assertSame(AllPlayer.get(model.getTurnId()).getPickedTiles()[0], buffer[0]);
