@@ -31,7 +31,6 @@ public class VirtualView {
 
     private void listener(){
         //called asynchronously from start method
-        Command tmpComm;
         while(connected){
             final Command command;
             try{
@@ -89,7 +88,7 @@ public class VirtualView {
         this.safeConnection = false;
     }
 
-    public void pingRecieved(){
+    public void pingReceived(){
         this.safeConnection = true;
     }
 
@@ -98,7 +97,11 @@ public class VirtualView {
     }
 
     public void disconnect(){
-        sch.disconnect();
-        this.connected = false;
+        if(connected){
+            this.connected = false;
+            sch.disconnect();
+            if(player!=null)
+                player.disconnect();
+        }
     }
 }
