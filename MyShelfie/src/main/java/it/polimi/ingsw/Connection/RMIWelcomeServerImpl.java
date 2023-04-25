@@ -4,7 +4,6 @@ import main.java.it.polimi.ingsw.Controller.Server;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.List;
 
 public class RMIWelcomeServerImpl extends UnicastRemoteObject implements RMIWelcomeServer {
     private Server server;
@@ -27,10 +26,8 @@ public class RMIWelcomeServerImpl extends UnicastRemoteObject implements RMIWelc
         rmiClient.setRMIServer(rmiServer);
         VirtualView virtualView = new VirtualView(server);
         virtualView.setServerConnectionHandler(rmiServer);
-        List<VirtualView> vvlist = server.getVirtualViews();
-        synchronized (vvlist){
-            vvlist.add(virtualView);
-        }
+
+        server.addVirtualViewToList(virtualView);
         virtualView.start();
     }
 }

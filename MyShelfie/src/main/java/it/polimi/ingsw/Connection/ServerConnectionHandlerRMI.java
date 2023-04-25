@@ -30,8 +30,8 @@ public class ServerConnectionHandlerRMI implements ServerConnectionHandler, RMIS
         in the queue by the sendCommand() method
          */
 
-        synchronized (queue){
-            while(queue.size() == 0) queue.wait();
+        synchronized (queue) {
+            while (queue.size() == 0) queue.wait();
             ret = queue.get(0);
             queue.remove(0);
         }
@@ -45,6 +45,13 @@ public class ServerConnectionHandlerRMI implements ServerConnectionHandler, RMIS
     public void sendCommand(Command command) throws RemoteException {
         synchronized (queue){
             queue.add(command);
+            queue.notifyAll();
+        }
+    }
+
+    public void disconnect(){
+        synchronized (queue){
+            queue.add(null);
             queue.notifyAll();
         }
     }

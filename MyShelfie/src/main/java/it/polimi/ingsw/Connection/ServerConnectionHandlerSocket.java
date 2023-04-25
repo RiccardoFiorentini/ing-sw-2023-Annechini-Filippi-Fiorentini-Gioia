@@ -35,4 +35,14 @@ public class ServerConnectionHandlerSocket implements ServerConnectionHandler {
         oos.writeObject(response);
     }
 
+    public void disconnect(){
+        if(socket!=null){
+            try{
+                socket.close();
+                socket = null;
+            } catch(IOException e){
+                socket = null;
+            }
+        }
+    }
 }

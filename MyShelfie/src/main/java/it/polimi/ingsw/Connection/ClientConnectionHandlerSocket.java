@@ -35,4 +35,14 @@ public class ClientConnectionHandlerSocket implements ClientConnectionHandler {
         oos.writeObject(command);
     }
 
+    public void disconnect(){
+        if(socket!=null){
+            try{
+                socket.close();
+                socket = null;
+            } catch(IOException e){
+                socket = null;
+            }
+        }
+    }
 }

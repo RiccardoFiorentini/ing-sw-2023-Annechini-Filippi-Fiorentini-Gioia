@@ -31,13 +31,14 @@ public class VirtualView {
 
     private void listener(){
         //called asynchronously from start method
-
+        Command tmpComm;
         while(connected){
             final Command command;
             try{
                 command = sch.getNextCommand();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                this.connected = false;
+                break;
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (InterruptedException e) {
@@ -97,6 +98,7 @@ public class VirtualView {
     }
 
     public void disconnect(){
+        sch.disconnect();
         this.connected = false;
     }
 }

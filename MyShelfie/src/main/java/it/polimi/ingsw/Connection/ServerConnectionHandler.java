@@ -22,4 +22,9 @@ public interface ServerConnectionHandler {
      * @throws IOException
      */
     public void sendResponse(Response response) throws IOException;
+    /**
+     * This method ensures the termination of the connection between the client and the server
+     * @author Alessandro Annechini
+     */
+    public void disconnect();
 }

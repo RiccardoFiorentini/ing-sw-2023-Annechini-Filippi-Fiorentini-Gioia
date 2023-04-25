@@ -23,4 +23,10 @@ public interface ClientConnectionHandler {
      * @throws IOException
      */
     public void sendCommand(Command command) throws IOException;
+
+    /**
+     * This method ensures the termination of the connection between the client and the server
+     * @author Alessandro Annechini
+     */
+    public void disconnect();
 }

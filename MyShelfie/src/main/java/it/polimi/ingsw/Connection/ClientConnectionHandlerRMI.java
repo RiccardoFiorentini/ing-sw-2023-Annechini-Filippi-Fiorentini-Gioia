@@ -49,4 +49,11 @@ public class ClientConnectionHandlerRMI implements ClientConnectionHandler, RMIC
     public void sendCommand(Command command) throws RemoteException {
         rmiServer.sendCommand(command);
     }
+
+    public void disconnect(){
+        synchronized (queue){
+            queue.add(null);
+            queue.notifyAll();
+        }
+    }
 }
