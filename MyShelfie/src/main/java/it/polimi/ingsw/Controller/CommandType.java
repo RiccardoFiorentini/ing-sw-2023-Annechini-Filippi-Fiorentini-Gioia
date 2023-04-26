@@ -12,21 +12,25 @@ public enum CommandType {
 
     //The first client of the queue decides the number of players
     //if the number inserted is invalid another request is sent
-    PLAYERS_NUM("C"),
+    PLAYERS_NUM("S"),
 
     //Ack sent from the players after the game starts
     GAME_JOINED("C"),
 
     // Send a new message in the chat
+    // Map<String,String> strArgs : {<"receiver", "nickname o receiver or null if broadcast">, <"text", "message sent">}
     SEND_MEX_CHAT("C"),
 
     // Select column
+    // Map<String,Integer> intArgs : {<"value", columnIndex>}
     SELECT_COLUMN("C"),
 
     // Select tile
+    // Map<String,Integer> intArgs : {<"row", rowIndex>, <"col", colIndex>}
     SELECT_TILE("C"),
 
     // Put the tile from the buffer to the shelf column
+    // Map<String,Integer> intArgs : {<"index", bufferIndex>}
     PUT_IN_COLUMN("C");
 
     String handler;
