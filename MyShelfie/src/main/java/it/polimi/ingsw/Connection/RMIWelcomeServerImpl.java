@@ -7,6 +7,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class RMIWelcomeServerImpl extends UnicastRemoteObject implements RMIWelcomeServer {
     private Server server;
+
     public RMIWelcomeServerImpl(Server server) throws RemoteException {
         this.server = server;
     }
@@ -22,12 +23,14 @@ public class RMIWelcomeServerImpl extends UnicastRemoteObject implements RMIWelc
             ...
 
          */
-        ServerConnectionHandlerRMI rmiServer = new ServerConnectionHandlerRMI(rmiClient);
-        rmiClient.setRMIServer(rmiServer);
+        ServerConnectionHandlerRMI rmiServer = null;
+        rmiServer = new ServerConnectionHandlerRMI(rmiClient);
         VirtualView virtualView = new VirtualView(server);
-        virtualView.setServerConnectionHandler(rmiServer);
 
+        virtualView.setServerConnectionHandler(rmiServer);
+        rmiClient.setRMIServer(rmiServer);
         server.addVirtualViewToList(virtualView);
         virtualView.start();
+        System.out.println("New RMI client connected!");
     }
 }

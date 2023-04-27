@@ -31,8 +31,9 @@ public class ClientConnectionHandlerSocket implements ClientConnectionHandler {
         return ret;
     }
 
-    public void sendCommand(Command command) throws IOException {
+    public synchronized void sendCommand(Command command) throws IOException {
         oos.writeObject(command);
+        oos.flush();
     }
 
     public void disconnect(){

@@ -1,9 +1,10 @@
 package main.java.it.polimi.ingsw.Controller;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Response {
+public class Response implements Serializable {
     ResponseType responseType;
     Map<String,String> strArgs;
     Map<String,Integer> intArgs;

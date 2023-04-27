@@ -4,12 +4,13 @@ import main.java.it.polimi.ingsw.Controller.Command;
 import main.java.it.polimi.ingsw.Controller.Response;
 
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerConnectionHandlerRMI implements ServerConnectionHandler, RMIServerConnection {
+public class ServerConnectionHandlerRMI extends UnicastRemoteObject implements ServerConnectionHandler, RMIServerConnection {
     final List<Command> queue;
-    private RMIClientConnection rmiClient;
+    private transient RMIClientConnection rmiClient;
 
     /**
      * Class' constructor
@@ -17,7 +18,7 @@ public class ServerConnectionHandlerRMI implements ServerConnectionHandler, RMIS
      * @param rmiClient The RMI client corresponding to this instance of RMI server
      */
 
-    public ServerConnectionHandlerRMI(RMIClientConnection rmiClient){
+    public ServerConnectionHandlerRMI(RMIClientConnection rmiClient) throws RemoteException{
         queue = new ArrayList<>();
         this.rmiClient = rmiClient;
     }

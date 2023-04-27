@@ -1,9 +1,10 @@
 package main.java.it.polimi.ingsw.Controller;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Command {
+public class Command implements Serializable {
     private CommandType commandType;
     Map<String,String> strArgs;
     Map<String,Integer> intArgs;

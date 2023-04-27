@@ -3,19 +3,24 @@ package main.java.it.polimi.ingsw.Connection;
 import main.java.it.polimi.ingsw.Controller.Command;
 import main.java.it.polimi.ingsw.Controller.Response;
 
+import java.io.Serial;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientConnectionHandlerRMI implements ClientConnectionHandler, RMIClientConnection {
-    final List<Response> queue;
-    private RMIServerConnection rmiServer;
+public class ClientConnectionHandlerRMI extends UnicastRemoteObject implements ClientConnectionHandler, RMIClientConnection {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+    private final List<Response> queue;
+    private transient RMIServerConnection rmiServer;
 
     /**
      * Class' constructor
      * @author Alessandro Annechini
      */
-    public ClientConnectionHandlerRMI(){
+    public ClientConnectionHandlerRMI() throws RemoteException {
         queue = new ArrayList<>();
     }
 

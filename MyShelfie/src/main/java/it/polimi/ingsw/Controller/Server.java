@@ -15,9 +15,6 @@ public class Server {
     private final List<Player> players;
     private final List<VirtualView> virtualViews;
     private final List<VirtualView> queue;
-
-    private final Map<Integer,GameController> games;
-
     private int numPlayersForMatch;
     private VirtualView firstOfMatch;
 
@@ -29,7 +26,6 @@ public class Server {
         players = new ArrayList<>();
         virtualViews = new ArrayList<>();
         queue = new ArrayList<>();
-        games = new HashMap<>();
     }
 
     /**
@@ -37,12 +33,13 @@ public class Server {
      * @author Alessandro Annechini
      */
     public void start(){
-        try(ServerSocket listener = new ServerSocket(54321)){
+        try{
+            ServerSocket listener = new ServerSocket(54321);
             RMIWelcomeServer myShelfieRMIServer = new RMIWelcomeServerImpl(this);
             Registry registry = LocateRegistry.createRegistry(1099);
             registry.rebind("MyShelfieRMIServer", myShelfieRMIServer);
 
-            //new Thread(() -> handleConnections()).start();
+            new Thread(() -> handleConnections()).start();
             new Thread(() -> handleQueue()).start();
 
             while(true){
@@ -61,7 +58,7 @@ public class Server {
                 }
             }
         } catch(Exception e){
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -71,7 +68,6 @@ public class Server {
      */
     public void handleCommand(Command command, VirtualView virtualView){
         //called asynchronously from virtual view
-        System.out.println("New command! -> ");
         if(command == null || !command.getCommandType().getHandler().equals("S")) return;
         System.out.println("New command! "+command.getCommandType());
         if(command.getCommandType() == CommandType.PING){
@@ -104,18 +100,16 @@ public class Server {
 
                     //NICKNAME corresponds to a disconnected player
 
-                    oldp.getModel().getGameController().reconnect(oldp,virtualView);
+                    oldp.getGameController().reconnect(oldp,virtualView);
 
                 }else{
 
                     //NICKNAME is valid
-
                     virtualView.setNickname(nickname);
-                    addVirtualViewToList(virtualView);
-                    addToQueue(virtualView);
                     Response response = new Response(ResponseType.LOGIN_CONFIRMED);
                     response.setStrParameter("nickname",nickname);
                     virtualView.sendResponse(response);
+                    addToQueue(virtualView);
 
                 }
             }
@@ -196,33 +190,45 @@ public class Server {
             try{
                 numPlayersForMatch = -1;
                 firstOfMatch=null;
+
                 synchronized (queue){
                     while(queue.size()==0) queue.wait();
+                    firstOfMatch = queue.get(0);
                 }
-                firstOfMatch = queue.get(0);
+
                 final VirtualView firstOfList = firstOfMatch;
 
                 Response res = new Response(ResponseType.ASK_PLAYERS_NUM);
                 firstOfList.sendResponse(res);
 
                 synchronized (queue){
-                    while(queue.get(0).equals(firstOfList) && queue.size()<numPlayersForMatch
-                            || numPlayersForMatch<2 || numPlayersForMatch>4) queue.wait();
-                }
-                if(queue.get(0).equals(firstOfList)){
-                    //CREATE NEW MATCH
+                    while( queue.size()>0 && queue.get(0).equals(firstOfList) && (queue.size()<numPlayersForMatch
+                            || numPlayersForMatch<2 || numPlayersForMatch>4) ) queue.wait();
+                    if(queue.size()>0 && queue.get(0).equals(firstOfList)){
+                        //CREATE NEW MATCH
 
-                    List<VirtualView> gamers = new ArrayList<>();
-                    synchronized (queue){
-                        for(int i = 0; i< numPlayersForMatch; i++ ){
-                            gamers.add(popFromQueue());
-                        }
-                        firstOfMatch=null;
-                        queue.notifyAll();
+                        new Thread(()->{
+                            List<VirtualView> gamers = new ArrayList<>();
+                            synchronized (queue){
+                                for(int i = 0; i< numPlayersForMatch; i++ ){
+                                    gamers.add(popFromQueue());
+                                }
+                                firstOfMatch=null;
+                                queue.notifyAll();
+                            }
+                            try{
+                                new GameController(this,gamers,0);
+                            } catch(Exception e){
+                                e.printStackTrace();
+                            }
+
+                        }).start();
+
                     }
-                    new GameController(this,gamers,0);
                 }
-            } catch (Exception e){}
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -233,32 +239,35 @@ public class Server {
     private void handleConnections(){
         List<VirtualView> tested = new ArrayList<>();
         while(true){
-            tested.clear();
-            synchronized (virtualViews){
-                tested.addAll(virtualViews);
-            }
-            for(VirtualView vv : tested){
-                vv.newConnectionCheck();
-                vv.sendResponse(new Response(ResponseType.PONG));
-            }
             try{
-                TimeUnit.SECONDS.sleep(timeout/2);
 
-                //Send PONG
+                tested.clear();
+                synchronized (virtualViews){
+                    tested.addAll(virtualViews);
+                }
+
                 for(VirtualView vv : tested){
+                    vv.newConnectionCheck();
                     vv.sendResponse(new Response(ResponseType.PONG));
                 }
 
+                TimeUnit.SECONDS.sleep(timeout/2);
+
                 //Disconnect virtual view that didn't respond
+                //Send PONG
                 for(VirtualView vv : tested){
                     if(!vv.checkCurrConnection()){
                         final VirtualView vview = vv;
                         new Thread(() -> vview.disconnect()).start();
                     }
+                    else vv.sendResponse(new Response(ResponseType.PONG));
                 }
 
                 TimeUnit.SECONDS.sleep( timeout % 2==0 ? timeout/2 : timeout/2 +1);
-            } catch(Exception ignored){}
+
+            } catch(Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -342,7 +351,6 @@ public class Server {
     public void removeVirtualViewFromList(VirtualView virtualView){
         synchronized (virtualViews) {
             virtualViews.remove(virtualView);
-            virtualViews.notifyAll();
         }
         synchronized (queue){
             queue.remove(virtualView);
@@ -355,6 +363,7 @@ public class Server {
      * @author Alessandro Annechini
      * @param gameController The game controller of the game that just ended
      */
+
     public void endGame(GameController gameController){
         for(Player p : gameController.getPlayers()){
             removePlayerFromList(p);

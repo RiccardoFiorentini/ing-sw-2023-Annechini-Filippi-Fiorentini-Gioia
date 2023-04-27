@@ -24,6 +24,7 @@ public class ServerConnectionHandlerSocket implements ServerConnectionHandler {
         this.socket=socket;
         oos = new ObjectOutputStream(socket.getOutputStream());
         ois = new ObjectInputStream(socket.getInputStream());
+        oos.flush();
     }
 
     public Command getNextCommand() throws IOException, ClassNotFoundException {
@@ -31,7 +32,7 @@ public class ServerConnectionHandlerSocket implements ServerConnectionHandler {
         return ret;
     }
 
-    public void sendResponse(Response response) throws IOException {
+    public synchronized void sendResponse(Response response) throws IOException {
         oos.writeObject(response);
         oos.flush();
     }

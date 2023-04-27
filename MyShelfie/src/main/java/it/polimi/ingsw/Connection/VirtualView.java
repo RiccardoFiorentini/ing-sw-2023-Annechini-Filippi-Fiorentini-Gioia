@@ -55,6 +55,9 @@ public class VirtualView {
                 throw new RuntimeException(e);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch(Exception e){
+                disconnect();
+                break;
             }
             if(command!=null && command.getCommandType().getHandler().equals("S")){
                 new Thread( () -> server.handleCommand(command,this) ).start();
@@ -87,6 +90,7 @@ public class VirtualView {
             try{
                 sch.sendResponse(response);
             } catch(IOException e) {
+                e.printStackTrace();
                 disconnect();
             }
         }
@@ -139,9 +143,11 @@ public class VirtualView {
      * @author Alessandro Annechini
      */
     public void disconnect(){
-        System.out.println("Player disconnected");
+        System.out.println(server.getVirtualViews().size());
         server.removeVirtualViewFromList(this);
         if(connected){
+            System.out.println("Player disconnected");
+            System.out.println(server.getVirtualViews().size());
             this.connected = false;
             sch.disconnect();
             if(player!=null)
