@@ -293,20 +293,29 @@ public class Player {
         return pickableTiles;
     }
 
-    public void setVirtualView(VirtualView virtualView) {
-        this.virtualView = virtualView;
-    }
-
     public VirtualView getVirtualView() {
         return virtualView;
     }
 
+    /**
+     * Disconnect this player from the game, changing turn if necessary
+     * @author Alessandro Annechini
+     */
     public void disconnect(){
         connected = false;
+        virtualView = null;
+
         // Tells model to change turn if necessary
+
     }
 
-    public void reconnect(){
+    /**
+     * The player is set back as connected, and the new virtual view is assigned
+     * @author Alessandro Annechini
+     * @param virtualView The new virtual view of the player
+     */
+    public void connectVirtualView(VirtualView virtualView){
         connected = true;
+        this.virtualView = virtualView;
     }
 }

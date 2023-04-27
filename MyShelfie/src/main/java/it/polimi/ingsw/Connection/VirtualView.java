@@ -18,17 +18,30 @@ public class VirtualView {
     private boolean safeConnection;
     private boolean connected;
 
+    /**
+     * Class' constructor
+     * @author Alessandro Annechini
+     * @param server The main server
+     */
     public VirtualView(Server server){
         this.safeConnection = true;
         this.connected = true;
         this.server = server;
     }
 
+    /**
+     * This method starts a new thread to listen for new Commands
+     * @author Alessandro Annechini
+     */
     public void start(){
         //called from whoever instantiates this object
         new Thread( () -> listener() ).start();
     }
 
+    /**
+     * This method waits for new Commands and then starts a thread in order to execute it
+     * @author Alessandro Annechini
+     */
     private void listener(){
         //called asynchronously from start method
         while(connected){
@@ -36,7 +49,7 @@ public class VirtualView {
             try{
                 command = sch.getNextCommand();
             } catch (IOException e) {
-                this.connected = false;
+                disconnect();
                 break;
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
@@ -64,8 +77,19 @@ public class VirtualView {
         this.gameController = gameController;
     }
 
-    public void sendResponse(Response response) throws IOException {
-        sch.sendResponse(response);
+    /**
+     * This method sends a Response to the client. If something goes wrong, the client is disconnected
+     * @author Alessandro Annechini
+     * @param response The response to be sent
+     */
+    public void sendResponse(Response response){
+        if(connected){
+            try{
+                sch.sendResponse(response);
+            } catch(IOException e) {
+                disconnect();
+            }
+        }
     }
 
     public Player getPlayer(){
@@ -84,24 +108,58 @@ public class VirtualView {
         return nickname;
     }
 
+    /**
+     * This method starts a new connection check
+     * @author Alessandro Annechini
+     */
     public void newConnectionCheck(){
         this.safeConnection = false;
     }
 
+    /**
+     * This method asserts the correct connection to the client
+     * @author Alessandro Annechini
+     */
     public void pingReceived(){
         this.safeConnection = true;
     }
 
+    /**
+     * Check if the client asserted the validity of the connection
+     * @author Alessandro Annechini
+     * @return True if a PING has arrived, false otherwise
+     */
     public boolean checkCurrConnection(){
         return safeConnection;
     }
 
+    /**
+     * This method disconnects the virtual view (with the corresponding ServerConnectionHandler and eventual Player).
+     * Note that this method may take a while to execute, so it is best to start a new thread
+     * @author Alessandro Annechini
+     */
     public void disconnect(){
+        System.out.println("Player disconnected");
+        server.removeVirtualViewFromList(this);
         if(connected){
             this.connected = false;
             sch.disconnect();
             if(player!=null)
                 player.disconnect();
         }
+    }
+
+    /**
+     * This virtual view exits the game and returns again an anonymous virtual view
+     * @author Alessandro Annechini
+     */
+    public void exitGame(){
+        this.player = null;
+        this.nickname = null;
+        this.gameController = null;
+    }
+
+    public boolean isConnected(){
+        return connected;
     }
 }

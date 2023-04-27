@@ -22,8 +22,8 @@ public class ClientConnectionHandlerSocket implements ClientConnectionHandler {
      */
     public ClientConnectionHandlerSocket(Socket socket) throws IOException {
         this.socket=socket;
-        ois = new ObjectInputStream(socket.getInputStream());
         oos = new ObjectOutputStream(socket.getOutputStream());
+        ois = new ObjectInputStream(socket.getInputStream());
     }
 
     public Response getNextResponse() throws IOException, ClassNotFoundException {
