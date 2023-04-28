@@ -76,6 +76,7 @@ public enum ResponseType {
 
     // The player is the only one remaining, the time
     // remaining for his victory is sent
+    // Map<String, Integer>: {<"Timer", timerMilliSeconds>},
     ONLY_ONE_CONNECTED_TIMER,
 
     // The game ended, if it ends correctly the points (in order of
@@ -88,6 +89,8 @@ public enum ResponseType {
     // A player won a common goal: the winner of the common goal (turnId),
     // the id of the common goal, the points won by the player and the
     // points remaining for that common goal are sent as arguments
+    // Map<String,Integer> intArgs : {<"PlayerId", id>, <"CommonGoal", points>, <"CommonGoalId", id>}
+    //
     COMMON_GOAL_WON
 
 }

@@ -1,11 +1,15 @@
 package main.java.it.polimi.ingsw.Model;
 
+import main.java.it.polimi.ingsw.Controller.Response;
 import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
 import main.java.it.polimi.ingsw.ModelExceptions.WrongTurnException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static main.java.it.polimi.ingsw.Controller.ResponseType.*;
+
 public class Model {
     private final int gameId;
     private int gameEnd;
@@ -82,41 +86,93 @@ public class Model {
 
     /**
      * Method that is called at the end of a turn, before the turn passes to the next player
-     * @author Nicole Filippi
+     * @author Nicole Filippi, Pasquale Gioia
      */
     public void nextTurn() throws NotToRefillException, WrongTurnException {
+
         if(players.get(turnId).getPointsCommonGoal()[0]==0 && commonGoals[0].check(players.get(turnId).getShelf())){
+            Response commonGoalWon = new Response(COMMON_GOAL_WON);
+            commonGoalWon.setIntParameter("PlayerId", turnId);
+            commonGoalWon.setIntParameter("CommonGoal", commonGoals[0].getPointsLeft());
+            commonGoalWon.setIntParameter("CommonGoalId", 0);
+            players.get(turnId).getVirtualView().sendResponse(commonGoalWon);
+
             players.get(turnId).setPointsCommonGoal(0, commonGoals[0].pullPoints());
         }
         if(players.get(turnId).getPointsCommonGoal()[1]==0 && commonGoals[1].check(players.get(turnId).getShelf())){
+            Response commonGoalWon = new Response(COMMON_GOAL_WON);
+            commonGoalWon.setIntParameter("PlayerId", turnId);
+            commonGoalWon.setIntParameter("CommonGoal", commonGoals[1].getPointsLeft());
+            commonGoalWon.setIntParameter("CommonGoalId", 1);
+            players.get(turnId).getVirtualView().sendResponse(commonGoalWon);
+
             players.get(turnId).setPointsCommonGoal(1, commonGoals[1].pullPoints());
         }
 
-        if(firstToEnd==-1 && players.get(turnId).getShelf().isFull())   //check if player's board is full
+
+
+        if(firstToEnd==-1 && players.get(turnId).getShelf().isFull())//check if player's shelf is full
             firstToEnd=turnId;
 
-        turnId = (turnId+1)%numPlayers;     //next player
 
-        if(firstToEnd>-1 && turnId==firstToStart) {         //the game is finished
-            int points;
-            for(int i=0; i<numPlayers; i++){
-                points=0;
-                points+=players.get(i).getPointsCommonGoal()[0];
-                points+=players.get(i).getPointsCommonGoal()[1];
-                points+=players.get(i).getPersonalGoal().getPoints(players.get(i).getShelf());
-                if(i==firstToEnd)
-                    points++;
-                points+=players.get(i).getShelf().getGroupsPoints();
-                finalPoints.add(points);
+        if(getNumPlayersConnected()<=1){
+            //Sending one player left timer has started response to connected players
+            Response timerStarted = new Response(ONLY_ONE_CONNECTED_TIMER);
+            timerStarted.setIntParameter("Timer", 15000);
+            for(Player p: players){
+                if(p.getVirtualView()!=null) {
+                    p.getVirtualView().sendResponse(timerStarted);
+                }
             }
-            turnId=-1;
-            this.gameEnd = 1;
-        }
-        else{
-            if(board.checkFill())   //check if the board has to be refilled
+            long startTime = System.currentTimeMillis();
+            while(getNumPlayersConnected()<=1 && (System.currentTimeMillis()-startTime)<15000);
+            //Timer has ended: if no player has connected the game should end;
+            if(getNumPlayersConnected()<=1){
+                //End game due to lack of enough players
+                this.gameEnd = 1;
+                Response end = new Response(GAME_ENDED);
+                end.setObjParameter("finalPoints", getFinalPoints());
+                end.setIntParameter("interrupted", 1);
+
+                for(Player p: players){
+                    //Sending endGame response to the only (or none) player left
+                    if(p.getVirtualView()!=null) {
+                        p.getVirtualView().sendResponse(end);
+                        p.getVirtualView().disconnect();
+                    }
+                }
+                //If a player has connected the game should go on
+            } else {
+                do {
+                    turnId = (turnId + 1) % numPlayers;//next player
+                } while (!getPlayerByTurnId(turnId).isConnected());
+
+                if (getNumPlayersConnected() > 1 && firstToEnd > -1 && turnId == firstToStart) {
+                    //End game as natural game flow
+                    countPoints();
+                } else if (board.checkFill()) {   //check if the board has to be refilled
+                    board.refill();
+                }
+
+                players.get(turnId).beginTurn();
+            }
+
+        } else {
+            do {
+                turnId = (turnId + 1) % numPlayers;//next player
+            }while(!getPlayerByTurnId(turnId).isConnected());
+
+            if(getNumPlayersConnected()>1 && firstToEnd>-1 && turnId==firstToStart) {
+                //the game is finished
+                countPoints();
+            }
+            else if(board.checkFill()){   //check if the board has to be refilled
                 board.refill();
+            }
+
             players.get(turnId).beginTurn();
         }
+
     }
 
     /**
@@ -205,6 +261,28 @@ public class Model {
 
     }
 
+
+    /**
+     * Method that counts players' points at the end of the game
+     * @author Pasquale Gioia
+     */
+    private void countPoints(){
+        int points;
+        for(int i=0; i<numPlayers; i++){
+            points=0;
+            points+=players.get(i).getPointsCommonGoal()[0];
+            points+=players.get(i).getPointsCommonGoal()[1];
+            points+=players.get(i).getPersonalGoal().getPoints(players.get(i).getShelf());
+            if(i==firstToEnd)
+                points++;
+            points+=players.get(i).getShelf().getGroupsPoints();
+            finalPoints.add(points);
+        }
+        turnId=-1;
+        this.gameEnd = 1;
+    }
+
+
     public int getGameId() {
         return gameId;
     }
@@ -239,4 +317,23 @@ public class Model {
     public int getGameEnd() {
         return gameEnd;
     }
+
+    public Player getPlayerByTurnId(int turnId){
+        Player turnIdPlayer = null;
+        for(Player p: players)
+            if(p.getTurnId()==turnId) {
+                turnIdPlayer = p;
+            }
+
+        return turnIdPlayer;
+    }
+
+    private int getNumPlayersConnected(){
+        int numPlayers = 0;
+        for(Player p: getPlayers())
+            if(p.isConnected())
+                numPlayers++;
+        return numPlayers;
+    }
+
 }
