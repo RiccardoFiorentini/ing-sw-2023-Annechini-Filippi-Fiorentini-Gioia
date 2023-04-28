@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 public class Model {
     private final int gameId;
+    private int gameEnd;
     private final int numPlayers;
     private final List<Player> players;
     private final Board board;
@@ -27,7 +28,7 @@ public class Model {
     public Model(int gameId, List<Player> players) throws IOException, NotToRefillException, WrongTurnException {
         this.gameId = gameId;
         this.players = players;
-
+        this.gameEnd = 0;
         numPlayers = players.size();
 
         for(int i=0; i<numPlayers; i++){
@@ -109,6 +110,7 @@ public class Model {
                 finalPoints.add(points);
             }
             turnId=-1;
+            this.gameEnd = 1;
         }
         else{
             if(board.checkFill())   //check if the board has to be refilled
@@ -232,5 +234,9 @@ public class Model {
     }
     public Chat getChat() {
         return chat;
+    }
+
+    public int getGameEnd() {
+        return gameEnd;
     }
 }

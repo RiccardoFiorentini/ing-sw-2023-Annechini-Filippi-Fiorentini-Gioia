@@ -1,6 +1,7 @@
 package main.java.it.polimi.ingsw.Model;
 
 import main.java.it.polimi.ingsw.Connection.VirtualView;
+import main.java.it.polimi.ingsw.Controller.GameController;
 import main.java.it.polimi.ingsw.ModelExceptions.*;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import static main.java.it.polimi.ingsw.Model.Tile.EMPTY;
 
 public class Player {
     private int turnId;
-
+    private GameController gameController;
     //coordinates of first and last tiles selected
     private int x1;
     private int y1;
@@ -33,7 +34,7 @@ public class Player {
      * @author Fiorentini Riccardo
      * @param nickname name of the player, unique in the match
      * */
-    public Player(String nickname){
+    public Player(String nickname, GameController gameController){
         this.pickedTiles = new Tile[] {EMPTY, EMPTY, EMPTY};
         this.pointsCommonGoal = new int[] {0, 0};
         this.nickname = nickname;
@@ -49,6 +50,7 @@ public class Player {
         this.y1 = -1;
         this.x2 = -1;
         this.y2 = -1;
+        this.gameController = gameController;
     }
 
     /**
@@ -293,6 +295,10 @@ public class Player {
         return pickableTiles;
     }
 
+    public void setVirtualView(VirtualView virtualView) {
+        this.virtualView = virtualView;
+    }
+
     public VirtualView getVirtualView() {
         return virtualView;
     }
@@ -301,6 +307,10 @@ public class Player {
      * Disconnect this player from the game, changing turn if necessary
      * @author Alessandro Annechini
      */
+    public Boolean getConnected(){
+        return connected;
+    }
+
     public void disconnect(){
         connected = false;
         virtualView = null;
@@ -317,5 +327,9 @@ public class Player {
     public void connectVirtualView(VirtualView virtualView){
         connected = true;
         this.virtualView = virtualView;
+    }
+
+    public GameController getGameController() {
+        return gameController;
     }
 }

@@ -150,6 +150,9 @@ public class VirtualView {
             System.out.println(server.getVirtualViews().size());
             this.connected = false;
             sch.disconnect();
+            if(gameController!=null){
+                gameController.disconnected(this);
+            }
             if(player!=null)
                 player.disconnect();
         }

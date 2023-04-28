@@ -15,11 +15,12 @@ public enum ResponseType {
 
     //The game started, the initial conditions are sent as arguments
     // Initial conditions:
-    // Map<String,Integer> intArgs : {<"firstPlayerId", id>, <"commonGoal1", id>, <"commonGoal2", id>, <"commonGoalsRemainingPoint1", points>, <"commonGoalsRemainingPoint2", points>}
+    // Map<String,Integer> intArgs : {<"firstPlayerId", id>, <"commonGoal1", id>, <"commonGoal2", id>, <"commonGoalsRemainingPoint1", points>, <"commonGoalsRemainingPoint2", points>,
+    //                          <"currentPlayer",id>, <"isStart", 1 if it's the the starting message or 0 if it is used for reconnection>}
     // Map<String,Object> objArgs : {<"board", board>, <"chat", chat>, <"shelves", List<Shelf>>, <"nicknames", List<String>>, <"turnIds", List<Integer>>,
-    // <"personalGoals", List<Integer>>, <"commonGoalPoints1", List<Integer>>, <"commonGoalPoints2", List<Integer>>}
-    //
-    // shelves, nicknames, turnIds, peronalGoals, commonGoalPoints1 and commonGoalPoints2 follow the order of the players in the list.
+    // <"personalGoals", List<Integer>>, <"commonGoalPoints1", List<Integer>>, <"commonGoalPoints2", List<Integer>>, <"connected", List<Boolean>>}
+    // Map<String,String> strArgs : {<"commonGoalDescription1", description>, <"commonGoalDescription2", description>}
+    // shelves, nicknames, turnIds, personalGoals, connected, commonGoalPoints1 and commonGoalPoints2 follow the order of the players in the list.
     GAME_STARTED,
 
     // A new message has been sent to the chat
@@ -67,6 +68,7 @@ public enum ResponseType {
     PLAYER_DISCONNECTED,
 
     // A player reconnected
+    // Map<String, Object> : {<"connected", List<Boolean>>}
     PLAYER_RECONNECTED,
 
     // The player is the only one connected
@@ -79,6 +81,8 @@ public enum ResponseType {
     // The game ended, if it ends correctly the points (in order of
     // turnId) are sent, if the game ends because all but one player
     // disconnected, the victory of the remaining player is signaled
+    // Map<String, Object> : {<"finalPoints", List<int>>}
+    // Map<String, Integer>: {<"interrupted", 0 if it finished correctly, 1 if not>}
     GAME_ENDED,
 
     // A player won a common goal: the winner of the common goal (turnId),

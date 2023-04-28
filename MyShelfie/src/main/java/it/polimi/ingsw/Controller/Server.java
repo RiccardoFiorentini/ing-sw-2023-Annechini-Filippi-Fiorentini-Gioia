@@ -100,7 +100,7 @@ public class Server {
 
                     //NICKNAME corresponds to a disconnected player
 
-                    oldp.getGameController().reconnect(oldp,virtualView);
+                    oldp.getGameController().reconnected(virtualView, oldp);
 
                 }else{
 
