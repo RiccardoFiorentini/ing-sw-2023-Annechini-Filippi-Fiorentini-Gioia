@@ -31,7 +31,7 @@ public enum Tile {
         this.color = color;
     }
 
-    TileColor getColor(){
+    public TileColor getColor(){
         return color;
     }
 

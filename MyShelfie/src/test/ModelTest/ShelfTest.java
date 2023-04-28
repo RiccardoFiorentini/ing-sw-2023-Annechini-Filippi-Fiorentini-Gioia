@@ -1,4 +1,4 @@
-package ModelTest;
+package test.ModelTest;
 
 import main.java.it.polimi.ingsw.Model.Shelf;
 import main.java.it.polimi.ingsw.Model.Tile;
