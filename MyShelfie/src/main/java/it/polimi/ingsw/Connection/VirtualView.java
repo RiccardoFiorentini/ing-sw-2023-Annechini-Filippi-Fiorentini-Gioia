@@ -48,6 +48,9 @@ public class VirtualView {
             final Command command;
             try{
                 command = sch.getNextCommand();
+
+                System.out.println("New command! "+command.getCommandType());
+
             } catch (IOException e) {
                 disconnect();
                 break;
@@ -89,6 +92,9 @@ public class VirtualView {
         if(connected){
             try{
                 sch.sendResponse(response);
+
+                System.out.println("Response sent: "+response.getResponseType());
+
             } catch(IOException e) {
                 e.printStackTrace();
                 disconnect();

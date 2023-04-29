@@ -18,7 +18,7 @@ public enum CommandType {
     GAME_JOINED("C"),
 
     // Send a new message in the chat
-    // Map<String,String> strArgs : {<"receiver", "nickname o receiver or null if broadcast">, <"text", "message sent">}
+    // Map<String,String> strArgs : {<"receiver", "nickname of receiver or null if broadcast">, <"text", "message sent">}
     SEND_MEX_CHAT("C"),
 
     // Select column
@@ -33,7 +33,7 @@ public enum CommandType {
     // Map<String,Integer> intArgs : {<"index", bufferIndex>}
     PUT_IN_COLUMN("C");
 
-    String handler;
+    final String handler;
 
     CommandType(String handler){
         this.handler = handler;

@@ -4,18 +4,22 @@ import main.java.it.polimi.ingsw.Connection.ClientConnectionHandler;
 import main.java.it.polimi.ingsw.Connection.ClientConnectionHandlerRMI;
 import main.java.it.polimi.ingsw.Connection.ClientConnectionHandlerSocket;
 import main.java.it.polimi.ingsw.Connection.RMIWelcomeServer;
+import main.java.it.polimi.ingsw.Controller.Command;
+import main.java.it.polimi.ingsw.Controller.CommandType;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class Client {
     ClientConnectionHandler cch;
     View view;
 
-    public static void main(String args[]){
+    public static void main(String[] args) throws RemoteException {
         new Client().start();
     }
 
@@ -38,6 +42,20 @@ public class Client {
             }
         }
         cch = createConnection(connectionType);
+        final ClientConnectionHandler threadCch = cch;
+
+        new Thread(()->{
+            while(true){
+                try{
+                    TimeUnit.SECONDS.sleep(5);
+                }catch(Exception e){}
+                try {
+                    threadCch.sendCommand(new Command(CommandType.PING));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 
         while(interfaceType!=1 && interfaceType!=2){
             System.out.println("Select the interface: \n1. Command Line \n2. Graphic");
@@ -97,5 +115,6 @@ public class Client {
         }
         return null;
     }
+
 
 }

@@ -29,4 +29,10 @@ public class CommonGoal12 extends CommonGoal{
     public int getIndex() {
         return 12;
     }
+
+    public String getDescription() {
+        return "Five columns of increasing or decreasing height. Starting from the " +
+                "first column each next column must be made of exactly one more tile. " +
+                "Tiles can be of any type.";
+    }
 }

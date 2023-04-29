@@ -51,5 +51,7 @@ public abstract class CommonGoal {
      * @return the index of the Common Goal (from 1 to 12)
      */
     public abstract int getIndex();
+
+    public abstract String getDescription();
 }
 

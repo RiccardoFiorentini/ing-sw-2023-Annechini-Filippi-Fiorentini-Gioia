@@ -21,4 +21,8 @@ public class CommonGoal8 extends CommonGoal{
     public int getIndex() {
         return 8;
     }
+
+    public String getDescription() {
+        return "Four tiles of the same type in the four corners of the bookshelf.";
+    }
 }

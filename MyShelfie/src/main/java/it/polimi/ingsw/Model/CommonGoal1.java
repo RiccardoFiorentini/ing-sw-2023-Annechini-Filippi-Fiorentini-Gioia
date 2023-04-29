@@ -90,4 +90,9 @@ public class CommonGoal1 extends CommonGoal{
     public int getIndex() {
         return 1;
     }
+
+    public String getDescription(){
+        return "Two groups each containing 4 tiles of the same type in a 2x2 square. "
+                +"The tiles of one square have to be the same type of those of the other square.";
+    }
 }

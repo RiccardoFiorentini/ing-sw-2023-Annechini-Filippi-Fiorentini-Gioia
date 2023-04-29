@@ -15,12 +15,12 @@ public enum ResponseType {
 
     //The game started, the initial conditions are sent as arguments
     // Initial conditions:
-    // Map<String,Integer> intArgs : {<"firstPlayerId", id>, <"commonGoal1", id>, <"commonGoal2", id>, <"commonGoalsRemainingPoint1", points>, <"commonGoalsRemainingPoint2", points>,
-    //                          <"currentPlayer",id>, <"isStart", 1 if it's the the starting message or 0 if it is used for reconnection>}
+    // Map<String,Integer> intArgs : {<"firstPlayerId", id>, <"commonGoal1", id(1-12)>, <"commonGoal2", id(1-12)>, <"commonGoalsRemainingPoint1", points>, <"commonGoalsRemainingPoint2", points>,
+    //                          <"currentPlayer",id>, <"isStart", 1 if it's the starting message or 0 if it is used for reconnection>}
     // Map<String,Object> objArgs : {<"board", board>, <"chat", chat>, <"shelves", List<Shelf>>, <"nicknames", List<String>>, <"turnIds", List<Integer>>,
-    // <"personalGoals", List<Integer>>, <"commonGoalPoints1", List<Integer>>, <"commonGoalPoints2", List<Integer>>, <"connected", List<Boolean>>}
+    // <"personalGoal", TilesColor[][] >, <"commonGoalPoints1", List<Integer>>, <"commonGoalPoints2", List<Integer>>, <"connected", List<Boolean>>}
     // Map<String,String> strArgs : {<"commonGoalDescription1", description>, <"commonGoalDescription2", description>}
-    // shelves, nicknames, turnIds, personalGoals, connected, commonGoalPoints1 and commonGoalPoints2 follow the order of the players in the list.
+    // shelves, nicknames, turnIds, personalGoal, connected, commonGoalPoints1 and commonGoalPoints2 follow the order of the players in the list.
     GAME_STARTED,
 
     // A new message has been sent to the chat
@@ -28,7 +28,7 @@ public enum ResponseType {
     NEW_MEX_CHAT,
 
     // A new turn begins, the current player is specified in the arguments
-    // The server sends a boolean matrix corresponding to the pickable tiles to the current player
+    // The server sends a boolean matrix corresponding to the pickable tiles to the current player (just for GUI)
     // Map<String,Integer> intArgs : {<"CurrentPlayerId", id>}
     // Map<String,Object> objArgs : {<"pickableTiles", boolean pickableTiles[][]>}
     NEW_TURN,
@@ -45,7 +45,7 @@ public enum ResponseType {
     // matrix corresponding to the pickable tiles is sent, for the second
     // selection the updated buffer is sent
     // Map<String,String> strArgs : {<"result", "success" or error string>}
-    // Map<String,Object> objArgs : {<"pickableTiles", boolean pickableTiles[][]>}
+    // Map<String,Object> objArgs : {<"pickableTiles", boolean pickableTiles[][] if first time>,<"buffer", buffer array if second time>}
     SELECT_TILE_RESULT,
 
     // The board is updated
@@ -62,12 +62,15 @@ public enum ResponseType {
     // When the last tile is put, the change of turn is signaled in the args
     // Map<String,String> strArgs : {<"result", "success" or error string>}
     // Map<String,Integer> intArgs : {<"currentPlayerId", id or -1 if the turn is not finished>}
+    // Map<String,String> objArgs : {<"buffer", buffer array>}
     PUT_IN_COLUMN_RESULT,
 
     // A player disconnected
+    //Map<String,Integer> intArgs : {<"PlayerId", id of disconnected player>}
     PLAYER_DISCONNECTED,
 
     // A player reconnected
+    // Map<String,Integer> intArgs : {<"PlayerId", id of re-connected player>}
     // Map<String, Object> : {<"connected", List<Boolean>>}
     PLAYER_RECONNECTED,
 
@@ -87,10 +90,14 @@ public enum ResponseType {
     GAME_ENDED,
 
     // A player won a common goal: the winner of the common goal (turnId),
-    // the id of the common goal, the points won by the player and the
+    // the id of the common goal
     // points remaining for that common goal are sent as arguments
-    // Map<String,Integer> intArgs : {<"PlayerId", id>, <"CommonGoal", points>, <"CommonGoalId", id>}
+    // Map<String,Integer> intArgs : {<"PlayerId", id>, <"pointswon", points>, <"CommonGoalId", id (0 or 1)>, <"remainingpoints", remaining points>}
     //
-    COMMON_GOAL_WON
+    COMMON_GOAL_WON,
+
+    //a player completed the shelf
+    //Map<String,Integer> intArgs : {<"PlayerId", id>}
+    SHELF_COMPLETED
 
 }

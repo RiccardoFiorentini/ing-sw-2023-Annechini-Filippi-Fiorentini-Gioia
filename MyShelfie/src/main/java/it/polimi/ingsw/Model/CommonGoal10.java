@@ -28,4 +28,8 @@ public class CommonGoal10 extends CommonGoal{
     public int getIndex() {
         return 10;
     }
+
+    public String getDescription() {
+        return "Five tiles of the same type forming an X.";
+    }
 }

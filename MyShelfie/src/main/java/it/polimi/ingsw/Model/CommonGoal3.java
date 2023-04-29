@@ -150,4 +150,10 @@ public class CommonGoal3 extends CommonGoal{
     public int getIndex() {
         return 3;
     }
+
+    public String getDescription(){
+        return "Four groups each containing at least 4 tiles of the same type in a " +
+                "straight line (either horizontal or vertical). "+
+                "The tiles of one group can be different from those of another group.";
+    }
 }

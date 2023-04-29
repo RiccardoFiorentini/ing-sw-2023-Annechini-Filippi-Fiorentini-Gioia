@@ -42,4 +42,9 @@ public class CommonGoal7 extends CommonGoal{
     public int getIndex() {
         return 7;
     }
+
+    public String getDescription() {
+        return "Four lines each formed by 5 tiles of maximum three different types. " +
+                "One line can show the same or a different combination of another line.";
+    }
 }

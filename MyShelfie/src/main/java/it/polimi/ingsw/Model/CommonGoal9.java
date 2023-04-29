@@ -39,4 +39,9 @@ public class CommonGoal9 extends CommonGoal{
     public int getIndex() {
         return 9;
     }
+
+    public String getDescription() {
+        return "Eight tiles of the same type. " +
+                "There’s no restriction about the position of these tiles.";
+    }
 }

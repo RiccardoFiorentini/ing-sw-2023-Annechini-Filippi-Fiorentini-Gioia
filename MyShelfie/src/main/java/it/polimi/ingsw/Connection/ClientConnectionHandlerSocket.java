@@ -18,7 +18,6 @@ public class ClientConnectionHandlerSocket implements ClientConnectionHandler {
      * Class' constructor
      * @author Alessandro Annechini
      * @param socket The socket connecting this node to the server
-     * @throws IOException
      */
     public ClientConnectionHandlerSocket(Socket socket) throws IOException {
         this.socket=socket;
@@ -32,6 +31,7 @@ public class ClientConnectionHandlerSocket implements ClientConnectionHandler {
     }
 
     public synchronized void sendCommand(Command command) throws IOException {
+        oos.reset();
         oos.writeObject(command);
         oos.flush();
     }

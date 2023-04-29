@@ -1,9 +1,11 @@
 package main.java.it.polimi.ingsw.Model;
 
+import java.io.Serializable;
+
 /**
  * @author Fiorentini Riccardo
  * */
-public enum Tile {
+public enum Tile implements Serializable {
     GREEN1(TileColor.GREEN),
     GREEN2(TileColor.GREEN),
     GREEN3(TileColor.GREEN),

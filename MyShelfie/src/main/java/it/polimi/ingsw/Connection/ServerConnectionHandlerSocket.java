@@ -18,7 +18,6 @@ public class ServerConnectionHandlerSocket implements ServerConnectionHandler {
      * Class' constructor
      * @author Alessandro Annechini
      * @param socket The socket connecting the server to the current client
-     * @throws IOException
      */
     public ServerConnectionHandlerSocket(Socket socket) throws IOException {
         this.socket=socket;
@@ -33,6 +32,7 @@ public class ServerConnectionHandlerSocket implements ServerConnectionHandler {
     }
 
     public synchronized void sendResponse(Response response) throws IOException {
+        oos.reset();
         oos.writeObject(response);
         oos.flush();
     }

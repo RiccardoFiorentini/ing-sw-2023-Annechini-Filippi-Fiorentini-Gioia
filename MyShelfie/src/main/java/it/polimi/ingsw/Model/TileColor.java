@@ -1,6 +1,8 @@
 package main.java.it.polimi.ingsw.Model;
 
-public enum TileColor {
+import java.io.Serializable;
+
+public enum TileColor implements Serializable {
     GREEN,
     BLUE,
     PINK,

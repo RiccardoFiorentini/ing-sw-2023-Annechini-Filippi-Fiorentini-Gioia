@@ -34,4 +34,8 @@ public class CommonGoal11 extends CommonGoal{
     public int getIndex() {
         return 11;
     }
+
+    public String getDescription() {
+        return "Five tiles of the same type forming a diagonal.";
+    }
 }

@@ -125,4 +125,10 @@ public class CommonGoal4 extends CommonGoal{
     public int getIndex() {
         return 4;
     }
+
+    @Override
+    public String getDescription() {
+        return "Six groups each containing at least 2 tiles of the same type. " +
+                "The tiles of one group can be different from those of another group.";
+    }
 }

@@ -14,7 +14,7 @@ public class GUI extends View{
     }
 
     @Override
-    public void handleEvent(String event) {
+    public void onStartup() {
 
     }
 }

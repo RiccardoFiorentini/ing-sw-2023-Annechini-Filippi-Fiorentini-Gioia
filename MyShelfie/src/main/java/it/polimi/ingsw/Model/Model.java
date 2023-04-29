@@ -121,14 +121,25 @@ public class Model {
 
 
 
-        if(firstToEnd==-1 && getPlayerByTurnId(turnId).getShelf().isFull())//check if player's shelf is full
+        if(firstToEnd==-1 && getPlayerByTurnId(turnId).getShelf().isFull()){
+            //check if player's shelf is full
             firstToEnd=turnId;
+
+            Response fin = new Response(SHELF_COMPLETED);
+            fin.setIntParameter("playerId",turnId);
+
+            for(Player p: players){
+                if(p.getVirtualView()!=null)
+                    p.getVirtualView().sendResponse(fin);
+            }
+        }
+
 
 
         if(getNumPlayersConnected()<=1){
             //Sending one player left timer has started response to connected players
             Response timerStarted = new Response(ONLY_ONE_CONNECTED_TIMER);
-            timerStarted.setIntParameter("Timer", 15000);
+            timerStarted.setIntParameter("timermilliseconds", 15000);
             for(Player p: players){
                 if(p.getVirtualView()!=null) {
                     p.getVirtualView().sendResponse(timerStarted);
@@ -151,7 +162,7 @@ public class Model {
 
             } else {
                 //If a player has connected the game should go on
-                do {
+                do{
                     turnId = (turnId + 1) % numPlayers;//next player
                 } while (!getPlayerByTurnId(turnId).isConnected());
 
@@ -168,9 +179,26 @@ public class Model {
                 } else {
                     if (board.checkFill()) {  //check if the board has to be refilled
                         board.refill();
+                        Response bu = new Response(UPDATE_BOARD);
+                        bu.setObjParameter("board",board.toBean());
+                        for(Player p : players){
+                            if(p.getVirtualView()!=null){
+                                p.getVirtualView().sendResponse(bu);
+                            }
+                        }
                     }
 
+
                     getPlayerByTurnId(turnId).beginTurn();
+
+                    Response result0 = new Response(NEW_TURN);
+                    result0.setIntParameter("CurrentPlayerId", getTurnId());
+                    result0.setObjParameter("pickableTiles", players.get(getTurnId()).getPickableTiles());
+                    for(Player p: players){
+                        if(p.getVirtualView()!=null) {
+                            p.getVirtualView().sendResponse(result0);
+                        }
+                    }
                 }
             }
 
@@ -193,9 +221,26 @@ public class Model {
             } else {
                 if (board.checkFill()) {   //check if the board has to be refilled
                     board.refill();
+                    Response bu = new Response(UPDATE_BOARD);
+                    bu.setObjParameter("board",board.toBean());
+                    for(Player p : players){
+                        if(p.getVirtualView()!=null){
+                            p.getVirtualView().sendResponse(bu);
+                        }
+                    }
                 }
 
                 getPlayerByTurnId(turnId).beginTurn();
+
+                Response result0 = new Response(NEW_TURN);
+                result0.setIntParameter("CurrentPlayerId", getTurnId());
+                result0.setObjParameter("pickableTiles", players.get(getTurnId()).getPickableTiles());
+                for(Player p: players){
+                    if(p.getVirtualView()!=null) {
+                        p.getVirtualView().sendResponse(result0);
+                    }
+                }
+
             }
         }
 

@@ -159,6 +159,8 @@ public class Player {
                         }
                     }
                 }
+            }else{
+                throw new NotPickableException();
             }
         }else{
             if(pickableTiles[row][col]) { //if the last tile selected is valid it set the last tile and put the selected tiles in the buffer
@@ -175,6 +177,8 @@ public class Player {
                         pickedTiles[i-min] = this.model.getBoard().pickTile(this.y1, i);
                     }
                 }
+            }else{
+                throw new NotPickableException();
             }
         }
     }
@@ -340,6 +344,7 @@ public class Player {
                         }
                     }
                 }
+                model.nextTurn();
             }else{
                 model.nextTurn();
             }

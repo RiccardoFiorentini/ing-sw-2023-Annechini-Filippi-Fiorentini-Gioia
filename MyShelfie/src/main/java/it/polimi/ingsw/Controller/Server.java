@@ -18,6 +18,10 @@ public class Server {
     private int numPlayersForMatch;
     private VirtualView firstOfMatch;
 
+    public static void main(String[] args){
+        new Server().start();
+    }
+
     /**
      * Class' constructor
      * @author Alessandro Annechini
@@ -69,7 +73,7 @@ public class Server {
     public void handleCommand(Command command, VirtualView virtualView){
         //called asynchronously from virtual view
         if(command == null || !command.getCommandType().getHandler().equals("S")) return;
-        System.out.println("New command! "+command.getCommandType());
+
         if(command.getCommandType() == CommandType.PING){
 
             virtualView.pingReceived();
@@ -212,10 +216,9 @@ public class Server {
                             || numPlayersForMatch<2 || numPlayersForMatch>4) ) queue.wait();
                     if(queue.size()>0 && queue.get(0).equals(firstOfList)){
                         //CREATE NEW MATCH
-
+                        final List<VirtualView> gamers = new ArrayList<>();
+                        final int num = numPlayersForMatch;
                         new Thread(()->{
-                            final List<VirtualView> gamers = new ArrayList<>();
-                            final int num = numPlayersForMatch;
                             synchronized (queue){
                                 for(int i = 0; i< num; i++ ){
                                     gamers.add(popFromQueue());
@@ -374,7 +377,7 @@ public class Server {
     public void endGame(GameController gameController){
         for(Player p : gameController.getPlayers()){
             removePlayerFromList(p);
-            p.getVirtualView().exitGame();
+            if(p.getVirtualView()!=null) p.getVirtualView().exitGame();
         }
     }
 }
