@@ -4,8 +4,8 @@ import main.java.it.polimi.ingsw.Model.Model;
 import main.java.it.polimi.ingsw.Model.Player;
 import main.java.it.polimi.ingsw.Model.Tile;
 import main.java.it.polimi.ingsw.ModelExceptions.*;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,13 +20,14 @@ public class PlayerTest {
     List<Player> AllPlayer;
     boolean[][] pickableTiles;
 
+
     @BeforeEach
     public void setUp(){
         AllPlayer = new ArrayList<Player>();
-        AllPlayer.add(new Player("Admin1"));
-        AllPlayer.add(new Player("Admin2"));
-        AllPlayer.add(new Player("Admin3"));
-        AllPlayer.add(new Player("Admin4"));
+        AllPlayer.add(new Player("Admin1", null));
+        AllPlayer.add(new Player("Admin2", null));
+        AllPlayer.add(new Player("Admin3", null));
+        AllPlayer.add(new Player("Admin4", null));
 
         pickableTiles = new boolean[9][9];
 
@@ -72,7 +73,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testBeginTurn(){
+    public void beginTurn_CorrectVariablesSet_CorrectNewPlayerTurnBeginning(){
 
         try {
             AllPlayer.get(model.getTurnId()).beginTurn();
@@ -101,7 +102,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testCorrectActions(){
+    public void correctActions_CorrectVariablesSet_CorrectGameFlow(){
 
         try {
             AllPlayer.get(model.getTurnId()).beginTurn();
@@ -207,7 +208,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testOneTile(){
+    public void selectTile_PickableTileToBeSelected_CorrectTilesPicked(){
 
         try {
             AllPlayer.get(model.getTurnId()).beginTurn();
@@ -310,7 +311,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testBeginTurn2() throws NotPickableException {
+    public void beginTurn2_CorrectVariablesSet_CorrectNewPlayerTurnBeginningAfterPickAction() throws NotPickableException {
 
         model.getBoard().pickTile(0, 3);
         model.getBoard().pickTile(0, 4);

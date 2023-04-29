@@ -86,7 +86,7 @@ public class Server {
                 Response response = new Response(ResponseType.LOGIN_ERROR);
                 virtualView.sendResponse(response);
 
-            } else if(!unusedNickname(nickname)){
+            } else if(!validNickname(nickname)){
 
                 //NICKNAME is already in use
 
@@ -138,9 +138,14 @@ public class Server {
      * @param nickname The nickname to be checked
      * @return True if the nickname is not used by any connected player, false otherwise
      */
-    private boolean unusedNickname(String nickname){
+    private boolean validNickname(String nickname){
         synchronized (virtualViews){
+            //Invalid string
+            if(nickname==null) return false;
+            //Nickname contains white spaces
+            if(nickname.contains(" ")) return false;
             for(VirtualView vv : virtualViews){
+                //Already in use
                 if(nickname.equals(vv.getNickname())) return false;
             }
         }
@@ -173,10 +178,11 @@ public class Server {
      */
     private String findNewNickname(String oldNickname){
         int i = 1;
-        String newNickname = oldNickname + String.valueOf(i);
-        while(!unusedNickname(newNickname) || searchOldPlayer(newNickname)!=null){
+        String tmpNickname = oldNickname.replaceAll("\\s+","");
+        String newNickname = tmpNickname + String.valueOf(i);
+        while(!validNickname(newNickname) || searchOldPlayer(newNickname)!=null){
             i++;
-            newNickname = oldNickname + String.valueOf(i);
+            newNickname = tmpNickname + String.valueOf(i);
         }
         return newNickname;
     }
@@ -208,9 +214,10 @@ public class Server {
                         //CREATE NEW MATCH
 
                         new Thread(()->{
-                            List<VirtualView> gamers = new ArrayList<>();
+                            final List<VirtualView> gamers = new ArrayList<>();
+                            final int num = numPlayersForMatch;
                             synchronized (queue){
-                                for(int i = 0; i< numPlayersForMatch; i++ ){
+                                for(int i = 0; i< num; i++ ){
                                     gamers.add(popFromQueue());
                                 }
                                 firstOfMatch=null;

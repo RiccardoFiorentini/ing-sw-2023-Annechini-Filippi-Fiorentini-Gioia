@@ -18,12 +18,12 @@ public class ShelfTest {
     }
 
     @Test
-    public void emptyShelf() {
+    public void emptyShelf_EmptyShelf_GroupPointsEqualToZero() {
         assertEquals(0,shelf.getGroupsPoints());
     }
 
     @Test
-    public void shelfPoints1() throws FullColumnException {
+    public void getGroupPoints1_GivenShelfStructure_CorrectGroupPointsCalculated() throws FullColumnException {
         shelf.putTile(Tile.BLUE1,0);
         shelf.putTile(Tile.BLUE1,0);
         shelf.putTile(Tile.BLUE1,0);
@@ -39,7 +39,7 @@ public class ShelfTest {
     }
 
     @Test
-    public void shelfPoints2() throws FullColumnException {
+    public void getGroupPoints2_GivenShelfStructure_CorrectGroupPointsCalculated() throws FullColumnException {
         shelf.putTile(Tile.BLUE1,0);
         shelf.putTile(Tile.BLUE1,0);
         shelf.putTile(Tile.BLUE1,0);
@@ -52,7 +52,7 @@ public class ShelfTest {
     }
 
     @Test
-    public void fullColTest() throws FullColumnException{
+    public void fullColumnException_ShelfWithFullColumn_RaisedFullColumnException() throws FullColumnException{
         shelf.putTile(Tile.PINK1,0);
         shelf.putTile(Tile.PINK1,0);
         shelf.putTile(Tile.PINK1,0);

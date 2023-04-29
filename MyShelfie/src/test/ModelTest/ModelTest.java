@@ -14,13 +14,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ModelTest {
     Model model;
     static List<Player> players;
+
     @BeforeAll
     public static void setUpClass(){
         players=new ArrayList<>();
-        players.add(new Player("Nicole"));
-        players.add(new Player("Alessandro"));
-        players.add(new Player("Pasquale"));
-        players.add(new Player("Riccardo"));
+        players.add(new Player("Nicole", null));
+        players.add(new Player("Alessandro", null));
+        players.add(new Player("Pasquale", null));
+        players.add(new Player("Riccardo", null));
     }
 
     @BeforeEach
@@ -29,7 +30,7 @@ public class ModelTest {
     }
 
     @Test
-    public void constructor() throws NotToRefillException, WrongTurnException, IOException {
+    public void modelConstructor_CorrectParameters_CorrectModelInitialization() throws NotToRefillException, WrongTurnException, IOException {
 
         for(int k=0; k<20; k++){
             model=new Model(k, players);
@@ -50,7 +51,7 @@ public class ModelTest {
     }
 
     @Test
-    public void nextTurnTest() throws NotToRefillException, WrongTurnException {
+    public void nextTurn_CustomTurnPhase_NextTurnHandledCorrectly() throws NotToRefillException, WrongTurnException {
         for(int i=0; i<8; i++){
             int turn1 = model.getTurnId();
             model.nextTurn();

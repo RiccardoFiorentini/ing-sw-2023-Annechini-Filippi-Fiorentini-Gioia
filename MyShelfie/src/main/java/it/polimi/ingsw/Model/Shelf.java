@@ -2,7 +2,9 @@ package main.java.it.polimi.ingsw.Model;
 
 import main.java.it.polimi.ingsw.ModelExceptions.FullColumnException;
 
-public class Shelf {
+import java.io.Serializable;
+
+public class Shelf implements Serializable {
     private Tile[][] tiles;
     private int[] spacesForCol;
     private int spacesLeft;

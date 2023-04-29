@@ -15,10 +15,10 @@ public class ChatTest {
     @BeforeAll
     public static void setUpClass(){
         players=new ArrayList<>();
-        players.add(new Player("Nicole"));
-        players.add(new Player("Alessandro"));
-        players.add(new Player("Pasquale"));
-        players.add(new Player("Riccardo"));
+        players.add(new Player("Nicole", null));
+        players.add(new Player("Alessandro", null));
+        players.add(new Player("Pasquale", null));
+        players.add(new Player("Riccardo", null));
         for(int i=0; i<4; i++){
             players.get(i).setTurnId(i);
         }
@@ -30,7 +30,7 @@ public class ChatTest {
     }
 
     @Test
-    public void newBroadcastMessage() throws IncorrectMessageException {
+    public void writeMessageBroadcast_CorrectMessage_CorrectExecution() throws IncorrectMessageException {
         assertTrue(chat.getMessages().size()==0);
         chat.writeMessage(players.get(0), "message");
         assertTrue(chat.getMessages().size()==1);
@@ -40,7 +40,7 @@ public class ChatTest {
     }
 
     @Test
-    public void callExceptionBroadcast(){
+    public void emptyBroadcastException_EmptyMessage_RaiseIncorrectMessageException(){
         try{
             chat.writeMessage(players.get(0), "");
             fail();
@@ -49,7 +49,7 @@ public class ChatTest {
     }
 
     @Test
-    public void newMessage() throws IncorrectMessageException {
+    public void writeMessage_CorrectMessageFormat_CorrectExecution() throws IncorrectMessageException {
         assertTrue(chat.getMessages().size()==0);
         chat.writeMessage(players.get(0), players.get(1), "message");
         assertTrue(chat.getMessages().size()==1);
@@ -59,7 +59,7 @@ public class ChatTest {
     }
 
     @Test
-    public void callExceptionEmptyText(){
+    public void emptySingleException_EmptyMessage_RaiseIncorrectMessageException(){
         try{
             chat.writeMessage(players.get(0), players.get(1), "");
             fail();
@@ -68,16 +68,16 @@ public class ChatTest {
     }
 
     @Test
-    public void callExceptionWrongReceiver(){
+    public void wrongReceiverException_InvalidReceiver_RaiseIncorrectMessageException(){
         try{
-            chat.writeMessage(players.get(0), new Player("Pippo"), "message");
+            chat.writeMessage(players.get(0), new Player("Pippo", null), "message");
             fail();
         }catch(IncorrectMessageException e){
         }
     }
 
     @Test
-    public void newMessages() throws IncorrectMessageException {
+    public void writeBroadcastMessage_CorrectMessageFormat_CorrectExecution() throws IncorrectMessageException {
         assertTrue(chat.getMessages().size()==0);
         chat.writeMessage(players.get(0), players.get(1), "message");
         chat.writeMessage(players.get(1), "second message");

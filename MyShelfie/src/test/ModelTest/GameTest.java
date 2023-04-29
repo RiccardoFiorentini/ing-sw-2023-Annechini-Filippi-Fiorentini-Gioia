@@ -1,7 +1,9 @@
 package test.ModelTest;
-import main.java.it.polimi.ingsw.Model.*;
+
+import main.java.it.polimi.ingsw.Model.Model;
+import main.java.it.polimi.ingsw.Model.Player;
+import main.java.it.polimi.ingsw.Model.Tile;
 import main.java.it.polimi.ingsw.ModelExceptions.*;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,14 +19,14 @@ public class GameTest {
     @BeforeEach
     public void setUp() throws NotToRefillException, WrongTurnException, IOException {
         players = new ArrayList<>();
-        players.add(new Player("Nicole"));
-        players.add(new Player("Riccardo"));
+        players.add(new Player("Pasquale", null));
+        players.add(new Player("Riccardo", null));
 
         model=new Model(1, players);
     }
 
     @Test
-    public void game() throws WrongTurnException, WrongPhaseException, NotPickableException, NotToRefillException, FullColumnException {
+    public void game_TwoPlayersGameSimulation_CorrectLogicExecution() throws WrongTurnException, WrongPhaseException, NotPickableException, NotToRefillException, FullColumnException {
 
         players.get(model.getTurnId()).setSelectedColumn(1);
         players.get(model.getTurnId()).selectTile(4,1);

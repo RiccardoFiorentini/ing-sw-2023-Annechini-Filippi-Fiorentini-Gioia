@@ -15,7 +15,7 @@ public class BoardTest {
     Board board;
 
     @Test
-    public void boardConstructor2Players() throws NotToRefillException, IOException {
+    public void testBoard2Players() throws NotToRefillException, IOException {
         board = new Board(2);
         for(int i=0; i<9; i++){
             for(int j=0; j<9; j++){
@@ -34,7 +34,7 @@ public class BoardTest {
         }
     }
     @Test
-    public void boardConstructor3Players() throws NotToRefillException, IOException {
+    public void testBoard3Players() throws NotToRefillException, IOException {
         board = new Board(3);
         for(int i=0; i<9; i++){
             for(int j=0; j<9; j++){
@@ -53,7 +53,7 @@ public class BoardTest {
         }
     }
     @Test
-    public void boardConstructor4Players() throws NotToRefillException, IOException {
+    public void testBoard4Players() throws NotToRefillException, IOException {
         board = new Board(4);
         for(int i=0; i<9; i++){
             for(int j=0; j<9; j++){
@@ -74,7 +74,7 @@ public class BoardTest {
 
 
     @Test
-    public void pickTile() throws NotPickableException, NotToRefillException, IOException {
+    public void pickTile_SelectPickableTile_SuccessfulPickAndBoardTileIsEmpty() throws NotPickableException, NotToRefillException, IOException {
         board = new Board(2);
         Tile pickedTile = board.pickTile(3, 3);
         assertTrue(board.getTiles()[3][3] == Tile.EMPTY);
@@ -83,7 +83,7 @@ public class BoardTest {
     }
 
     @Test
-    public void callPickEmptyTileException() throws NotToRefillException, IOException, NotPickableException {
+    public void pickEmptyTileException_SelectEmptyTile_NotSuccessfulPick() throws NotToRefillException, IOException, NotPickableException {
         board = new Board(2);
         Tile pickedTile = board.pickTile(3,3);
 
@@ -95,7 +95,7 @@ public class BoardTest {
     }
 
     @Test
-    public void callPickBlockedTileException() throws  NotToRefillException, IOException {
+    public void pickBlockedTileException_SelectBlockedTile_NotSuccessfulPick() throws  NotToRefillException, IOException {
         board = new Board(2);
         Tile pickedTile;
         try{
@@ -106,7 +106,7 @@ public class BoardTest {
     }
 
     @Test
-    public void checkToRefill() throws NotToRefillException, IOException, NotPickableException {
+    public void checkFill_RefillableBoard_BoardHasToBeRefilled() throws NotToRefillException, IOException, NotPickableException {
         Tile pickedTile;
         Board board2 = new Board(2);
         for(int i=0; i<9; i++){
@@ -119,7 +119,7 @@ public class BoardTest {
     }
 
     @Test
-    public void checkNotToRefill() throws NotToRefillException, IOException, NotPickableException{
+    public void checkNotToFill_NotRefillableBoard_BoardHasNotToBeRefilled() throws NotToRefillException, IOException, NotPickableException{
         Tile pickedTile;
         Board board2 = new Board(2);
 
@@ -132,7 +132,7 @@ public class BoardTest {
     }
 
     @Test
-    public void callRefillException() throws IOException, NotPickableException, NotToRefillException {
+    public void refillException_NotRefillableBoard_NotToRefillExceptionRaised() throws IOException, NotPickableException, NotToRefillException {
         board = new Board(2);
         Tile pickedTile;
         for(int i=0; i<9; i++){
@@ -148,7 +148,7 @@ public class BoardTest {
     }
 
     @Test
-    public void boardRefillAction() throws NotToRefillException, IOException, NotPickableException {
+    public void refill_RefillableBoard_BoardIsCorrectlyRefilled() throws NotToRefillException, IOException, NotPickableException {
         Board boardGeneric = new Board(2);
         Tile pickedTile;
 

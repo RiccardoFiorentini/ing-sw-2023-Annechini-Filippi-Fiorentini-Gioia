@@ -15,7 +15,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg1_1() throws FullColumnException {
+    public void checkCommonGoal1() throws FullColumnException {
         cg=new CommonGoal1(4);
         assertFalse(cg.check(shelf));
         shelf.putTile(Tile.ORANGE1,0);
@@ -41,7 +41,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg2_1() throws FullColumnException {
+    public void checkCommonGoal2() throws FullColumnException {
         cg=new CommonGoal2(4);
 
         assertFalse(cg.check(shelf));
@@ -64,7 +64,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg3_1() throws FullColumnException{
+    public void checkCommonGoal3() throws FullColumnException{
         cg=new CommonGoal3(4);
         assertFalse(cg.check(shelf));
         for(int i=0;i<4;i++){
@@ -85,7 +85,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg4_1() throws FullColumnException{
+    public void checkCommonGoal4() throws FullColumnException{
         cg=new CommonGoal4(4);
         assertFalse(cg.check(shelf));
 
@@ -113,7 +113,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg5_1() throws FullColumnException{
+    public void checkCommonGoal5() throws FullColumnException{
         cg=new CommonGoal5(4);
         assertFalse(cg.check(shelf));
         for(int i=0;i<6;i++)
@@ -144,7 +144,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg6_1() throws FullColumnException{
+    public void checkCommonGoal6() throws FullColumnException{
         cg = new CommonGoal6(4);
         assertFalse(cg.check(shelf));
         for(int i=0;i<3;i++) shelf.putTile(Tile.BLUE1,0);
@@ -161,7 +161,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg7_1() throws FullColumnException{
+    public void checkCommonGoal7() throws FullColumnException{
         cg = new CommonGoal7(4);
         assertFalse(cg.check(shelf));
         for(int i=0;i<4;i++)
@@ -193,7 +193,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg8_1() throws FullColumnException{
+    public void checkCommonGoal8() throws FullColumnException{
         cg = new CommonGoal8(4);
         assertFalse(cg.check(shelf));
         for(int i=0;i<6;i++) shelf.putTile(Tile.BLUE1,0);
@@ -212,7 +212,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg9_1() throws FullColumnException {
+    public void checkCommonGoal9() throws FullColumnException {
         cg=new CommonGoal9(4);
         assertFalse(cg.check(shelf));
         shelf.putTile(Tile.GREEN1,0);
@@ -231,7 +231,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg10_1() throws FullColumnException{
+    public void checkCommonGoal10() throws FullColumnException{
         cg = new CommonGoal10(4);
         assertFalse(cg.check(shelf));
         shelf.putTile(Tile.GREEN1,0);
@@ -248,7 +248,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg11_1() throws FullColumnException{
+    public void checkCommonGoal11() throws FullColumnException{
         cg = new CommonGoal11(4);
         assertFalse(cg.check(shelf));
         for(int i=0;i<5;i++){
@@ -280,7 +280,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void cg12_1() throws FullColumnException{
+    public void checkCommonGoal12() throws FullColumnException{
         cg = new CommonGoal12(4);
         assertFalse(cg.check(shelf));
         for(int i=0;i<5;i++){
@@ -297,7 +297,7 @@ public class CommonGoalTest {
     }
 
     @Test
-    public void pullPointsTest(){
+    public void pullPoints_VariousCommonGoalsFulfillment_CorrectPointsBeingPulled(){
         cg = new CommonGoal1(4);
         assertEquals(8,cg.getPointsLeft());
         assertEquals(8,cg.pullPoints());

@@ -12,7 +12,7 @@ import static main.java.it.polimi.ingsw.Controller.ResponseType.*;
 
 public class Model {
     private final int gameId;
-    private int gameEnd;
+    private boolean gameEnd;
     private final int numPlayers;
     private final List<Player> players;
     private final Board board;
@@ -32,7 +32,7 @@ public class Model {
     public Model(int gameId, List<Player> players) throws IOException, NotToRefillException, WrongTurnException {
         this.gameId = gameId;
         this.players = players;
-        this.gameEnd = 0;
+        this.gameEnd = false;
         numPlayers = players.size();
 
         for(int i=0; i<numPlayers; i++){
@@ -81,7 +81,7 @@ public class Model {
 
         finalPoints = new ArrayList<>();
         chat = new Chat(players);
-        players.get(turnId).beginTurn();
+        getPlayerByTurnId(turnId).beginTurn();
     }
 
     /**
@@ -90,28 +90,38 @@ public class Model {
      */
     public void nextTurn() throws NotToRefillException, WrongTurnException {
 
-        if(players.get(turnId).getPointsCommonGoal()[0]==0 && commonGoals[0].check(players.get(turnId).getShelf())){
+        if(getPlayerByTurnId(turnId).getPointsCommonGoal()[0]==0 && commonGoals[0].check(getPlayerByTurnId(turnId).getShelf())){
             Response commonGoalWon = new Response(COMMON_GOAL_WON);
             commonGoalWon.setIntParameter("PlayerId", turnId);
-            commonGoalWon.setIntParameter("CommonGoal", commonGoals[0].getPointsLeft());
+            commonGoalWon.setIntParameter("PointsWon", commonGoals[0].getPointsLeft());
             commonGoalWon.setIntParameter("CommonGoalId", 0);
-            players.get(turnId).getVirtualView().sendResponse(commonGoalWon);
 
-            players.get(turnId).setPointsCommonGoal(0, commonGoals[0].pullPoints());
+            getPlayerByTurnId(turnId).setPointsCommonGoal(0, commonGoals[0].pullPoints());
+            commonGoalWon.setIntParameter("RemainingPoints", commonGoals[0].getPointsLeft());
+
+            for(Player p: players){
+                if(p.getVirtualView()!=null)
+                    p.getVirtualView().sendResponse(commonGoalWon);
+            }
         }
-        if(players.get(turnId).getPointsCommonGoal()[1]==0 && commonGoals[1].check(players.get(turnId).getShelf())){
+        if(getPlayerByTurnId(turnId).getPointsCommonGoal()[1]==0 && commonGoals[1].check(getPlayerByTurnId(turnId).getShelf())){
             Response commonGoalWon = new Response(COMMON_GOAL_WON);
             commonGoalWon.setIntParameter("PlayerId", turnId);
-            commonGoalWon.setIntParameter("CommonGoal", commonGoals[1].getPointsLeft());
+            commonGoalWon.setIntParameter("PointsWon", commonGoals[1].getPointsLeft());
             commonGoalWon.setIntParameter("CommonGoalId", 1);
-            players.get(turnId).getVirtualView().sendResponse(commonGoalWon);
 
-            players.get(turnId).setPointsCommonGoal(1, commonGoals[1].pullPoints());
+            getPlayerByTurnId(turnId).setPointsCommonGoal(1, commonGoals[1].pullPoints());
+            commonGoalWon.setIntParameter("RemainingPoints", commonGoals[1].getPointsLeft());
+
+            for(Player p: players){
+                if(p.getVirtualView()!=null)
+                    p.getVirtualView().sendResponse(commonGoalWon);
+            }
         }
 
 
 
-        if(firstToEnd==-1 && players.get(turnId).getShelf().isFull())//check if player's shelf is full
+        if(firstToEnd==-1 && getPlayerByTurnId(turnId).getShelf().isFull())//check if player's shelf is full
             firstToEnd=turnId;
 
 
@@ -126,51 +136,67 @@ public class Model {
             }
             long startTime = System.currentTimeMillis();
             while(getNumPlayersConnected()<=1 && (System.currentTimeMillis()-startTime)<15000);
-            //Timer has ended: if no player has connected the game should end;
-            if(getNumPlayersConnected()<=1){
-                //End game due to lack of enough players
-                this.gameEnd = 1;
-                Response end = new Response(GAME_ENDED);
-                end.setObjParameter("finalPoints", getFinalPoints());
-                end.setIntParameter("interrupted", 1);
 
+            //Timer has ended:
+            // If no player has connected the game should end
+            if(getNumPlayersConnected()<=1){
+                //End game due to lack of enough players -- (interrupted = 1)
+                Response end = new Response(GAME_ENDED);
+                setGameEndResponse(end, 1);
                 for(Player p: players){
-                    //Sending endGame response to the only (or none) player left
                     if(p.getVirtualView()!=null) {
                         p.getVirtualView().sendResponse(end);
-                        p.getVirtualView().disconnect();
                     }
                 }
-                //If a player has connected the game should go on
+
             } else {
+                //If a player has connected the game should go on
                 do {
                     turnId = (turnId + 1) % numPlayers;//next player
                 } while (!getPlayerByTurnId(turnId).isConnected());
 
                 if (getNumPlayersConnected() > 1 && firstToEnd > -1 && turnId == firstToStart) {
-                    //End game as natural game flow
+                    //End game as natural game flow -- (interrupted = 0)
                     countPoints();
-                } else if (board.checkFill()) {   //check if the board has to be refilled
-                    board.refill();
-                }
+                    Response end = new Response(GAME_ENDED);
+                    setGameEndResponse(end, 0);
+                    for(Player p: players){
+                        if(p.getVirtualView()!=null) {
+                            p.getVirtualView().sendResponse(end);
+                        }
+                    }
+                } else {
+                    if (board.checkFill()) {  //check if the board has to be refilled
+                        board.refill();
+                    }
 
-                players.get(turnId).beginTurn();
+                    getPlayerByTurnId(turnId).beginTurn();
+                }
             }
 
         } else {
+            //There is more than one player connected
             do {
                 turnId = (turnId + 1) % numPlayers;//next player
-            }while(!getPlayerByTurnId(turnId).isConnected());
+            } while (!getPlayerByTurnId(turnId).isConnected());
 
-            if(getNumPlayersConnected()>1 && firstToEnd>-1 && turnId==firstToStart) {
-                //the game is finished
+            if (getNumPlayersConnected() > 1 && firstToEnd > -1 && turnId == firstToStart) {
+                //End game as natural game flow -- (interrupted =0)
                 countPoints();
-            }
-            else if(board.checkFill()){   //check if the board has to be refilled
-                board.refill();
-            }
+                Response end = new Response(GAME_ENDED);
+                setGameEndResponse(end, 0);
+                for(Player p: players){
+                    if(p.getVirtualView()!=null) {
+                        p.getVirtualView().sendResponse(end);
+                    }
+                }
+            } else {
+                if (board.checkFill()) {   //check if the board has to be refilled
+                    board.refill();
+                }
 
-            players.get(turnId).beginTurn();
+                getPlayerByTurnId(turnId).beginTurn();
+            }
         }
 
     }
@@ -279,7 +305,12 @@ public class Model {
             finalPoints.add(points);
         }
         turnId=-1;
-        this.gameEnd = 1;
+        this.gameEnd = true;
+    }
+
+    private void setGameEndResponse(Response end, int interrupted){
+        end.setObjParameter("finalPoints", finalPoints);
+        end.setIntParameter("interrupted", interrupted);
     }
 
 
@@ -314,7 +345,7 @@ public class Model {
         return chat;
     }
 
-    public int getGameEnd() {
+    public boolean isGameFinished() {
         return gameEnd;
     }
 
@@ -335,5 +366,7 @@ public class Model {
                 numPlayers++;
         return numPlayers;
     }
+
+
 
 }
