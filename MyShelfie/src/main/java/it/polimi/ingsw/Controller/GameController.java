@@ -180,7 +180,7 @@ public class GameController {
                     for(VirtualView vv: virtualViews){
                         vv.sendResponse(shelf);
                     }
-                    if(model.getGameEnd()==1 && this.model.getFinalPoints()!=null){
+                    if(model.isGameFinished() && this.model.getFinalPoints()!=null){
                         Response end = new Response(GAME_ENDED);
                         end.setObjParameter("finalPoints", model.getFinalPoints());
                         end.setIntParameter("interrupted", 0);
@@ -188,7 +188,7 @@ public class GameController {
                             vv.sendResponse(end);
                         }
                         server.endGame(this);
-                    } else if (model.getGameEnd()==1 && this.model.getFinalPoints()==null) {
+                    } else if (model.isGameFinished() && this.model.getFinalPoints()==null) {
                         Response end = new Response(GAME_ENDED);
                         end.setObjParameter("finalPoints", model.getFinalPoints());
                         end.setIntParameter("interrupted", 1);
