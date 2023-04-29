@@ -11,7 +11,6 @@ import java.util.List;
 import static main.java.it.polimi.ingsw.Controller.ResponseType.*;
 
 public class GameController {
-
     private final List<Player> players;
     private final List<VirtualView> virtualViews;
     private int joined;
@@ -32,8 +31,8 @@ public class GameController {
         this.players = new ArrayList<>();
         for(VirtualView vv: player){
             this.players.add(new Player(vv.getNickname(), this));
-            server.addPlayerToList(players.get(player.size()-1));
-            vv.setPlayer(players.get(player.size()-1));
+            server.addPlayerToList(players.get(players.size()-1));
+            vv.setPlayer(players.get(players.size()-1));
         }
 
         this.model = new Model(gameId, this.players);
@@ -48,8 +47,8 @@ public class GameController {
         start.setObjParameter("chat", model.getChat());
         start.setIntParameter("commonGoalsRemainingPoint1", model.getCommonGoals()[0].getPointsLeft());
         start.setIntParameter("commonGoalsRemainingPoint2", model.getCommonGoals()[1].getPointsLeft());
-        start.setStrParameter("commonGoalDescription1", model.getCommonGoals()[0].getDescription());
-        start.setStrParameter("commonGoalDescription2", model.getCommonGoals()[1].getDescription());
+        //start.setStrParameter("commonGoalDescription1", model.getCommonGoals()[0].getDescription());
+        //start.setStrParameter("commonGoalDescription2", model.getCommonGoals()[1].getDescription());
         List<Shelf> shelves = new ArrayList<>();
         List<String> nicknames = new ArrayList<>();
         List<Integer> turnIds = new ArrayList<>();
@@ -188,17 +187,13 @@ public class GameController {
                         for(VirtualView vv: virtualViews){
                             vv.sendResponse(end);
                         }
-                        for(VirtualView vv: virtualViews){
-                            vv.disconnect();
-                        }
+                        server.endGame(this);
                     } else if (model.getGameEnd()==1 && this.model.getFinalPoints()==null) {
                         Response end = new Response(GAME_ENDED);
                         end.setObjParameter("finalPoints", model.getFinalPoints());
                         end.setIntParameter("interrupted", 1);
                         virtualViews.get(0).sendResponse(end);
-                        for(VirtualView vv: virtualViews){
-                            vv.disconnect();
-                        }
+                        server.endGame(this);
                     }
                 } catch (FullColumnException e) {
                     throw new RuntimeException(e);
@@ -236,8 +231,8 @@ public class GameController {
         recon.setObjParameter("chat", model.getChat());
         recon.setIntParameter("commonGoalsRemainingPoint1", model.getCommonGoals()[0].getPointsLeft());
         recon.setIntParameter("commonGoalsRemainingPoint2", model.getCommonGoals()[1].getPointsLeft());
-        recon.setStrParameter("commonGoalDescription1", model.getCommonGoals()[0].getDescription());
-        recon.setStrParameter("commonGoalDescription2", model.getCommonGoals()[1].getDescription());
+        //recon.setStrParameter("commonGoalDescription1", model.getCommonGoals()[0].getDescription());
+        //recon.setStrParameter("commonGoalDescription2", model.getCommonGoals()[1].getDescription());
         List<Shelf> shelves = new ArrayList<>();
         List<String> nicknames = new ArrayList<>();
         List<Integer> turnIds = new ArrayList<>();
@@ -266,6 +261,7 @@ public class GameController {
 
         Response list = new Response(PLAYER_RECONNECTED);
         list.setObjParameter("connected", connected);
+        list.setIntParameter("playerid",pl.getTurnId());
         for(VirtualView vv: this.virtualViews){
             if(!(vv.getNickname().equals(player.getNickname()))){
                 vv.sendResponse(list);

@@ -2,10 +2,13 @@ package main.java.it.polimi.ingsw.Model;
 
 import main.java.it.polimi.ingsw.Connection.VirtualView;
 import main.java.it.polimi.ingsw.Controller.GameController;
+import main.java.it.polimi.ingsw.Controller.Response;
 import main.java.it.polimi.ingsw.ModelExceptions.*;
 
 import java.util.List;
 
+import static main.java.it.polimi.ingsw.Controller.ResponseType.PLAYER_DISCONNECTED;
+import static main.java.it.polimi.ingsw.Controller.ResponseType.UPDATE_PLAYER_SHELF;
 import static main.java.it.polimi.ingsw.Model.Tile.EMPTY;
 
 public class Player {
@@ -303,20 +306,44 @@ public class Player {
         return virtualView;
     }
 
-    /**
-     * Disconnect this player from the game, changing turn if necessary
-     * @author Alessandro Annechini
-     */
     public Boolean getConnected(){
         return connected;
     }
 
-    public void disconnect(){
+    /**
+     * Disconnect this player from the game, changing turn if necessary
+     * @author Riccardo Fiorentini
+     */
+    public void disconnect() throws NotToRefillException, WrongTurnException, WrongPhaseException, FullColumnException {
         connected = false;
         virtualView = null;
 
-        // Tells model to change turn if necessary
-
+        if(model.getTurnId() == turnId){
+            if(x2 != -1){
+                boolean updateShelf = false;
+                for(int i = 0; i<3; i++){
+                    if(!pickedTiles[i].equals(EMPTY)){
+                        putInColumn(i);
+                        updateShelf = true;
+                    }
+                }
+                if(updateShelf){
+                    Response shelf = new Response(UPDATE_PLAYER_SHELF);
+                    shelf.setObjParameter("shelf", virtualView.getPlayer().getShelf());
+                    shelf.setIntParameter("playerId", virtualView.getPlayer().getTurnId());
+                    Response disc = new Response(PLAYER_DISCONNECTED);
+                    disc.setIntParameter("playerId", virtualView.getPlayer().getTurnId());
+                    for(Player p: model.getPlayers()){
+                        if(p.getVirtualView()!=null){
+                            p.getVirtualView().sendResponse(shelf);
+                            p.getVirtualView().sendResponse(disc);
+                        }
+                    }
+                }
+            }else{
+                model.nextTurn();
+            }
+        }
     }
 
     /**

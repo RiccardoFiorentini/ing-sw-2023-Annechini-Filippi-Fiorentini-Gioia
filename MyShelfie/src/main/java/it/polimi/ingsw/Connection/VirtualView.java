@@ -153,8 +153,12 @@ public class VirtualView {
             if(gameController!=null){
                 gameController.disconnected(this);
             }
-            if(player!=null)
-                player.disconnect();
+            if(player!=null) {
+                try {
+                    player.disconnect();
+                } catch (Exception e){
+                }
+            }
         }
     }
 
