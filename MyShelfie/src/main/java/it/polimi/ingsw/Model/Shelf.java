@@ -2,9 +2,7 @@ package main.java.it.polimi.ingsw.Model;
 
 import main.java.it.polimi.ingsw.ModelExceptions.FullColumnException;
 
-import java.io.Serializable;
-
-public class Shelf implements Serializable {
+public class Shelf{
     private Tile[][] tiles;
     private int[] spacesForCol;
     private int spacesLeft;
@@ -13,6 +11,7 @@ public class Shelf implements Serializable {
      * Class' constructor
      * @author Alessandro Annechini
      */
+
     public Shelf(){
         tiles = new Tile[6][5];
         spacesForCol = new int[5];
@@ -110,4 +109,7 @@ public class Shelf implements Serializable {
         return tiles[row][col];
     }
 
+    public ShelfBean toBean(){
+        return new ShelfBean(tiles, spacesForCol, spacesLeft);
+    }
 }

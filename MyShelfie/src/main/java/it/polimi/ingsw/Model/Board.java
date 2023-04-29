@@ -7,10 +7,9 @@ import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 
-public class Board implements Serializable{
+public class Board{
     private Map<Tile, Integer> tilesRemaining;
     private Tile[][] tiles;
     private int numPlayers;
@@ -169,5 +168,9 @@ public class Board implements Serializable{
 
     public Tile[][] getTiles() {
         return tiles;
+    }
+
+    public BoardBean toBean(){
+        return new BoardBean(tilesRemaining, tiles);
     }
 }

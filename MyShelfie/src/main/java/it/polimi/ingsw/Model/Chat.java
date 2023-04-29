@@ -52,4 +52,9 @@ public class Chat {
     public List<Message> getMessages() {
         return messages;
     }
+
+    public ChatBean toBean(Player beanReceiver){
+        return new ChatBean(messages, beanReceiver);
+    }
+
 }
