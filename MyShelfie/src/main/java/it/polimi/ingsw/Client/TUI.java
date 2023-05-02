@@ -145,12 +145,10 @@ public class TUI extends View{
         TUI t = new TUI(null);
         t.printAll(bb, cb, sb, nicknames, p1.getNickname(), commonGoalPoints1, commonGoalPoints2, CommonGoal1Descr,
                 CommonGoal2Descr, buffer, personalGoal, 4, 6);
-        t.clearCosole();
+        t.clearConsole();
 
         t.printAll(bb, cb, sb, nicknames, p1.getNickname(), commonGoalPoints1, commonGoalPoints2, CommonGoal1Descr,
                 CommonGoal2Descr, buffer, personalGoal, 4, 6);
-
-
     }
 
     /**
@@ -163,6 +161,7 @@ public class TUI extends View{
         if(resp == null) return;
         switch(resp.getResponseType()) {
             case LOGIN_ERROR:
+                playerNickname = null;
                 System.out.println("Nickname not valid.");
                 if (resp.getStrParameter("newnickname") != null)
                     System.out.println("A valid nickname is: " + resp.getStrParameter("newnickname"));
@@ -196,7 +195,6 @@ public class TUI extends View{
                 break;
 
             case GAME_STARTED:
-
                 if(state==ClientState.QUEUE || state==ClientState.BEFORE_LOGIN || state==ClientState.ASK_PLAYERS_NUM)
                     state=ClientState.MATCH_IDLE;
 
@@ -219,8 +217,8 @@ public class TUI extends View{
                         playerTurnId=turnIds.get(i);
                 }
                 personalGoal=(TileColor[][])resp.getObjParameter("personalgoal");
-                commonGoalPoints1=(List<Integer>)resp.getObjParameter("commongoalspoints1");
-                commonGoalPoints2=(List<Integer>)resp.getObjParameter("commongoalspoints2");
+                commonGoalPoints1=(List<Integer>)resp.getObjParameter("commongoalpoints1");
+                commonGoalPoints2=(List<Integer>)resp.getObjParameter("commongoalpoints2");
                 connected=(List<Boolean>)resp.getObjParameter("connected");
                 commonGoalsDesc[0]=resp.getStrParameter("commongoaldescription1");
                 commonGoalsDesc[1]=resp.getStrParameter("commongoaldescription2");
@@ -260,8 +258,8 @@ public class TUI extends View{
                 break;
 
             case NEW_MEX_CHAT:
-                //print just last message!!
-                //CHAT -> nickname: message
+                System.out.println("CHAT <" + ((ChatBean)resp.getObjParameter("chat")).getSender().get(((ChatBean)resp.getObjParameter("chat")).getText().size()-1) +
+                        "> : " + ((ChatBean)resp.getObjParameter("chat")).getText().get(((ChatBean)resp.getObjParameter("chat")).getText().size()-1) );
                 break;
 
             case NEW_TURN:
@@ -296,7 +294,7 @@ public class TUI extends View{
                         state=ClientState.PUT_IN_COLUMN;
                         buffer=(Tile[]) resp.getObjParameter("buffer");
                         System.out.println("Buffer: (0)"+ buffer[0] +" (1)" +  buffer[1]+" (2)" + buffer[2]);
-                        System.out.println("Choose a tile you pick from the buffer:");
+                        System.out.println("Choose a tile you want to pick from the buffer:");
                     }
 
                 }else{
@@ -313,10 +311,10 @@ public class TUI extends View{
             case PUT_IN_COLUMN_RESULT:
                 if("success".equals(resp.getStrParameter("result"))){
                     buffer=(Tile[]) resp.getObjParameter("buffer");
-                    if(resp.getIntParameter("currentplayerid")==-1) {
+                    if(resp.getIntParameter("turnFinished")==0) {
                         state = ClientState.PUT_IN_COLUMN;
                         System.out.println("Buffer: (0)"+ buffer[0] +" (1)" +  buffer[1]+" (2)" + buffer[2]);
-                        System.out.println("Choose another tile you pick from the buffer: ");
+                        System.out.println("Choose another tile you want to pick from the buffer: ");
                     }else{
                         state=ClientState.MATCH_IDLE;
                     }
@@ -453,6 +451,7 @@ public class TUI extends View{
             else{
                 switch (state){
                     case BEFORE_LOGIN:
+                        playerNickname = input;
                         Command command = new Command(CommandType.LOGIN);
                         command.setStrParameter("nickname", input);
                         sendCommand(command);
@@ -1452,7 +1451,7 @@ public class TUI extends View{
 
     }
 
-    public void clearCosole(){
+    public void clearConsole(){
         //System.out.print((char)27 + "[{9};{0}H");
         //escape command doesn't work
     }

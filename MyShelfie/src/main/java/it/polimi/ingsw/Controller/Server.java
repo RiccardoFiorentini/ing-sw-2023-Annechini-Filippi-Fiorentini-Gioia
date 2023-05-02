@@ -37,8 +37,9 @@ public class Server {
      * @author Alessandro Annechini
      */
     public void start(){
+        ServerSocket listener=null;
         try{
-            ServerSocket listener = new ServerSocket(54321);
+            listener = new ServerSocket(54321);
             RMIWelcomeServer myShelfieRMIServer = new RMIWelcomeServerImpl(this);
             Registry registry = LocateRegistry.createRegistry(1099);
             registry.rebind("MyShelfieRMIServer", myShelfieRMIServer);
@@ -62,6 +63,11 @@ public class Server {
                 }
             }
         } catch(Exception e){
+            if(listener!=null){
+                try{
+                    listener.close();
+                }catch (Exception ex){}
+            }
             e.printStackTrace();
         }
     }
@@ -72,67 +78,61 @@ public class Server {
      */
     public void handleCommand(Command command, VirtualView virtualView){
         //called asynchronously from virtual view
-        if(command == null || !command.getCommandType().getHandler().equals("S")) return;
+        if(command == null || !command.getCommandType().getHandler().equals("S"))
+            return;
 
-        if(command.getCommandType() == CommandType.PING){
-
-            virtualView.pingReceived();
-
-        } else if (command.getCommandType() == CommandType.DISCONNECT) {
-
-            virtualView.disconnect();
-
-        } else if(command.getCommandType() == CommandType.LOGIN){
-
-            String nickname= command.getStrParameter("nickname");
-            if(nickname == null){
-
-                Response response = new Response(ResponseType.LOGIN_ERROR);
-                virtualView.sendResponse(response);
-
-            } else if(!validNickname(nickname)){
-
-                //NICKNAME is already in use
-
-                Response response = new Response(ResponseType.LOGIN_ERROR);
-                response.setStrParameter("newnickname",findNewNickname(nickname));
-                virtualView.sendResponse(response);
-
-            } else {
-                Player oldp = searchOldPlayer(nickname);
-                if(oldp != null){
-
-                    //NICKNAME corresponds to a disconnected player
-
-                    oldp.getGameController().reconnected(virtualView, oldp);
-
-                }else{
-
-                    //NICKNAME is valid
-                    virtualView.setNickname(nickname);
-                    Response response = new Response(ResponseType.LOGIN_CONFIRMED);
-                    response.setStrParameter("nickname",nickname);
+        switch(command.getCommandType()){
+            case PING:
+                virtualView.pingReceived();
+                break;
+            case DISCONNECT:
+                virtualView.disconnect();
+                break;
+            case LOGIN:
+                String nickname= command.getStrParameter("nickname");
+                if(nickname == null){
+                    Response response = new Response(ResponseType.LOGIN_ERROR);
                     virtualView.sendResponse(response);
-                    addToQueue(virtualView);
-
-                }
-            }
-        } else if(command.getCommandType() == CommandType.PLAYERS_NUM){
-            if(virtualView.equals(firstOfMatch) && (numPlayersForMatch<2 || numPlayersForMatch>4 )){
-                if(command.getIntParameter("num") < 2 || command.getIntParameter("num") > 4){
-                    Response res = new Response(ResponseType.ASK_PLAYERS_NUM);
-                    res.setStrParameter("result","Invalid number");
-                    virtualView.sendResponse(res);
-                }else{
-                    Response res = new Response(ResponseType.ASK_PLAYERS_NUM);
-                    res.setStrParameter("result","success");
-                    virtualView.sendResponse(res);
-                    numPlayersForMatch = command.getIntParameter("num");
-                    synchronized (queue){
-                        queue.notifyAll();
+                } else if(!validNickname(nickname)){
+                    //NICKNAME is already in use
+                    Response response = new Response(ResponseType.LOGIN_ERROR);
+                    response.setStrParameter("newnickname",findNewNickname(nickname));
+                    virtualView.sendResponse(response);
+                } else {
+                    Player oldp = searchOldPlayer(nickname);
+                    if(oldp != null){
+                        //NICKNAME corresponds to a disconnected player
+                        virtualView.setNickname(oldp.getNickname());
+                        oldp.getGameController().reconnected(virtualView, oldp);
+                    }else{
+                        //NICKNAME is valid
+                        virtualView.setNickname(nickname);
+                        Response response = new Response(ResponseType.LOGIN_CONFIRMED);
+                        response.setStrParameter("nickname",nickname);
+                        virtualView.sendResponse(response);
+                        addToQueue(virtualView);
                     }
                 }
-            }
+                break;
+            case PLAYERS_NUM:
+                if(virtualView.equals(firstOfMatch) && (numPlayersForMatch<2 || numPlayersForMatch>4 )){
+                    if(command.getIntParameter("num") < 2 || command.getIntParameter("num") > 4){
+                        Response res = new Response(ResponseType.ASK_PLAYERS_NUM);
+                        res.setStrParameter("result","Invalid number");
+                        virtualView.sendResponse(res);
+                    }else{
+                        Response res = new Response(ResponseType.ASK_PLAYERS_NUM);
+                        res.setStrParameter("result","success");
+                        virtualView.sendResponse(res);
+                        numPlayersForMatch = command.getIntParameter("num");
+                        synchronized (queue){
+                            queue.notifyAll();
+                        }
+                    }
+                }
+                break;
+            default:
+                //
         }
     }
 
@@ -183,10 +183,11 @@ public class Server {
     private String findNewNickname(String oldNickname){
         int i = 1;
         String tmpNickname = oldNickname.replaceAll("\\s+","");
-        String newNickname = tmpNickname + String.valueOf(i);
+        if(validNickname(tmpNickname)) return tmpNickname;
+        String newNickname = tmpNickname + i;
         while(!validNickname(newNickname) || searchOldPlayer(newNickname)!=null){
             i++;
-            newNickname = tmpNickname + String.valueOf(i);
+            newNickname = tmpNickname + i;
         }
         return newNickname;
     }
@@ -267,8 +268,10 @@ public class Server {
                 //Send PONG
                 for(VirtualView vv : tested){
                     if(!vv.checkCurrConnection()){
-                        final VirtualView vview = vv;
-                        new Thread(() -> vview.disconnect()).start();
+                        if(vv.isConnected()){
+                            final VirtualView vview = vv;
+                            new Thread(() -> vview.disconnect()).start();
+                        }
                     }
                     else vv.sendResponse(new Response(ResponseType.PONG));
                 }
@@ -373,7 +376,6 @@ public class Server {
      * @author Alessandro Annechini
      * @param gameController The game controller of the game that just ended
      */
-
     public void endGame(GameController gameController){
         for(Player p : gameController.getPlayers()){
             removePlayerFromList(p);

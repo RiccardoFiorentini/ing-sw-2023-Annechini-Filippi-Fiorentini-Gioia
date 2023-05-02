@@ -23,7 +23,7 @@ public class PlayerTest {
 
     @BeforeEach
     public void setUp(){
-        AllPlayer = new ArrayList<Player>();
+        AllPlayer = new ArrayList<>();
         AllPlayer.add(new Player("Admin1", null));
         AllPlayer.add(new Player("Admin2", null));
         AllPlayer.add(new Player("Admin3", null));
@@ -182,7 +182,7 @@ public class PlayerTest {
             throw new RuntimeException(e);
         } catch (WrongPhaseException e) {
             throw new RuntimeException(e);
-        } catch (WrongTurnException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -201,7 +201,7 @@ public class PlayerTest {
             throw new RuntimeException(e);
         } catch (WrongTurnException e) {
             throw new RuntimeException(e);
-        } catch (WrongPhaseException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -288,7 +288,7 @@ public class PlayerTest {
             throw new RuntimeException(e);
         } catch (WrongPhaseException e) {
             throw new RuntimeException(e);
-        } catch (WrongTurnException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -305,7 +305,7 @@ public class PlayerTest {
             throw new RuntimeException(e);
         } catch (WrongTurnException e) {
             throw new RuntimeException(e);
-        } catch (WrongPhaseException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

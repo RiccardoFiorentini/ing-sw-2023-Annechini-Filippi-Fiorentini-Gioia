@@ -26,7 +26,7 @@ public class GameTest {
     }
 
     @Test
-    public void game_TwoPlayersGameSimulation_CorrectLogicExecution() throws WrongTurnException, WrongPhaseException, NotPickableException, NotToRefillException, FullColumnException {
+    public void game_TwoPlayersGameSimulation_CorrectLogicExecution() throws Exception {
 
         players.get(model.getTurnId()).setSelectedColumn(1);
         players.get(model.getTurnId()).selectTile(4,1);

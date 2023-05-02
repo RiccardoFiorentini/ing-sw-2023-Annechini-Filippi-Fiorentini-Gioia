@@ -61,7 +61,7 @@ public enum ResponseType {
     // If there is an error, it is signaled
     // When the last tile is put, the change of turn is signaled in the args
     // Map<String,String> strArgs : {<"result", "success" or error string>}
-    // Map<String,Integer> intArgs : {<"currentPlayerId", id or -1 if the turn is not finished>}
+    // Map<String,Integer> intArgs : {<"turnFinished", 0 if turn not finished, 1 otherwise>}
     // Map<String,String> objArgs : {<"buffer", buffer array>}
     PUT_IN_COLUMN_RESULT,
 

@@ -4,11 +4,6 @@ import main.java.it.polimi.ingsw.Connection.VirtualView;
 import main.java.it.polimi.ingsw.Controller.GameController;
 import main.java.it.polimi.ingsw.Controller.Response;
 import main.java.it.polimi.ingsw.ModelExceptions.*;
-
-import java.util.List;
-
-import static main.java.it.polimi.ingsw.Controller.ResponseType.PLAYER_DISCONNECTED;
-import static main.java.it.polimi.ingsw.Controller.ResponseType.UPDATE_PLAYER_SHELF;
 import static main.java.it.polimi.ingsw.Model.Tile.EMPTY;
 
 public class Player {
@@ -104,7 +99,6 @@ public class Player {
      * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
     public void setSelectedColumn(int column) throws WrongTurnException, WrongPhaseException {
-
         if(this.selectedColumn != -1){
             throw new WrongPhaseException();
         }
@@ -130,56 +124,54 @@ public class Player {
      *                             before the selection of the column
      * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
-    public void selectTile(int row, int col) throws NotPickableException, WrongPhaseException, WrongTurnException {
-
-        if(this.selectedColumn == -1 || (this.x1 != -1 && this.x2 != -1)){
-            throw new WrongPhaseException();
-        }
-
+    public void selectTile(int row, int col) throws Exception {
         if(this.model.getTurnId() != this.turnId){
             throw new WrongTurnException();
         }
-
+        if(this.selectedColumn == -1 || (this.x1 != -1 && this.x2 != -1)){
+            throw new WrongPhaseException();
+        }
+        if(row<0 || row>8 || col<0 || col>8){
+            throw new Exception("Wrong index");
+        }
+        if(!pickableTiles[row][col]){
+            throw new NotPickableException();
+        }
         if(this.x1 == -1){ //if it's the first valid tile selected
-            if(pickableTiles[row][col]){ //if it's valid it sets the first tile and update the pickableTiles matrix
-                this.x1 = col;
-                this.y1 = row;
-                for(int i = 0; i<9; i++){
-                    for(int j = 0; j<9; j++){
-                        if(pickableTiles[i][j] && i!=row && j!=col){
-                            pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && i==row && Math.abs(j-col) >= numPickableTiles){
-                            pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && j==col && Math.abs(i-row) >= numPickableTiles){
-                            pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && i==row && Math.abs(j-col) == 2 && !pickableTiles[i][(j+col)/2]){
-                            pickableTiles[i][j] = false;
-                        }else if(pickableTiles[i][j] && j==col && Math.abs(i-row) == 2 && !pickableTiles[(i+row)/2][j]){
-                            pickableTiles[i][j] = false;
-                        }
+            this.x1 = col;
+            this.y1 = row;
+            for(int i = 0; i<9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    if (pickableTiles[i][j] && i != row && j != col) {
+                        pickableTiles[i][j] = false;
+                    } else if (pickableTiles[i][j] && i == row && Math.abs(j - col) >= numPickableTiles) {
+                        pickableTiles[i][j] = false;
+                    } else if (pickableTiles[i][j] && j == col && Math.abs(i - row) >= numPickableTiles) {
+                        pickableTiles[i][j] = false;
+                    } else if (pickableTiles[i][j] && i == row && Math.abs(j - col) == 2 && !pickableTiles[i][(j + col) / 2]) {
+                        pickableTiles[i][j] = false;
+                    } else if (pickableTiles[i][j] && j == col && Math.abs(i - row) == 2 && !pickableTiles[(i + row) / 2][j]) {
+                        pickableTiles[i][j] = false;
                     }
                 }
-            }else{
-                throw new NotPickableException();
             }
+            model.responseSelectTileResult(this,pickableTiles,null);
         }else{
-            if(pickableTiles[row][col]) { //if the last tile selected is valid it set the last tile and put the selected tiles in the buffer
-                this.x2 = col;
-                this.y2 = row;
-                if(this.x1 == this.x2){
-                    int min = Math.min(this.y1, this.y2);
-                    for(int i = min; i <= Math.max(this.y1, this.y2); i++){
-                        pickedTiles[i-min] = this.model.getBoard().pickTile(i, this.x1);
-                    }
-                }else{
-                    int min = Math.min(this.x1, this.x2);
-                    for(int i = min; i <= Math.max(this.x1, this.x2); i++){
-                        pickedTiles[i-min] = this.model.getBoard().pickTile(this.y1, i);
-                    }
+            this.x2 = col;
+            this.y2 = row;
+            if(this.x1 == this.x2){
+                int min = Math.min(this.y1, this.y2);
+                for(int i = min; i <= Math.max(this.y1, this.y2); i++){
+                    pickedTiles[i-min] = this.model.getBoard().pickTile(i, this.x1);
                 }
             }else{
-                throw new NotPickableException();
+                int min = Math.min(this.x1, this.x2);
+                for(int i = min; i <= Math.max(this.x1, this.x2); i++){
+                    pickedTiles[i-min] = this.model.getBoard().pickTile(this.y1, i);
+                }
             }
+            model.updateBoard();
+            model.responseSelectTileResult(this,null,pickedTiles);
         }
     }
 
@@ -192,38 +184,29 @@ public class Player {
      *                             or before selecting the column where he will put them.
      * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
-    public void putInColumn(int index) throws FullColumnException, NotToRefillException, WrongTurnException, WrongPhaseException {
+    public void putInColumn(int index) throws Exception {
+        if(this.model.getTurnId() != this.turnId){
+            throw new WrongTurnException();
+        }
 
         if(this.selectedColumn == -1 || this.x1 == -1 || this.x2 == -1){
             throw new WrongPhaseException();
         }
 
-        if(this.model.getTurnId() != this.turnId){
-            throw new WrongTurnException();
+        if(!(index>=0 && index <= 2 && pickedTiles[index] != EMPTY)){
+            throw new Exception("Wrong index");
         }
 
-        if(index>=0 && index <= 2 && pickedTiles[index] != EMPTY){
-            this.shelf.putTile(pickedTiles[index], this.selectedColumn);
-            pickedTiles[index] = EMPTY;
-            if(pickedTiles[0] == EMPTY && pickedTiles[1] == EMPTY && pickedTiles[2] == EMPTY)
-                model.nextTurn();
-        }
+        this.shelf.putTile(pickedTiles[index], this.selectedColumn);
+        pickedTiles[index] = EMPTY;
 
-    }
-
-    /**
-     * Method to write a message
-     * @author Fiorentini Riccardo
-     * @param receiver list of player I am texting to
-     * @param text message I am sending
-     * */
-    public void writeMessage(List<Player> receiver, String text) throws IncorrectMessageException {
-        if(receiver.size() == this.model.getNumPlayers()){
-            model.getChat().writeMessage(this, text);
+        if(pickedTiles[0] == EMPTY && pickedTiles[1] == EMPTY && pickedTiles[2] == EMPTY){
+            model.updateShelf(turnId,shelf);
+            model.responsePutInColumnResult(this,1);
+            model.nextTurn();
         }else{
-            for(int i = 0; i < receiver.size(); i++) {
-                model.getChat().writeMessage(this, receiver.get(i), text);
-            }
+            model.updateShelf(turnId,shelf);
+            model.responsePutInColumnResult(this,0);
         }
     }
 
@@ -304,6 +287,7 @@ public class Player {
 
     public void setVirtualView(VirtualView virtualView) {
         this.virtualView = virtualView;
+        this.connected = true;
     }
 
     public VirtualView getVirtualView() {
@@ -318,36 +302,31 @@ public class Player {
      * Disconnect this player from the game, changing turn if necessary
      * @author Riccardo Fiorentini
      */
-    public void disconnect() throws NotToRefillException, WrongTurnException, WrongPhaseException, FullColumnException {
-        connected = false;
+    public void disconnect() throws Exception {
         virtualView = null;
+        if(connected){
+            connected = false;
+            model.updatePlayerDisconnected(turnId);
 
-        if(model.getTurnId() == turnId){
-            if(x2 != -1){
-                boolean updateShelf = false;
-                for(int i = 0; i<3; i++){
-                    if(!pickedTiles[i].equals(EMPTY)){
-                        putInColumn(i);
-                        updateShelf = true;
-                    }
-                }
-                if(updateShelf){
-                    Response shelf = new Response(UPDATE_PLAYER_SHELF);
-                    shelf.setObjParameter("shelf", virtualView.getPlayer().getShelf());
-                    shelf.setIntParameter("playerId", virtualView.getPlayer().getTurnId());
-                    Response disc = new Response(PLAYER_DISCONNECTED);
-                    disc.setIntParameter("playerId", virtualView.getPlayer().getTurnId());
-                    for(Player p: model.getPlayers()){
-                        if(p.getVirtualView()!=null){
-                            p.getVirtualView().sendResponse(shelf);
-                            p.getVirtualView().sendResponse(disc);
+            if(model.getTurnId() == turnId){
+                if(x2 != -1){
+                    boolean updateShelf = false;
+                    for(int i = 0; i<3; i++){
+                        if(!pickedTiles[i].equals(EMPTY)){
+                            putInColumn(i);
+                            updateShelf = true;
                         }
                     }
+                    if(updateShelf){
+                        model.updateShelf(turnId,shelf);
+                    }
                 }
                 model.nextTurn();
-            }else{
-                model.nextTurn();
             }
+        }
+
+        if(model.getNumPlayersConnected()==0){
+            gameController.getServer().endGame(gameController);
         }
     }
 
@@ -356,12 +335,26 @@ public class Player {
      * @author Alessandro Annechini
      * @param virtualView The new virtual view of the player
      */
-    public void connectVirtualView(VirtualView virtualView){
+    public void reconnect(VirtualView virtualView){
         connected = true;
         this.virtualView = virtualView;
+        update(model.createGameStartedResponse(this,0));
+        model.updatePlayerReconnected(turnId);
     }
 
     public GameController getGameController() {
         return gameController;
     }
+
+    /**
+     * This method sends the response to his virtual view, if present
+     * @author Alessandro Annechini
+     * @param response The response to be sent
+     */
+    public void update(Response response){
+        if(virtualView!=null){
+            virtualView.sendResponse(response);
+        }
+    }
+
 }

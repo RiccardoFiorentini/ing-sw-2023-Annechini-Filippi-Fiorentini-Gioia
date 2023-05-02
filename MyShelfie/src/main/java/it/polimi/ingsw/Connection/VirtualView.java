@@ -1,9 +1,6 @@
 package main.java.it.polimi.ingsw.Connection;
 
-import main.java.it.polimi.ingsw.Controller.Command;
-import main.java.it.polimi.ingsw.Controller.GameController;
-import main.java.it.polimi.ingsw.Controller.Response;
-import main.java.it.polimi.ingsw.Controller.Server;
+import main.java.it.polimi.ingsw.Controller.*;
 import main.java.it.polimi.ingsw.Model.Player;
 
 import java.io.IOException;
@@ -48,9 +45,7 @@ public class VirtualView {
             final Command command;
             try{
                 command = sch.getNextCommand();
-
-                System.out.println("New command! "+command.getCommandType());
-
+                if(command.getCommandType()!=CommandType.PING) System.out.println("New command! "+command.getCommandType());
             } catch (IOException e) {
                 disconnect();
                 break;
@@ -92,11 +87,8 @@ public class VirtualView {
         if(connected){
             try{
                 sch.sendResponse(response);
-
-                System.out.println("Response sent: "+response.getResponseType());
-
+                if(response.getResponseType()!= ResponseType.PONG) System.out.println("Response sent: "+response.getResponseType());
             } catch(IOException e) {
-                e.printStackTrace();
                 disconnect();
             }
         }
@@ -149,23 +141,19 @@ public class VirtualView {
      * @author Alessandro Annechini
      */
     public void disconnect(){
-        System.out.println(server.getVirtualViews().size());
         server.removeVirtualViewFromList(this);
         if(connected){
-            System.out.println("Player disconnected");
-            System.out.println(server.getVirtualViews().size());
             this.connected = false;
             sch.disconnect();
-            if(gameController!=null){
-                gameController.disconnected(this);
-            }
-            if(player!=null) {
-                try {
-                    player.disconnect();
-                } catch (Exception e){
-                }
-            }
         }
+        if(player!=null) {
+            try {
+                player.disconnect();
+            } catch (Exception e) {}
+        }
+        System.out.println("Player disconnected");
+        System.out.println("VirtualViews remaining: " + server.getVirtualViews().size());
+        System.out.println("Players remaining: " + server.getPlayers().size());
     }
 
     /**
