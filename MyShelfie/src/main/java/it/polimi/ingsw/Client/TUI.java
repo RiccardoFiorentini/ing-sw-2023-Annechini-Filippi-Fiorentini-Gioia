@@ -140,15 +140,19 @@ public class TUI extends View{
 
         personalGoal[0][0] = TileColor.ORANGE;
         personalGoal[1][0] = TileColor.BLUE;
+        List<Boolean> connected = new ArrayList<>();
+        connected.add(true);
+        connected.add(true);
+        connected.add(false);
 
         new TUI(null).printTitle();
         TUI t = new TUI(null);
         t.printAll(bb, cb, sb, nicknames, p1.getNickname(), commonGoalPoints1, commonGoalPoints2, CommonGoal1Descr,
-                CommonGoal2Descr, buffer, personalGoal, 4, 6);
+                CommonGoal2Descr, buffer, personalGoal, 4, 6, 1, connected, "select column\n");
         t.clearConsole();
 
         t.printAll(bb, cb, sb, nicknames, p1.getNickname(), commonGoalPoints1, commonGoalPoints2, CommonGoal1Descr,
-                CommonGoal2Descr, buffer, personalGoal, 4, 6);
+                CommonGoal2Descr, buffer, personalGoal, 4, 6, 1, connected, "select column\n");
     }
 
     /**
@@ -660,7 +664,7 @@ public class TUI extends View{
      */
     public void printAll(BoardBean board, ChatBean chat, List<ShelfBean> shelves, List<String> nicknames, String nickPlayer, List<Integer> commonGoalPoints1,
                          List<Integer> commonGoalPoints2, String CommonGoal1Descr, String CommonGoal2Descr, List<Tile> buffer, TileColor[][] personalGoal,
-                         int remainPointCommonGoal1, int remainPointCommonGoal2){
+                         int remainPointCommonGoal1, int remainPointCommonGoal2, int currPlayerId, List<Boolean> connected, String phase){
 
         String cg11  = "";
         String cg12  = "";
@@ -779,7 +783,17 @@ public class TUI extends View{
                     output = output + "\n";
                 }
             }else if(i == 1){
-                output = output + "║" + "\t@" + nickPlayer + "\n";
+                int tmpId = 0;
+                for(int k = 0; k<nicknames.size(); k++){
+                    if(nicknames.get(k).equals(nickPlayer)){
+                        tmpId = k;
+                    }
+                }
+                if(tmpId==currPlayerId){
+                    output = output  + "║" + (char)27 + "[33m" + "\t@" + nickPlayer + (char)27 + "[37m" + "\n";
+                }else{
+                    output = output + "║" + "\t@" + nickPlayer + "\n";
+                }
                 output = output + "╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣\t\t\t╔═══╦═══╦═══╗";
                 if(sizeChat > 9){
                     output = output + "\t\t\t\t\t\t\t<@" + chat.getSender().get(sizeChat-9) + "> " + chat.getText().get(sizeChat-9) + "\n";
@@ -1413,40 +1427,73 @@ public class TUI extends View{
         }
         output = output + "\n";
         if(!nicknames.get(0).equals(nickPlayer)){
-            output = output + "  @" + nicknames.get(0);
+            if(connected.get(0) && currPlayerId!=0){
+                output = output + "  @" + nicknames.get(0);
+            }else if(connected.get(0) && currPlayerId==0){
+                output = output + "  @" + (char)27 + "[33m" + nicknames.get(0) + (char)27 + "[37m";
+            }else{
+                output = output + "  @" + (char)27 + "[31m" + nicknames.get(0) + (char)27 + "[37m";
+            }
             for(int l = 0; l<21 - nicknames.get(0).length(); l++){
                 output = output + " ";
             }
         }
         if(!nicknames.get(1).equals(nickPlayer)){
-            output = output + "  @" + nicknames.get(1);
-            for(int l = 0; l<21 - nicknames.get(1).length(); l++){
+            if(connected.get(1) && currPlayerId!=1){
+                output = output + "  @" + nicknames.get(1);
+            }else if(connected.get(1) && currPlayerId==1){
+                output = output + "  @" + (char)27 + "[33m" + nicknames.get(1) + (char)27 + "[37m";
+            }else{
+                output = output + "  @" + (char)27 + "[31m" + nicknames.get(1) + (char)27 + "[37m";
+            }            for(int l = 0; l<21 - nicknames.get(1).length(); l++){
                 output = output + " ";
             }
         }
         if(numPlay == 4){
             if(!nicknames.get(2).equals(nickPlayer)){
-                output = output + "  @" + nicknames.get(2);
+                if(connected.get(2) && currPlayerId!=2){
+                    output = output + "  @" + nicknames.get(2);
+                }else if(connected.get(2) && currPlayerId==2){
+                    output = output + "  @" + (char)27 + "[33m" + nicknames.get(2) + (char)27 + "[37m";
+                }else{
+                    output = output + "  @" + (char)27 + "[31m" + nicknames.get(2) + (char)27 + "[37m";
+                }
                 for(int l = 0; l< 21 - nicknames.get(2).length(); l++){
                     output = output + " ";
                 }
             }
             if(!nicknames.get(3).equals(nickPlayer)){
-                output = output + "  @" + nicknames.get(3);
+                if(connected.get(3) && currPlayerId!=3){
+                    output = output + "  @" + nicknames.get(3);
+                }else if(connected.get(3) && currPlayerId==3){
+                    output = output + "  @" + (char)27 + "[33m" + nicknames.get(3) + (char)27 + "[37m";
+                }else{
+                    output = output + "  @" + (char)27 + "[31m" + nicknames.get(3) + (char)27 + "[37m";
+                }
                 for(int l = 0; l<nicknames.get(3).length()-22; l++){
                     output = output + " ";
                 }
             }
         }else if(numPlay == 3){
             if(!nicknames.get(2).equals(nickPlayer)){
-                output = output + "  @" + nicknames.get(2);
+                if(connected.get(2) && currPlayerId!=2){
+                    output = output + "  @" + nicknames.get(2);
+                }else if(connected.get(2) && currPlayerId==2){
+                    output = output + "  @" + (char)27 + "[33m" + nicknames.get(2) + (char)27 + "[37m";
+                }else{
+                    output = output + "  @" + (char)27 + "[31m" + nicknames.get(2) + (char)27 + "[37m";
+                }
                 for(int l = 0; l< 21 - nicknames.get(2).length(); l++){
+                    output = output + " ";
+                }                for(int l = 0; l< 21 - nicknames.get(2).length(); l++){
                     output = output + " ";
                 }
             }
         }
         output = output + "\n";
-
+        if(phase!=null){
+            output = output + phase;
+        }
         System.out.print(output);
 
     }
