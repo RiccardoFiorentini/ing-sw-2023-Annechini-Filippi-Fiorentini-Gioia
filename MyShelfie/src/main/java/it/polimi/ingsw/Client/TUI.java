@@ -11,6 +11,7 @@ import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -36,6 +37,7 @@ public class TUI extends View{
     private List<Integer> commonGoalPoints2;
     private List<Boolean> connected;
     private Tile[] buffer;
+    private String phase=null;
 
     /**
      * Class' constructor
@@ -52,108 +54,6 @@ public class TUI extends View{
         buffer=new Tile[2];
     }
 
-     public static void main(String[] args) throws NotToRefillException, IOException, FullColumnException {
-        Board board = new Board(3);
-        Shelf shelf = new Shelf();
-        shelf.putTile (Tile.CYAN2, 0);
-        shelf.putTile (Tile.WHITE1, 0);
-        shelf.putTile (Tile.ORANGE1, 0);
-        shelf.putTile (Tile.CYAN2, 1);
-        Shelf shelf1 = new Shelf();
-        shelf1.putTile (Tile.CYAN2, 0);
-        shelf1.putTile (Tile.CYAN2, 0);
-        shelf1.putTile (Tile.CYAN2, 0);
-        shelf1.putTile (Tile.CYAN2, 1);
-        Shelf shelf2 = new Shelf();
-        shelf2.putTile (Tile.ORANGE1, 0);
-        shelf2.putTile (Tile.ORANGE1, 0);
-        shelf2.putTile (Tile.ORANGE1, 0);
-        shelf2.putTile (Tile.ORANGE1, 1);
-
-        List<ShelfBean> sb = new ArrayList<>();
-        sb.add(shelf.toBean());
-        sb.add(shelf1.toBean());
-        sb.add(shelf2.toBean());
-
-        BoardBean bb = new BoardBean(board.getTilesRemaining(), board.getTiles());
-
-        Player p1 = new Player("niki", null);
-        Player p2 = new Player("ale", null);
-        Player p3 = new Player("paki", null);
-        List<Player> players = new ArrayList<>();
-        players.add(p1);
-        players.add(p2);
-        players.add(p3);
-
-        Chat chat = new Chat(players);
-        try {
-            chat.writeMessage(p1,"bella a tutti");
-            chat.writeMessage(p2,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p1,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-            chat.writeMessage(p3,"bella a tutti");
-
-        } catch (IncorrectMessageException e) {
-            throw new RuntimeException(e);
-        }
-
-        ChatBean cb = new ChatBean(chat.getMessages(), p1);
-
-        List<String> nicknames = new ArrayList<>();
-        nicknames.add(p1.getNickname());
-        nicknames.add(p2.getNickname());
-        nicknames.add(p3.getNickname());
-
-        List<Integer> commonGoalPoints1 = new ArrayList<>();
-        commonGoalPoints1.add(0);
-        commonGoalPoints1.add(0);
-        commonGoalPoints1.add(0);
-
-        List<Integer> commonGoalPoints2 = new ArrayList<>();
-        commonGoalPoints2.add(8);
-        commonGoalPoints2.add(4);
-        commonGoalPoints2.add(2);
-
-        String CommonGoal1Descr = "pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo ";
-        String CommonGoal2Descr = "pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo pippo ";
-
-        List<Tile> buffer = new ArrayList<>();
-        buffer.add(Tile.EMPTY);
-        buffer.add(Tile.BLUE2);
-        buffer.add(Tile.ORANGE2);
-
-        TileColor[][] personalGoal = new TileColor[6][5];
-        for(int i = 0; i<6; i++){
-            for(int j = 0; j<5; j++){
-                personalGoal[i][j] = TileColor.EMPTY;
-            }
-        }
-
-        personalGoal[0][0] = TileColor.ORANGE;
-        personalGoal[1][0] = TileColor.BLUE;
-        List<Boolean> connected = new ArrayList<>();
-        connected.add(true);
-        connected.add(true);
-        connected.add(false);
-
-        new TUI(null).printTitle();
-        TUI t = new TUI(null);
-        t.printAll(bb, cb, sb, nicknames, p1.getNickname(), commonGoalPoints1, commonGoalPoints2, CommonGoal1Descr,
-                CommonGoal2Descr, buffer, personalGoal, 4, 6, 1, connected, "select column\n");
-        t.clearConsole();
-
-        t.printAll(bb, cb, sb, nicknames, p1.getNickname(), commonGoalPoints1, commonGoalPoints2, CommonGoal1Descr,
-                CommonGoal2Descr, buffer, personalGoal, 4, 6, 1, connected, "select column\n");
-    }
 
     /**
      * Method that handles responses
@@ -166,6 +66,10 @@ public class TUI extends View{
         switch(resp.getResponseType()) {
             case LOGIN_ERROR:
                 playerNickname = null;
+
+                clearConsole();
+                printTitle();
+
                 System.out.println("Nickname not valid.");
                 if (resp.getStrParameter("newnickname") != null)
                     System.out.println("A valid nickname is: " + resp.getStrParameter("newnickname"));
@@ -173,6 +77,9 @@ public class TUI extends View{
                 break;
 
             case LOGIN_CONFIRMED:
+                clearConsole();
+                printTitle();
+
                 System.out.println("Nickname accepted.");
                 playerNickname=resp.getStrParameter("nickname");
                 System.out.println("Your nickname is: " + playerNickname);
@@ -190,6 +97,9 @@ public class TUI extends View{
                         System.out.println("Okay, the game will start in a moment...");
                         state=ClientState.QUEUE;
                     } else { //not accepted value
+                        clearConsole();
+                        printTitle();
+
                         state=ClientState.ASK_PLAYERS_NUM;
                         System.out.println("Number not valid.");
                         System.out.println("Choose another answer: ");
@@ -204,7 +114,7 @@ public class TUI extends View{
 
                 Command command2 = new Command(CommandType.GAME_JOINED);
                 sendCommand(command2);
-
+                buffer = new Tile[]{Tile.EMPTY,Tile.EMPTY,Tile.EMPTY};
                 firstPlayerId=resp.getIntParameter("firstPlayerId");
                 commonGoalsId[0]=resp.getIntParameter("commongoal1");
                 commonGoalsId[1]=resp.getIntParameter("commongoal2");
@@ -220,71 +130,47 @@ public class TUI extends View{
                     if((nicknames).get(i).equals(playerNickname))
                         playerTurnId=turnIds.get(i);
                 }
-                personalGoal=(TileColor[][])resp.getObjParameter("personalgoal");
+                personalGoal=(TileColor[][])resp.getObjParameter("personalgoalmatrix");
                 commonGoalPoints1=(List<Integer>)resp.getObjParameter("commongoalpoints1");
                 commonGoalPoints2=(List<Integer>)resp.getObjParameter("commongoalpoints2");
                 connected=(List<Boolean>)resp.getObjParameter("connected");
                 commonGoalsDesc[0]=resp.getStrParameter("commongoaldescription1");
                 commonGoalsDesc[1]=resp.getStrParameter("commongoaldescription2");
 
-                if(resp.getIntParameter("isstart")==1){ //game has just begun
-                    System.out.println("The game has started.");
-                    printBoard(board);
-                    System.out.println("Common Goal 1: "+(commonGoalsId[0]+1)+ " Description: "+ commonGoalsDesc[0]) ;
-                    System.out.println("Common Goal 2: "+(commonGoalsId[1]+1)+ " Description: "+ commonGoalsDesc[1]);
-                    System.out.println("Personal goal: ");
-                }
-                else{   //reconnected player
-                    //print chat
-                    printBoard(board);
-                    System.out.println("Common Goal 1: "+(commonGoalsId[0]+1)+ " Description: "+ commonGoalsDesc[0] + " Points remaining: "+commonGoalsRemainingPoint[0]) ;
-                    System.out.println("Common Goal 2: "+(commonGoalsId[1]+1)+ " Description: "+ commonGoalsDesc[1]+ " Points remaining: "+commonGoalsRemainingPoint[1]);
-                    for(int i=0; i<turnIds.size(); i++){
-                        if(i!=playerTurnId) {
-                            System.out.println("Shelf of " + nicknames.get(i)+": ");
-                            printShelf(shelves.get(i));
-                            if (commonGoalPoints1.get(i) != 0)
-                                System.out.println("Common Goal 1 points: " + commonGoalPoints1.get(i));
-                            if (commonGoalPoints2.get(i) != 0)
-                                System.out.println("Common Goal 2 points: " + commonGoalPoints1.get(i));
-                        }else{
-                            System.out.println("Your shelf: ");
-                            printShelf(shelves.get(playerTurnId));
-                            //print personal goal
-                            if (commonGoalPoints1.get(playerTurnId) != 0)
-                                System.out.println("Common Goal 1 points: " + commonGoalPoints1.get(playerTurnId));
-                            if (commonGoalPoints2.get(playerTurnId) != 0)
-                                System.out.println("Common Goal 2 points: " + commonGoalPoints1.get(playerTurnId));
+                clearConsole();
+                printGameScreen();
 
-                        }
-                    }
-                }
                 break;
 
             case NEW_MEX_CHAT:
-                System.out.println("CHAT <" + ((ChatBean)resp.getObjParameter("chat")).getSender().get(((ChatBean)resp.getObjParameter("chat")).getText().size()-1) +
-                        "> : " + ((ChatBean)resp.getObjParameter("chat")).getText().get(((ChatBean)resp.getObjParameter("chat")).getText().size()-1) );
+                chat=(ChatBean) resp.getObjParameter("chat") ;
+                clearConsole();
+                printGameScreen();
                 break;
 
             case NEW_TURN:
                 currPlayerId=resp.getIntParameter("CurrentPlayerId");
+
                 if(playerTurnId==currPlayerId){
                     state=ClientState.SELECT_COLUMN;
-                    System.out.println("IT'S YOUR TURN");
-                    System.out.println("Select the column where you want to put the tiles: ");
+                    phase="IT'S YOUR TURN \nSelect the column where you want to put the tiles: ";
                 }else{
                     state=ClientState.MATCH_IDLE;
-                    System.out.println("Player "+nicknames.get(currPlayerId)+" is playing...");
+                    phase="Player "+nicknames.get(currPlayerId)+" is playing...";
                 }
+                clearConsole();
+                printGameScreen();
                 break;
 
             case SELECT_COLUMN_RESULT:
                 if("success".equals(resp.getStrParameter("result"))){
                     state=ClientState.SELECT_FIRST_TILE;
-                    System.out.println("Now select the first tile you want to pick, writing row and column ('r c') desired using the indexing.");
+                    phase="Now select the first tile you want to pick, writing row and column ('r c') desired using the indexing.";
+                    System.out.println(phase);
                 }else{
                     state=ClientState.SELECT_COLUMN;
-                    System.out.println("You chose a non-valid column, please select a number between 0 and 4: ");
+                    phase="You chose a non-valid column, please select a number between 0 and 4: ";
+                    System.out.println(phase);
                 }
                 break;
 
@@ -292,22 +178,27 @@ public class TUI extends View{
                 if("success".equals(resp.getStrParameter("result"))){
                     if(state==ClientState.SELECT_FIRST_TILE) {
                         state = ClientState.SELECT_SECOND_TILE;
-                        System.out.println("Now select the last tile you want to pick, it has to be on the same row or on the same column\n" +
-                                "and with a max distance of 2. If you want to pick just one tile, select the same tile: ");
+                        phase="Now select the last tile you want to pick, it has to be on the same row or on the same column\n" +
+                                "and with a max distance of 2. If you want to pick just one tile, select the same tile: ";
+                        System.out.println(phase);
                     }else{
                         state=ClientState.PUT_IN_COLUMN;
                         buffer=(Tile[]) resp.getObjParameter("buffer");
-                        System.out.println("Buffer: (0)"+ buffer[0] +" (1)" +  buffer[1]+" (2)" + buffer[2]);
-                        System.out.println("Choose a tile you want to pick from the buffer:");
+                        phase="Choose a tile you want to pick from the buffer: ";
+                        clearConsole();
+                        printGameScreen();
+
                     }
 
                 }else{
                     if(state==ClientState.SELECT_FIRST_TILE) {
                         state = ClientState.SELECT_FIRST_TILE;
-                        System.out.println("Invalid coordinates, select another tile: ");
+                        phase="Invalid coordinates, select another tile: ";
+                        System.out.println(phase);
                     }else{
                         state=ClientState.SELECT_SECOND_TILE;
-                        System.out.println("Invalid coordinates, select another tile: ");
+                        phase="Invalid coordinates, select another tile: ";
+                        System.out.println(phase);
                     }
                 }
                 break;
@@ -317,33 +208,38 @@ public class TUI extends View{
                     buffer=(Tile[]) resp.getObjParameter("buffer");
                     if(resp.getIntParameter("turnFinished")==0) {
                         state = ClientState.PUT_IN_COLUMN;
-                        System.out.println("Buffer: (0)"+ buffer[0] +" (1)" +  buffer[1]+" (2)" + buffer[2]);
-                        System.out.println("Choose another tile you want to pick from the buffer: ");
+                        phase="Choose another tile you want to pick from the buffer: ";
                     }else{
                         state=ClientState.MATCH_IDLE;
                     }
+                    clearConsole();
+                    printGameScreen();
                 }else{
                     state=ClientState.PUT_IN_COLUMN;
-                    System.out.println("You chose a non-valid position, please select a valid number between 0 and 2: ");
+                    phase="You chose a non-valid position, please select a valid number between 0 and 2: ";
+                    System.out.println(phase);
                 }
                 break;
 
             case UPDATE_BOARD:
                 board=(BoardBean)resp.getObjParameter("board");
-                printBoard(board);
+                clearConsole();
+                printGameScreen();
                 break;
 
             case UPDATE_PLAYER_SHELF:
-                System.out.println("The shelf of player "+nicknames.get(resp.getIntParameter("playerid"))+" has changed: ");
                 shelves.set(resp.getIntParameter("playerid"),(ShelfBean)resp.getObjParameter("shelf"));
-                printShelf(shelves.get(resp.getIntParameter("playerid")));
+                clearConsole();
+                printGameScreen();
                 break;
 
             case PLAYER_DISCONNECTED:
+                connected.set(resp.getIntParameter("playerid"),false);
                 System.out.println("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has disconnected.");
                 break;
 
             case PLAYER_RECONNECTED:
+                connected.set(resp.getIntParameter("playerid"),true);
                 System.out.println("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has reconnected.");
                 break;
 
@@ -356,6 +252,7 @@ public class TUI extends View{
                 break;
 
             case GAME_ENDED:
+                clearConsole();
                 List<Integer> points;
                 System.out.println("GAME ENDED!!!");
                 if(resp.getIntParameter("interrupted")==0){ //finished correctly
@@ -384,6 +281,9 @@ public class TUI extends View{
                         System.out.println(i +") " + resNick.get(i) + ": " + resPoints.get(i));
                     }
                 }
+                else{
+                    System.out.println("You are the only one remained... YOU WIN!");
+                }
                 break;
 
             case COMMON_GOAL_WON:
@@ -394,29 +294,21 @@ public class TUI extends View{
                     commonGoalPoints2.set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
                     commonGoalsRemainingPoint[0]=resp.getIntParameter("remainingpoints");
                 }
-                if(resp.getIntParameter("playerid")==playerTurnId)
-                    System.out.println("You have completed the common goal "+(resp.getIntParameter("commongoalid")+1)+" and won "+resp.getIntParameter("pointswon")+ " points!");
-                else
-                    System.out.println("Player "+ nicknames.get(resp.getIntParameter("playerid")) + " has completed the common goal "+(resp.getIntParameter("commongoalid")+1)+" and won "+resp.getIntParameter("pointswon")+ " points!");
-                if(resp.getIntParameter("remainingpoints")==0)
-                    System.out.println("Everyone has completed this common goal!");
-                else
-                    System.out.println("The next one will gain: " + resp.getIntParameter("remainingpoints") + " points!");
-
+                clearConsole();
+                printGameScreen();
                 break;
 
             case SHELF_COMPLETED:
-                if(resp.getIntParameter("playerid")==playerTurnId)
-                    System.out.println("Congratulation! You are the first player that completed the shelf.");
-                else
-                    System.out.println("The player "+nicknames.get(resp.getIntParameter("playerid"))+" is the first completing their shelf.");
-                break;
+                //
         }
     }
 
     @Override
     public void onStartup() {
         state=ClientState.BEFORE_LOGIN;
+        printTitle();
+        clearConsole();
+        printTitle();
         System.out.println("Choose your nickname: ");
         new Thread(()->handleInput()).start();
     }
@@ -532,6 +424,14 @@ public class TUI extends View{
                 }
             }
         }
+    }
+
+    /**
+     * Method that calls printAll
+     * @author Nicole Filippi
+     */
+    public void printGameScreen(){
+        printAll(board, chat, shelves, nicknames, playerNickname, commonGoalPoints1, commonGoalPoints2, commonGoalsDesc[0], commonGoalsDesc[1], Arrays.stream(buffer).toList(), personalGoal, commonGoalsRemainingPoint[0], commonGoalsRemainingPoint[1], currPlayerId, connected, phase);
     }
 
 
@@ -661,6 +561,9 @@ public class TUI extends View{
      * @param personalGoal personal goal of the client
      * @param remainPointCommonGoal1 points remaining for the first common goal
      * @param remainPointCommonGoal2 points remaining for the second common goal
+     * @param currPlayerId the id of the current player
+     * @param connected a boolean list players (true if currently connected)
+     * @param phase a string that is printed at the end that describes the actual phase of the game
      */
     public void printAll(BoardBean board, ChatBean chat, List<ShelfBean> shelves, List<String> nicknames, String nickPlayer, List<Integer> commonGoalPoints1,
                          List<Integer> commonGoalPoints2, String CommonGoal1Descr, String CommonGoal2Descr, List<Tile> buffer, TileColor[][] personalGoal,
@@ -1501,6 +1404,7 @@ public class TUI extends View{
     public void clearConsole(){
         //System.out.print((char)27 + "[{9};{0}H");
         //escape command doesn't work
+        for(int i=0;i<100;i++) System.out.println("\n");
     }
 
 }

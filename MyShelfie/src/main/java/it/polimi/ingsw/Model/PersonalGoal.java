@@ -8,8 +8,8 @@ import java.util.Arrays;
 
 public class PersonalGoal {
     private int index;
-    private int[] xGoals;
-    private int[] yGoals;
+    private int[] rowGoals;
+    private int[] colGoals;
     private final TileColor[] colorGoals =
             {TileColor.GREEN, TileColor.BLUE, TileColor.PINK, TileColor.WHITE, TileColor.ORANGE, TileColor.CYAN};
 
@@ -27,8 +27,8 @@ public class PersonalGoal {
             line = reader.readLine();
         }
         try {
-            xGoals = Arrays.stream(reader.readLine().split(",")).mapToInt(Integer::parseInt).toArray();
-            yGoals = Arrays.stream(reader.readLine().split(",")).mapToInt(Integer::parseInt).toArray();
+            rowGoals = Arrays.stream(reader.readLine().split(",")).mapToInt(Integer::parseInt).toArray();
+            colGoals = Arrays.stream(reader.readLine().split(",")).mapToInt(Integer::parseInt).toArray();
         } catch(NumberFormatException e) {
             System.out.println("Error while reading PersonalGoals.txt");
         }
@@ -45,7 +45,7 @@ public class PersonalGoal {
     public int getPoints(Shelf shelf){
         int points=0, result;
         for(int i=0; i<6; i++)
-            if(shelf.getTile(xGoals[i],yGoals[i]).getColor() == colorGoals[i])
+            if(shelf.getTile(rowGoals[i],colGoals[i]).getColor() == colorGoals[i])
                 points++;
 
         switch (points) {
@@ -66,6 +66,25 @@ public class PersonalGoal {
 
         }
         return result;
+    }
+
+    /**
+     * Creates a matrix of tiles for the personal goal
+     * @author Nicole Filippi
+     * @return the matrix of TileColor
+     */
+    public TileColor[][] toBean(){
+        TileColor[][] shelfPG= new TileColor[6][5];
+
+        for(int i=0; i<6; i++){
+            for(int j=0; j<5; j++){
+                shelfPG[i][j]=TileColor.EMPTY;
+            }
+        }
+        for(int i=0; i<6; i++){
+            shelfPG[rowGoals[i]][colGoals[i]]=colorGoals[i];
+        }
+        return shelfPG;
     }
 
     public int getIndex() {

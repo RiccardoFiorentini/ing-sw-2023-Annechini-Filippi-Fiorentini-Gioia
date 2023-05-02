@@ -495,6 +495,7 @@ public class Model {
         recon.setObjParameter("shelves", shelves);
         recon.setObjParameter("nicknames", nicknames);
         recon.setObjParameter("turnIds", turnIds);
+        recon.setObjParameter("personalGoalMatrix", player.getPersonalGoal().toBean());
         recon.setIntParameter("personalGoal", player.getPersonalGoal().getIndex());
         recon.setObjParameter("commongoalpoints1", commonGoalPoints1);
         recon.setObjParameter("commongoalpoints2", commonGoalPoints2);
