@@ -5,17 +5,14 @@ import main.java.it.polimi.ingsw.Controller.Command;
 import main.java.it.polimi.ingsw.Controller.CommandType;
 import main.java.it.polimi.ingsw.Controller.Response;
 import main.java.it.polimi.ingsw.Model.*;
-import main.java.it.polimi.ingsw.ModelExceptions.FullColumnException;
-import main.java.it.polimi.ingsw.ModelExceptions.IncorrectMessageException;
-import main.java.it.polimi.ingsw.ModelExceptions.NotToRefillException;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-public class TUI extends View{
+public class TUI implements View{
+    private final ClientConnectionHandler cch;
     private String playerNickname;
     private int playerTurnId;
     private Scanner scan = new Scanner(System.in);
@@ -45,7 +42,7 @@ public class TUI extends View{
      * @param cch is the ClientConnectionHandler associated (Socket or RMI)
      */
     public TUI(ClientConnectionHandler cch) {
-        super(cch);
+        this.cch=cch;
         playerNickname = null;
         playerTurnId = -1;
         commonGoalsId = new int[2];
@@ -55,12 +52,37 @@ public class TUI extends View{
     }
 
 
-    /**
-     * Method that handles responses
-     * @author Nicole Filippi
-     * @param resp is the response sent from the server
-     */
-    @Override
+    public void start(){
+        state=ClientState.BEFORE_LOGIN;
+        printTitle();
+        clearConsole();
+        printTitle();
+        System.out.println("Choose your nickname: ");
+        new Thread(()->handleInput()).start();
+        while(true){
+            Response resp=null;
+            try {
+                resp = cch.getNextResponse();
+            }catch(Exception e){
+                //e.printStackTrace();
+            }
+
+            final Response response=resp;
+
+            if(response != null){
+                new Thread(()->handleResponse(response)).start();
+            }
+        }
+    }
+
+    public void sendCommand(Command command){
+        try{
+            cch.sendCommand(command);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
     public synchronized void handleResponse(Response resp) {
         if(resp == null) return;
         switch(resp.getResponseType()) {
@@ -300,17 +322,8 @@ public class TUI extends View{
 
             case SHELF_COMPLETED:
                 //
+                break;
         }
-    }
-
-    @Override
-    public void onStartup() {
-        state=ClientState.BEFORE_LOGIN;
-        printTitle();
-        clearConsole();
-        printTitle();
-        System.out.println("Choose your nickname: ");
-        new Thread(()->handleInput()).start();
     }
 
 

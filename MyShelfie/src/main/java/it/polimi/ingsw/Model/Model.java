@@ -111,7 +111,7 @@ public class Model {
         if(getNumPlayersConnected()<=1){
             //Sending one player left timer has started response to connected players
 
-            int remaining = 15000;
+            int remaining = 60000;
 
             while(remaining>0 && getNumPlayersConnected()==1){
                 try{

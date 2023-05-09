@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Server {
-    private static final int timeout = 10;
+    private static final int timeout = 30;
     private final List<Player> players;
     private final List<VirtualView> virtualViews;
     private final List<VirtualView> queue;
