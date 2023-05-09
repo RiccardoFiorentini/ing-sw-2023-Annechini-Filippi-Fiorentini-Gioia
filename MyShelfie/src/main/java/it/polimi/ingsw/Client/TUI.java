@@ -1,5 +1,6 @@
 package main.java.it.polimi.ingsw.Client;
 
+
 import main.java.it.polimi.ingsw.Connection.ClientConnectionHandler;
 import main.java.it.polimi.ingsw.Controller.Command;
 import main.java.it.polimi.ingsw.Controller.CommandType;
@@ -11,8 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-public class TUI implements View{
-    private final ClientConnectionHandler cch;
+public class TUI extends View{
     private String playerNickname;
     private int playerTurnId;
     private Scanner scan = new Scanner(System.in);
@@ -42,7 +42,7 @@ public class TUI implements View{
      * @param cch is the ClientConnectionHandler associated (Socket or RMI)
      */
     public TUI(ClientConnectionHandler cch) {
-        this.cch=cch;
+        super(cch);
         playerNickname = null;
         playerTurnId = -1;
         commonGoalsId = new int[2];
@@ -52,37 +52,12 @@ public class TUI implements View{
     }
 
 
-    public void start(){
-        state=ClientState.BEFORE_LOGIN;
-        printTitle();
-        clearConsole();
-        printTitle();
-        System.out.println("Choose your nickname: ");
-        new Thread(()->handleInput()).start();
-        while(true){
-            Response resp=null;
-            try {
-                resp = cch.getNextResponse();
-            }catch(Exception e){
-                //e.printStackTrace();
-            }
-
-            final Response response=resp;
-
-            if(response != null){
-                new Thread(()->handleResponse(response)).start();
-            }
-        }
-    }
-
-    public void sendCommand(Command command){
-        try{
-            cch.sendCommand(command);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
+    /**
+     * Method that handles responses
+     * @author Nicole Filippi
+     * @param resp is the response sent from the server
+     */
+    @Override
     public synchronized void handleResponse(Response resp) {
         if(resp == null) return;
         switch(resp.getResponseType()) {
@@ -113,10 +88,10 @@ public class TUI implements View{
                 if(state==ClientState.BEFORE_LOGIN || state==ClientState.QUEUE || state==ClientState.ASK_PLAYERS_NUM){
                     if (resp.getStrParameter("result") == null) { //first request
                         state=ClientState.ASK_PLAYERS_NUM;
-                        System.out.println("How many players?");
+                        System.out.println("How many players? ");
 
                     } else if (resp.getStrParameter("result").equals("success")) {  //accepted value
-                        System.out.println("Okay, the game will start in a moment...");
+                        System.out.println("Okay, waiting other players to join...");
                         state=ClientState.QUEUE;
                     } else { //not accepted value
                         clearConsole();
@@ -175,10 +150,10 @@ public class TUI implements View{
 
                 if(playerTurnId==currPlayerId){
                     state=ClientState.SELECT_COLUMN;
-                    phase="IT'S YOUR TURN \nSelect the column where you want to put the tiles: ";
+                    phase="IT'S YOUR TURN \nSelect the column where you want to put the tiles: \n";
                 }else{
                     state=ClientState.MATCH_IDLE;
-                    phase="Player "+nicknames.get(currPlayerId)+" is playing...";
+                    phase="Player "+nicknames.get(currPlayerId)+" is playing...\n";
                 }
                 clearConsole();
                 printGameScreen();
@@ -187,11 +162,11 @@ public class TUI implements View{
             case SELECT_COLUMN_RESULT:
                 if("success".equals(resp.getStrParameter("result"))){
                     state=ClientState.SELECT_FIRST_TILE;
-                    phase="Now select the first tile you want to pick, writing row and column ('r c') desired using the indexing.";
+                    phase="Now select the first tile you want to pick, writing row and column ('r c') desired using the indexing.\n";
                     System.out.println(phase);
                 }else{
                     state=ClientState.SELECT_COLUMN;
-                    phase="You chose a non-valid column, please select a number between 0 and 4: ";
+                    phase="You chose a non-valid column, please select a number between 0 and 4: \n";
                     System.out.println(phase);
                 }
                 break;
@@ -201,12 +176,12 @@ public class TUI implements View{
                     if(state==ClientState.SELECT_FIRST_TILE) {
                         state = ClientState.SELECT_SECOND_TILE;
                         phase="Now select the last tile you want to pick, it has to be on the same row or on the same column\n" +
-                                "and with a max distance of 2. If you want to pick just one tile, select the same tile: ";
+                                "and with a max distance of 2. If you want to pick just one tile, select the same tile: \n";
                         System.out.println(phase);
                     }else{
                         state=ClientState.PUT_IN_COLUMN;
                         buffer=(Tile[]) resp.getObjParameter("buffer");
-                        phase="Choose a tile you want to pick from the buffer: ";
+                        phase="Choose a tile you want to pick from the buffer: \n";
                         clearConsole();
                         printGameScreen();
 
@@ -215,11 +190,11 @@ public class TUI implements View{
                 }else{
                     if(state==ClientState.SELECT_FIRST_TILE) {
                         state = ClientState.SELECT_FIRST_TILE;
-                        phase="Invalid coordinates, select another tile: ";
+                        phase="Invalid coordinates, select another tile: \n";
                         System.out.println(phase);
                     }else{
                         state=ClientState.SELECT_SECOND_TILE;
-                        phase="Invalid coordinates, select another tile: ";
+                        phase="Invalid coordinates, select another tile: \n";
                         System.out.println(phase);
                     }
                 }
@@ -230,7 +205,7 @@ public class TUI implements View{
                     buffer=(Tile[]) resp.getObjParameter("buffer");
                     if(resp.getIntParameter("turnFinished")==0) {
                         state = ClientState.PUT_IN_COLUMN;
-                        phase="Choose another tile you want to pick from the buffer: ";
+                        phase="Choose another tile you want to pick from the buffer: \n";
                     }else{
                         state=ClientState.MATCH_IDLE;
                     }
@@ -238,7 +213,7 @@ public class TUI implements View{
                     printGameScreen();
                 }else{
                     state=ClientState.PUT_IN_COLUMN;
-                    phase="You chose a non-valid position, please select a valid number between 0 and 2: ";
+                    phase="You chose a non-valid position, please select a valid number between 0 and 2: \n";
                     System.out.println(phase);
                 }
                 break;
@@ -257,7 +232,7 @@ public class TUI implements View{
 
             case PLAYER_DISCONNECTED:
                 connected.set(resp.getIntParameter("playerid"),false);
-                System.out.println("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has disconnected.");
+                System.out.println("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has disconnected. \n");
                 break;
 
             case PLAYER_RECONNECTED:
@@ -322,8 +297,17 @@ public class TUI implements View{
 
             case SHELF_COMPLETED:
                 //
-                break;
         }
+    }
+
+    @Override
+    public void onStartup() {
+        state=ClientState.BEFORE_LOGIN;
+        printTitle();
+        clearConsole();
+        printTitle();
+        System.out.println("Choose your nickname: ");
+        new Thread(()->handleInput()).start();
     }
 
 
@@ -1346,9 +1330,9 @@ public class TUI implements View{
             if(connected.get(0) && currPlayerId!=0){
                 output = output + "  @" + nicknames.get(0);
             }else if(connected.get(0) && currPlayerId==0){
-                output = output + "  @" + (char)27 + "[33m" + nicknames.get(0) + (char)27 + "[37m";
+                output = output + (char)27 + "[33m" + "  @" + nicknames.get(0) + (char)27 + "[37m";
             }else{
-                output = output + "  @" + (char)27 + "[31m" + nicknames.get(0) + (char)27 + "[37m";
+                output = output + (char)27 + "[31m" + "  @" + nicknames.get(0) + (char)27 + "[37m";
             }
             for(int l = 0; l<21 - nicknames.get(0).length(); l++){
                 output = output + " ";
@@ -1358,9 +1342,9 @@ public class TUI implements View{
             if(connected.get(1) && currPlayerId!=1){
                 output = output + "  @" + nicknames.get(1);
             }else if(connected.get(1) && currPlayerId==1){
-                output = output + "  @" + (char)27 + "[33m" + nicknames.get(1) + (char)27 + "[37m";
+                output = output + (char)27 + "[33m" + "  @" + nicknames.get(1) + (char)27 + "[37m";
             }else{
-                output = output + "  @" + (char)27 + "[31m" + nicknames.get(1) + (char)27 + "[37m";
+                output = output + (char)27 + "[31m" + "  @" + nicknames.get(1) + (char)27 + "[37m";
             }            for(int l = 0; l<21 - nicknames.get(1).length(); l++){
                 output = output + " ";
             }
@@ -1370,9 +1354,9 @@ public class TUI implements View{
                 if(connected.get(2) && currPlayerId!=2){
                     output = output + "  @" + nicknames.get(2);
                 }else if(connected.get(2) && currPlayerId==2){
-                    output = output + "  @" + (char)27 + "[33m" + nicknames.get(2) + (char)27 + "[37m";
+                    output = output + (char)27 + "[33m" + "  @" + nicknames.get(2) + (char)27 + "[37m";
                 }else{
-                    output = output + "  @" + (char)27 + "[31m" + nicknames.get(2) + (char)27 + "[37m";
+                    output = output + (char)27 + "[31m" + "  @" + nicknames.get(2) + (char)27 + "[37m";
                 }
                 for(int l = 0; l< 21 - nicknames.get(2).length(); l++){
                     output = output + " ";
@@ -1382,9 +1366,9 @@ public class TUI implements View{
                 if(connected.get(3) && currPlayerId!=3){
                     output = output + "  @" + nicknames.get(3);
                 }else if(connected.get(3) && currPlayerId==3){
-                    output = output + "  @" + (char)27 + "[33m" + nicknames.get(3) + (char)27 + "[37m";
+                    output = output + (char)27 + "[33m" + "  @" + nicknames.get(3) + (char)27 + "[37m";
                 }else{
-                    output = output + "  @" + (char)27 + "[31m" + nicknames.get(3) + (char)27 + "[37m";
+                    output = output + (char)27 + "[31m" + "  @" + nicknames.get(3) + (char)27 + "[37m";
                 }
                 for(int l = 0; l<nicknames.get(3).length()-22; l++){
                     output = output + " ";
@@ -1395,9 +1379,9 @@ public class TUI implements View{
                 if(connected.get(2) && currPlayerId!=2){
                     output = output + "  @" + nicknames.get(2);
                 }else if(connected.get(2) && currPlayerId==2){
-                    output = output + "  @" + (char)27 + "[33m" + nicknames.get(2) + (char)27 + "[37m";
+                    output = output + (char)27 + "[33m" + "  @" + nicknames.get(2) + (char)27 + "[37m";
                 }else{
-                    output = output + "  @" + (char)27 + "[31m" + nicknames.get(2) + (char)27 + "[37m";
+                    output = output + (char)27 + "[31m" + "  @" + nicknames.get(2) + (char)27 + "[37m";
                 }
                 for(int l = 0; l< 21 - nicknames.get(2).length(); l++){
                     output = output + " ";

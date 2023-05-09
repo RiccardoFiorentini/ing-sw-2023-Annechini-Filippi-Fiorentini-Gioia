@@ -7,50 +7,28 @@ import main.java.it.polimi.ingsw.Controller.Command;
 import main.java.it.polimi.ingsw.Controller.Response;
 
 
-public class GUI extends Application implements View {
-    private final ClientConnectionHandler cch;
+public class GUI extends View {
 
     /**
      * Class' constructor
-     * @author Nicole Filippi
      * @param cch is the ClientConnectionHandler associated
+     * @author Nicole Filippi
      */
     public GUI(ClientConnectionHandler cch) {
-        this.cch=cch;
+        super(cch);
     }
 
-    public void start(){
-        //TODO onstartup
-        while(true){
-            Response resp=null;
-            try {
-                resp = cch.getNextResponse();
-            }catch(Exception e){
-                //e.printStackTrace();
-            }
-
-            final Response response=resp;
-
-            if(response != null){
-                new Thread(()->handleResponse(response)).start();
-            }
-        }
+    public static void main (String args[]){
+        Graphics.main(args);
     }
 
-    public void sendCommand(Command command){
-        try{
-            cch.sendCommand(command);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
+    @Override
     public void handleResponse(Response resp) {
 
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void onStartup() {
 
     }
 }
