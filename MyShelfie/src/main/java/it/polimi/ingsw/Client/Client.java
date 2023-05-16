@@ -116,5 +116,8 @@ public class Client {
         return null;
     }
 
+    public View getView() {
+        return view;
+    }
 
 }
