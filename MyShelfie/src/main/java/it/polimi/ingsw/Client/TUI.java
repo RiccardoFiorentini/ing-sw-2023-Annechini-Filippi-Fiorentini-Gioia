@@ -12,10 +12,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-public class TUI extends View{
+public class TUI{
+    private ClientConnectionHandler cch;
+    Scanner scan = new Scanner(System.in);
     private String playerNickname;
     private int playerTurnId;
-    private Scanner scan = new Scanner(System.in);
     private ClientState state;
 
     //GAME PARAMETERS
@@ -39,10 +40,9 @@ public class TUI extends View{
     /**
      * Class' constructor
      * @author Nicole Filippi
-     * @param cch is the ClientConnectionHandler associated (Socket or RMI)
      */
-    public TUI(ClientConnectionHandler cch) {
-        super(cch);
+    public TUI() {
+        this.cch=null;
         playerNickname = null;
         playerTurnId = -1;
         commonGoalsId = new int[2];
@@ -51,13 +51,76 @@ public class TUI extends View{
         buffer=new Tile[2];
     }
 
+    /**
+     * Starts the View of the game, creates two thread: the one that handles the Ping
+     * to the server and the one that starts the view.
+     * @author Nicole Filippi
+     */
+    public void start(){
+        int connectionType=0;
+        while(connectionType!=1 && connectionType!=2){
+            System.out.println("Select the connection: \n1. RMI \n2. Socket");
+            try {
+                connectionType = Integer.parseInt(scan.nextLine());
+            }
+            catch(Exception e){
+                connectionType=0;
+            }
+        }
+        try{
+            cch = Client.createConnection(connectionType);
+        }catch(Exception e ){
+            e.printStackTrace();
+        }
+
+        new Thread(()->onStartup()).start();
+        while(true){
+            Response resp=null;
+            try {
+                resp = cch.getNextResponse();
+            }catch(Exception e){
+                //e.printStackTrace();
+            }
+
+            final Response response=resp;
+
+            if(response != null){
+                new Thread(()->handleResponse(response)).start();
+            }
+        }
+    }
 
     /**
-     * Method that handles responses
+     * Method that handles the startup
+     * @author Nicole Filippi
+     */
+    public void onStartup() {
+        state=ClientState.BEFORE_LOGIN;
+        printTitle();
+        clearConsole();
+        printTitle();
+        System.out.println("Choose your nickname: ");
+        new Thread(()->handleInput()).start();
+    }
+
+    /**
+     * Method that sends a given command to the server
+     * @author Nicole Filippi
+     * @param command is the command that has to be sent
+     */
+    public void sendCommand(Command command){
+        try{
+            cch.sendCommand(command);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method that handles responses sent by the server to the client
      * @author Nicole Filippi
      * @param resp is the response sent from the server
      */
-    @Override
     public synchronized void handleResponse(Response resp) {
         if(resp == null) return;
         switch(resp.getResponseType()) {
@@ -299,17 +362,6 @@ public class TUI extends View{
                 //
         }
     }
-
-    @Override
-    public void onStartup() {
-        state=ClientState.BEFORE_LOGIN;
-        printTitle();
-        clearConsole();
-        printTitle();
-        System.out.println("Choose your nickname: ");
-        new Thread(()->handleInput()).start();
-    }
-
 
     /**
      * Method that handles the input sent from the user, using the ClientState class

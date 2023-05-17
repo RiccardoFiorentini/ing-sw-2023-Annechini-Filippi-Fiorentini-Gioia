@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Scanner;
 
 
-public class GUI extends View {
+public class GUI {
+    private final ClientConnectionHandler cch;
     private String playerNickname;
     private int playerTurnId;
     private Scanner scan = new Scanner(System.in);
@@ -38,7 +39,7 @@ public class GUI extends View {
      * @author Nicole Filippi
      */
     public GUI(ClientConnectionHandler cch) {
-        super(cch);
+        this.cch=cch;
         playerNickname = null;
         playerTurnId = -1;
         commonGoalsId = new int[2];
@@ -46,7 +47,55 @@ public class GUI extends View {
         buffer=new Tile[2];
     }
 
-    @Override
+    /**
+     * Starts the View of the game, creates two thread: the one that handles the Ping
+     * to the server and the one that starts the view.
+     * @author Nicole Filippi
+     */
+    public void start(){
+        new Thread(()->onStartup()).start();
+        while(true){
+            Response resp=null;
+            try {
+                resp = cch.getNextResponse();
+            }catch(Exception e){
+                //e.printStackTrace();
+            }
+
+            final Response response=resp;
+
+            if(response != null){
+                new Thread(()->handleResponse(response)).start();
+            }
+        }
+    }
+
+    /**
+     * Method that handles the startup
+     * @author Nicole Filippi
+     */
+    public void onStartup() {
+        //TODO
+    }
+
+    /**
+     * Method that sends a given command to the server
+     * @author Nicole Filippi
+     * @param command is the command that has to be sent
+     */
+    public void sendCommand(Command command){
+        try{
+            cch.sendCommand(command);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method that handles responses sent by the server to the client
+     * @author Nicole Filippi
+     * @param resp is the response sent from the server
+     */
     public void handleResponse(Response resp) {
         if(resp == null) return;
         switch(resp.getResponseType()) {
@@ -60,9 +109,12 @@ public class GUI extends View {
                 break;
 
             case ASK_PLAYERS_NUM:
-                if (resp.getStrParameter("result").equals("success")) {  //accepted value
+                if (resp.getStrParameter("result") == null) { //first request
+
+                }
+                else if (resp.getStrParameter("result").equals("success")) {  //accepted value
                     //TODO
-                }else{
+                }else{ //not accepted value
                     //TODO
                 }
                 break;
@@ -220,9 +272,6 @@ public class GUI extends View {
         }
     }
 
-    @Override
-    public void onStartup() {
-    }
 
     public void doLogin(String nickname){
         if(nickname==null || nickname.equals("")){
