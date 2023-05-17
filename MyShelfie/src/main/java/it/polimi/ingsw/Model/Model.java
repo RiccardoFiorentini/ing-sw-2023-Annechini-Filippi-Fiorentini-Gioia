@@ -335,7 +335,7 @@ public class Model {
 
     /**
      * This method sends the response to all players
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param response The response to be sent
      */
     public void broadcast(Response response){
@@ -346,7 +346,7 @@ public class Model {
 
     /**
      * This method sends the NEW_TURN response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param turnId Turn id of the current player
      * @param pickableTiles Pickable tiles
      */
@@ -359,7 +359,7 @@ public class Model {
 
     /**
      * This method sends the UPDATE_BOARD response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      */
     public void updateBoard(){
         Response response = new Response(UPDATE_BOARD);
@@ -369,7 +369,7 @@ public class Model {
 
     /**
      * This method sends the UPDATE_PLAYER_SHELF response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param turnId Player who updated the shelf
      * @param shelf Updated shelf
      */
@@ -382,7 +382,7 @@ public class Model {
 
     /**
      * This method sends the GAME_ENDED response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param interrupted 1 if the game ended due to disconnections, 0 if the game ended correctly
      */
     public void updateGameEnd(int interrupted){
@@ -394,7 +394,7 @@ public class Model {
 
     /**
      * This method sends the ONLY_ONE_CONNECTED_TIMER response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param milliseconds Milliseconds remaining to victory
      */
     public void updateOnlyOneConnectedTimer(int milliseconds){
@@ -405,7 +405,7 @@ public class Model {
 
     /**
      * This method sends the SHELF_COMPLETED response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param turnId Player who completed the shelf
      */
     public void updateShelfCompleted(int turnId){
@@ -416,7 +416,7 @@ public class Model {
 
     /**
      * This method sends the COMMON_GOAL_WON response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param turnId Player who completed the common goal
      * @param commonGoalId Id of the common goal (0 or 1)
      * @param pointsWon Points won
@@ -433,7 +433,7 @@ public class Model {
 
     /**
      * This method sends the PLAYER_DISCONNECTED response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param turnId Player who disconnected
      */
     public void updatePlayerDisconnected(int turnId){
@@ -444,7 +444,7 @@ public class Model {
 
     /**
      * This method sends the PLAYER_RECONNECTED response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param turnId Player who reconnected
      */
     public void updatePlayerReconnected(int turnId){
@@ -455,7 +455,7 @@ public class Model {
 
     /**
      * This method sends the GAME_STARTED response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param player The player that will receive the response
      * @param isStart 1 if the game has just started, 0 otherwise
      * @return The GAME_STARTED response
@@ -504,7 +504,7 @@ public class Model {
 
     /**
      * This method sends the PUT_IN_COLUMN_RESULT response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param player The player that modified the shelf
      * @param turnFinished 0 if the turn has not finished, 1 otherwise
      */
@@ -518,7 +518,7 @@ public class Model {
 
     /**
      * This method sends the SELECT_TILE_RESULT response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param player The player that selected the tile
      * @param pickableTiles Pickable tiles (first time)
      * @param buffer Buffer of picked tiles (second time)
@@ -533,7 +533,7 @@ public class Model {
 
     /**
      * This method sends the NEW_MEX_CHAT response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      * @param toUpdate The players that will receive the update
      */
     public void updateChat(List<Player> toUpdate){
@@ -546,7 +546,7 @@ public class Model {
 
     /**
      * This method sends the GAME_STARTED response
-     * @author Alessandro Annechini
+     * @author Pasquale Gioia, Alessandro Annechini
      */
     public void updateStartGame(){
         for(Player p : players){
