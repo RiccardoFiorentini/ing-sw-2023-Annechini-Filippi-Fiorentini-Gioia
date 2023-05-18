@@ -15,16 +15,19 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Popup;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class GUIApplication extends Application{
@@ -32,6 +35,18 @@ public class GUIApplication extends Application{
     private Stage stage;
     private Parent root;
     private ImageView imageViewWallpaper;
+    private ImageView endWallpaper;
+    private StackPane endStackPane;
+    private GridPane resultPane;
+    private Text winner;
+
+    private GridPane specificPointsPopup;
+
+    /*
+    private HashMap<String, Integer> finalLeaderbord;
+    private List<Integer> finalPoints;
+    */
+
     private Label nicknameLabel;
     private Image wallpaper;
     private Image title;
@@ -131,14 +146,14 @@ public class GUIApplication extends Application{
         hBox.setAlignment(Pos.CENTER);
 
 
-        wallpaper = new Image(getClass().getResource("/misc/sfondo_parquet.jpg").toString());
+        wallpaper = new Image(getClass().getResource("/misc/sfondo parquet.jpg").toString());
         imageViewWallpaper = new ImageView(wallpaper);
         stackPane = new StackPane(imageViewWallpaper);
         imageViewWallpaper.setFitHeight(bounds.getHeight());
         imageViewWallpaper.setFitWidth(bounds.getWidth());
         StackPane.setAlignment(imageViewWallpaper, Pos.CENTER);
 
-        title = new Image(getClass().getResource("/Publisher_material/Title_2000x618px.png").toString());
+        title = new Image(getClass().getResource("/Publisher material/Title 2000x618px.png").toString());
         imageViewTitle = new ImageView(title);
         imageViewTitle.setPreserveRatio(true);
         imageViewTitle.setFitHeight(bounds.getHeight()/4);
@@ -375,4 +390,161 @@ public class GUIApplication extends Application{
             }
         }
     }
+
+    /**
+     * This method defines end game scene
+     * @author Pasquale Gioia
+     */
+    public void setupEndGameScreen(){
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        stage.setX(bounds.getMinX());
+        stage.setY(bounds.getMinY());
+        stage.setWidth(bounds.getWidth());
+        stage.setHeight(bounds.getHeight());
+
+        endStackPane = new StackPane();
+        endWallpaper = new ImageView(new Image(getClass().getResource("/Publisher material/Display_5.jpg").toString()));
+        endWallpaper.setFitHeight(bounds.getHeight());
+        endWallpaper.setFitWidth(bounds.getWidth());
+        StackPane.setAlignment(endWallpaper, Pos.CENTER);
+        endStackPane.getChildren().add(endWallpaper);
+
+        resultPane = new GridPane();
+
+        /*
+        SET RESULTPANE BACKGROUND COLOR -- NOT WORKING??
+        Color backgroundColor = Color.rgb(0, 0, 255, 0.5);
+        resultPane.setBackground(new Background(new BackgroundFill(backgroundColor, null, null)));
+        */
+
+        resultPane.setHgap(25);
+        resultPane.setVgap(10);
+
+        //Setting column properties for leaderboard pane
+        ColumnConstraints col1Constraints = new ColumnConstraints();
+        col1Constraints.setHgrow(Priority.ALWAYS);
+        col1Constraints.setPercentWidth(90);
+
+        ColumnConstraints col2Constraints = new ColumnConstraints();
+        col2Constraints.setHgrow(Priority.ALWAYS);
+        col2Constraints.setPercentWidth(10);
+        resultPane.getColumnConstraints().addAll(col1Constraints, col2Constraints);
+
+
+
+
+        String[] typeOfPointEntryNames = {"Personal goal:", "Common goal 1:", "Common goal 2:", "Group points:", "Final point:"};
+        //TODO For each player (in arrival order) specific point array --
+        int[][] specificPoints = {
+                {4, 3, 0, 2, 0},
+                {5, 6, 2, 5, 1},
+                {3, 1, 0, 5, 0},
+                {2, 2, 3, 1, 0}};
+
+        //TODO A list of Popup pointsPopup ? one popup for each player
+
+        Popup[] pointsPopupList = new Popup[4];
+
+        for(int i=0; i<4; i++) {
+            GridPane specificPointsPopup = new GridPane();
+            specificPointsPopup.setMaxWidth(50);
+            specificPointsPopup.setMaxHeight(50);
+
+            for (int j = 0; j < 5; j++) {
+                Text specificPointsEntry = new Text(String.valueOf(specificPoints[i][j]));
+                specificPointsEntry.setTextAlignment(TextAlignment.RIGHT);
+                specificPointsEntry.setFont(Font.font("Helvetica", 35));
+                Text typeOfPointEntry = new Text(typeOfPointEntryNames[j]);
+                typeOfPointEntry.setTextAlignment(TextAlignment.LEFT);
+                typeOfPointEntry.setFont(Font.font("Helvetica", 35));
+
+
+                specificPointsPopup.add(typeOfPointEntry, 0, j);
+                specificPointsPopup.add(specificPointsEntry, 1, j);
+
+
+                //Setting popup properties
+                //specificPointsPopup.getColumnConstraints().addAll(col1Constraints, col2Constraints);
+                specificPointsPopup.setHgap(25);
+                specificPointsPopup.setStyle("-fx-background-color: white;");
+            }
+            Popup popup = new Popup();
+            popup.getContent().add(specificPointsPopup);
+            pointsPopupList[i] = popup;
+
+        }
+
+
+
+
+
+        //TODO List of arrival nicknames (in descending order)
+        String[] playerEntryNames = {"Pasquale", "Nicole", "Alessandro", "Riccardo"};
+
+
+        //TODO List of arrival scoring points (in descending order)
+        int[] points = {12, 9, 8, 7};
+
+        //TODO Change 4(for) into numPlayers
+        for(int i=0; i<4; i++) {
+            Text playerEntry = new Text(playerEntryNames[i]);
+            playerEntry.setTextAlignment(TextAlignment.CENTER);
+            if(i==0){
+
+                playerEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
+                playerEntry.setFill(Color.GREEN);
+            } else {
+                playerEntry.setFont(Font.font("Calibri", 50));
+            }
+            resultPane.add(playerEntry, 0, i);
+        }
+        for(int i=0; i<4; i++) {
+            Text pointsEntry = new Text(String.valueOf(points[i]));
+            pointsEntry.setTextAlignment(TextAlignment.RIGHT);
+
+            if(i==0){
+
+                pointsEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
+                pointsEntry.setFill(Color.GREEN);
+            } else {
+                pointsEntry.setFont(Font.font("Calibri", 50));
+            }
+            resultPane.add(pointsEntry, 1, i);
+
+
+            int finalI = i;
+            pointsEntry.setOnMouseEntered(event -> {
+                // Shows popup when mouse gets over score
+                pointsPopupList[finalI].show(pointsEntry, event.getScreenX()+35, event.getScreenY()+10);
+
+
+            });
+            int finalI1 = i;
+            pointsEntry.setOnMouseExited(event -> {
+                pointsPopupList[finalI1].hide();
+            });
+        }
+
+        resultPane.setStyle("-fx-background-color: white;");
+        StackPane.setAlignment(resultPane, Pos.CENTER);
+        resultPane.setMaxWidth(bounds.getWidth()/4);
+        resultPane.setMaxHeight(bounds.getWidth()/7);
+        endStackPane.getChildren().add(resultPane);
+
+
+        //TODO player with highest score
+        winner = new Text("Pasquale WON!!!!");
+        winner.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 100));
+        winner.setFill(Color.BLUE);
+
+        StackPane.setAlignment(winner, Pos.TOP_CENTER);
+        endStackPane.getChildren().add(winner);
+
+        scene = new Scene(endStackPane, bounds.getWidth(), bounds.getHeight());
+        stage.setScene(scene);
+        stage.sizeToScene();
+        stage.show();
+        stage.setTitle("Game has ended");
+    }
+
 }
