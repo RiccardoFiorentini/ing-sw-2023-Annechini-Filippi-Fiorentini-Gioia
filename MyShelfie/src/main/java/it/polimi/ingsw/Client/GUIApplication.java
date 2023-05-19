@@ -25,9 +25,10 @@ import javafx.stage.Popup;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import main.java.it.polimi.ingsw.Connection.ClientConnectionHandler;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class GUIApplication extends Application{
@@ -63,10 +64,15 @@ public class GUIApplication extends Application{
     private Button button1;
     private Button button2;
     private Button button3;
+    private Button buttonRMI;
+    private Button buttonSocket;
     private HBox hBox;
+    private HBox hBoxNet;
     private FadeTransition fadeTransition1;
     private FadeTransition fadeTransition2;
     private FadeTransition fadeTransition3;
+    private FadeTransition fadeTransitionRMI;
+    private FadeTransition fadeTransitionSocket;
     private ImageView board;
     private ImageView playerShelf;
     private double stdScreenRatio;
@@ -77,6 +83,7 @@ public class GUIApplication extends Application{
     int numPlayers=4;
     private List<ImageView> otherPlayerShelves;
     private List<ImageView[][]> otherPlayersTiles;
+    private ClientConnectionHandler cch;
 
     public static void main(String[] args){
         launch(args);
@@ -93,8 +100,6 @@ public class GUIApplication extends Application{
      * @author Fiorentini Riccardo
      */
     public void setupMenu(){
-
-        //TODO RMI and Socket
 
         Screen screen = Screen.getPrimary();
         bounds = screen.getVisualBounds();
@@ -145,6 +150,68 @@ public class GUIApplication extends Application{
         hBox.setVisible(false);
         hBox.setAlignment(Pos.CENTER);
 
+        //RMI e SOCKET Buttons
+        buttonRMI = new Button("RMI");
+        buttonSocket = new Button("SOCKET");
+        buttonRMI.setPrefWidth(ratio*3);
+        buttonRMI.setMaxHeight(ratio);
+        buttonSocket.setPrefWidth(ratio*3);
+        buttonSocket.setMaxHeight(ratio);
+        buttonRMI.setFont(font);
+        buttonSocket.setFont(font);
+        buttonRMI.setStyle("-fx-background-color: white;");
+        buttonSocket.setStyle("-fx-background-color: white;");
+
+        fadeTransitionRMI = new FadeTransition(Duration.seconds(2), buttonRMI);
+        fadeTransitionRMI.setFromValue(0.0);
+        fadeTransitionRMI.setToValue(1);
+        fadeTransitionRMI.setAutoReverse(true);
+        fadeTransitionRMI.setCycleCount(1);
+
+        fadeTransitionSocket = new FadeTransition(Duration.seconds(2), buttonSocket);
+        fadeTransitionSocket.setFromValue(0.0);
+        fadeTransitionSocket.setToValue(1);
+        fadeTransitionSocket.setAutoReverse(true);
+        fadeTransitionSocket.setCycleCount(1);
+
+        DropShadow shadow = new DropShadow();
+        buttonSocket.addEventHandler(MouseEvent.MOUSE_ENTERED_TARGET, e -> buttonSocket.setEffect(shadow));
+        buttonRMI.addEventHandler(MouseEvent.MOUSE_ENTERED_TARGET, e -> buttonRMI.setEffect(shadow));
+        buttonSocket.addEventHandler(MouseEvent.MOUSE_EXITED_TARGET, e -> buttonSocket.setEffect(null));
+        buttonRMI.addEventHandler(MouseEvent.MOUSE_EXITED_TARGET, e -> buttonRMI.setEffect(null));
+
+        buttonSocket.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            //TODO connect with server and handle the response
+
+            try {
+                cch = Client.createConnection(2);
+            } catch (RemoteException ex) {
+                //
+            }
+            nicknameLabel.setText("Choose the nickname");
+            textField.setVisible(true);
+            vBox.setVisible(true);
+            hBoxNet.setVisible(false);
+        });
+
+        buttonRMI.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            //TODO connect with server and handle the response
+            //for now:
+            try {
+                cch = Client.createConnection(1);
+            } catch (RemoteException ex) {
+                //
+            }
+            nicknameLabel.setText("Choose the nickname");
+            textField.setVisible(true);
+            vBox.setVisible(true);
+            hBoxNet.setVisible(false);
+        });
+
+        hBoxNet = new HBox(10, buttonRMI, buttonSocket);
+        hBoxNet.setPadding(new Insets(10));
+        hBoxNet.setAlignment(Pos.CENTER);
+
 
         wallpaper = new Image(getClass().getResource("/misc/sfondo parquet.jpg").toString());
         imageViewWallpaper = new ImageView(wallpaper);
@@ -160,7 +227,7 @@ public class GUIApplication extends Application{
         StackPane.setAlignment(imageViewTitle, Pos.TOP_CENTER);
         stackPane.getChildren().add(imageViewTitle);
 
-        nicknameLabel = new Label("Insert your nickname");
+        nicknameLabel = new Label("Choose the network protocol");
         nicknameLabel.setFont(font);
         messages = new Label("");
         messages.setFont(font);
@@ -169,6 +236,8 @@ public class GUIApplication extends Application{
         textField.setOnAction((event)->{if(textField.isEditable()){
             nickname = textField.getText();
             //TODO login
+            askNumberPlayer(0);
+
         }});
         textField.setEditable(false);
         textField.setOnMouseClicked((event)->{textField.setEditable(true);});
@@ -179,8 +248,10 @@ public class GUIApplication extends Application{
         vBox.getChildren().add(textField);
         vBox.getChildren().add(messages);
         vBox.setAlignment(Pos.CENTER);
+        textField.setVisible(false);
         stackPane.getChildren().add(vBox);
         stackPane.getChildren().add(hBox);
+        stackPane.getChildren().add(hBoxNet);
         StackPane.setMargin(vBox, new Insets(0, 0, 50, 0));
 
         scene = new Scene(stackPane, bounds.getWidth(), bounds.getHeight());
@@ -189,6 +260,8 @@ public class GUIApplication extends Application{
         stage.setTitle("Access");
         stage.setScene(scene);
         stage.sizeToScene();
+        fadeTransitionRMI.play();
+        fadeTransitionSocket.play();
         stage.show();
     }
 
