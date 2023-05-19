@@ -33,6 +33,8 @@ import main.java.it.polimi.ingsw.Model.*;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class GUIApplication extends Application{
@@ -50,11 +52,7 @@ public class GUIApplication extends Application{
 
     private GridPane specificPointsPopup;
 
-    /*
-    private HashMap<String, Integer> finalLeaderbord;
-    private List<Integer> finalPoints;
-    */
-
+    private int personalGoalId;
     private Label nicknameLabel;
     private Image wallpaper;
     private Image title;
@@ -88,6 +86,14 @@ public class GUIApplication extends Application{
     int numPlayers=4;
     private List<ImageView> otherPlayerShelves;
     private List<ImageView[][]> otherPlayersTiles;
+
+    private ImageView personalGoal;
+    private ImageView commonGoal1;
+    private ImageView commonGoal2;
+    private ImageView tokenCommonGoal1;
+    private ImageView tokenCommonGoal2;
+    private ImageView tokenLastPlayerId;
+
     private ClientConnectionHandler cch;
 
     public static void main(String[] args){
@@ -97,7 +103,7 @@ public class GUIApplication extends Application{
     @Override
     public void start(Stage stage) throws Exception {
         this.stage = stage;
-        setupMenu();
+        setupEndGameScreen();
     }
 
     /**
@@ -294,12 +300,12 @@ public class GUIApplication extends Application{
             case LOGIN_CONFIRMED:
                 nicknameResponse(true, resp.getStrParameter("nickname"));
                 playerNickname = resp.getStrParameter("nickname");
-                waitingRoom();
+                //waitingRoom();
                 break;
 
             case ASK_PLAYERS_NUM:
                 if (resp.getStrParameter("result").equals("success")) {  //accepted value
-                    waitingRoom();
+                    //waitingRoom();
                 }
                 break;
 
@@ -613,7 +619,7 @@ public class GUIApplication extends Application{
 
     /**
      * This method prepares all the elements in the Game scene
-     * @author Alessandro Annechini
+     * @author Alessandro Annechini, Pasquale Gioia
      */
     public void setupGameScreen(){
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
@@ -654,10 +660,17 @@ public class GUIApplication extends Application{
 
         Pane boardPane = new Pane(board);
         Pane shelfPane = new Pane();
+        Pane tilePane = new Pane();
+        Pane tokenPane = new Pane();
+
+        shelfPane.getChildren().add(tilePane);
+        tilePane.getChildren().add(boardPane);
+        tokenPane.getChildren().add(shelfPane);
+
+
         shelfPane.getChildren().add(playerShelf);
         for(ImageView im : otherPlayerShelves) shelfPane.getChildren().add(im);
 
-        Pane tilePane = new Pane();
         for(ImageView[] el : boardTiles){
             for(ImageView i : el) tilePane.getChildren().add(i);
         }
@@ -671,8 +684,46 @@ public class GUIApplication extends Application{
         }
         ImageView background = new ImageView(new Image(getClass().getResource("/misc/sfondo parquet.jpg").toString()));
 
+
+        //PersonalGoal, CommonGoals, Remaining points
+
+        //TODO: make sure this is correct?
+        /*
+        String personalGoalPath = state.getPersonalGoalImagePath(personalGoalId);
+        String commonGoal1Path = state.getCommonGoalImagePath(state.getCommonGoalsId()[0]);
+        String commonGoal2Path = state.getCommonGoalImagePath(state.getCommonGoalsId()[1]);
+        String remainingPoints1Path = state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[0]);
+        String remainingPoints2Path = state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[1]);
+
+        personalGoal = new ImageView(new Image(getClass().getResource(personalGoalPath).toString()));
+        commonGoal1 = new ImageView(new Image(getClass().getResource(commonGoal1Path).toString()));
+        commonGoal2 = new ImageView(new Image(getClass().getResource(commonGoal2Path).toString()));
+        tokenCommonGoal1 = new ImageView(new Image(getClass().getResource(remainingPoints1Path).toString()));
+        tokenCommonGoal2 = new ImageView(new Image(getClass().getResource(remainingPoints2Path).toString()));
+        */
+        tokenLastPlayerId = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
+
+
+        //STATIC EXAMPLE
+        personalGoal = new ImageView(new Image(getClass().getResource("/personal goal cards/Personal_Goals.png").toString()));
+        commonGoal1 = new ImageView(new Image(getClass().getResource("/common goal cards/1.jpg").toString()));
+        commonGoal2 = new ImageView(new Image(getClass().getResource("/common goal cards/2.jpg").toString()));
+        tokenCommonGoal1 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
+        tokenCommonGoal2 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
+
+
+
+
+        tokenPane.getChildren().add(tokenLastPlayerId);
+        tokenPane.getChildren().add(tokenCommonGoal1);
+        tokenPane.getChildren().add(tokenCommonGoal2);
+        boardPane.getChildren().add(commonGoal1);
+        boardPane.getChildren().add(commonGoal2);
+        boardPane.getChildren().add(personalGoal);
+
+
         //ORDER OF PANELS
-        StackPane stackPane = new StackPane(background,boardPane,tilePane,shelfPane);
+        StackPane stackPane = new StackPane(background,tokenPane);
 
         stackPane.setOnMouseClicked((event)->{
             for(int i = stackPane.getChildren().size()-1;i>=0 && !event.isConsumed();i--){
@@ -701,7 +752,7 @@ public class GUIApplication extends Application{
     /**
      * This method sets the positions of the Game
      * elements with respect to the window size
-     * @author Alessandro Annechini
+     * @author Alessandro Annechini, Pasquale Gioia
      */
     public void setGameGraphicsProportions(){
         board.setFitWidth(Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight()) * 0.8 );
@@ -717,6 +768,7 @@ public class GUIApplication extends Application{
                 t.setFitWidth(board.getFitWidth()*boardTileRatio/margin);
                 t.setX(board.getX()+board.getFitWidth()*0.041+t.getFitWidth()*j*margin + t.getFitWidth()*(margin-1)/2);
                 t.setY(board.getY()+board.getFitHeight()*0.046+t.getFitHeight()*i*margin + t.getFitHeight()*(margin-1)/2);
+                t.setVisible(false);
             }
         }
 
@@ -736,6 +788,43 @@ public class GUIApplication extends Application{
 
             setTilesPositionInShelf(k);
         }
+
+        //PersonalGoal, CommonGoal position and proportion
+        commonGoal1.setFitHeight(Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight())*0.163);
+        commonGoal1.setFitWidth(commonGoal1.getFitHeight()*1.5169);
+        commonGoal1.setX(stage.getWidth()*0.695);
+        commonGoal1.setY(stage.getHeight()*0.041);
+
+        commonGoal2.setFitHeight(Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight())*0.163);
+        commonGoal2.setFitWidth(commonGoal2.getFitHeight()*1.5169);
+        commonGoal2.setX(stage.getWidth()*0.695);
+        commonGoal2.setY(stage.getHeight()*0.051+commonGoal1.getFitHeight());
+
+        personalGoal.setFitHeight(Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight())*0.338);
+        personalGoal.setFitWidth(personalGoal.getFitHeight()*0.6589);
+        personalGoal.setX(stage.getWidth()*0.85);
+        personalGoal.setY(stage.getHeight()*0.037);
+
+        //Token positions and proportion
+        tokenLastPlayerId.setFitHeight(board.getFitHeight()*0.107);
+        tokenLastPlayerId.setFitWidth(tokenLastPlayerId.getFitHeight());
+        tokenLastPlayerId.setX(board.getFitWidth()*0.808+board.getX());
+        tokenLastPlayerId.setY(board.getFitHeight()*0.695+board.getY());
+        tokenLastPlayerId.setRotate(8.9);
+
+        tokenCommonGoal1.setFitHeight(commonGoal1.getFitHeight()*0.5);
+        tokenCommonGoal1.setFitWidth(tokenCommonGoal1.getFitHeight());
+        tokenCommonGoal1.setX(commonGoal1.getFitWidth()*0.57+commonGoal1.getX());
+        tokenCommonGoal1.setY(commonGoal1.getFitHeight()*0.225+commonGoal1.getY());
+        tokenCommonGoal1.setRotate(-8.7);
+
+        tokenCommonGoal2.setFitHeight(commonGoal2.getFitHeight()*0.5);
+        tokenCommonGoal2.setFitWidth(tokenCommonGoal2.getFitHeight());
+        tokenCommonGoal2.setX(tokenCommonGoal1.getX());
+        tokenCommonGoal2.setY(tokenCommonGoal1.getFitHeight()+140);
+        tokenCommonGoal2.setRotate(-8.7);
+
+        //TODO: BUFFER HBOX, CHAT
     }
 
     /**
@@ -797,7 +886,7 @@ public class GUIApplication extends Application{
         resultPane.getColumnConstraints().addAll(col1Constraints, col2Constraints);
 
 
-
+        //TODO: ADJUST SIZES, MAKE EVERYTHING RESIZABLE
 
         String[] typeOfPointEntryNames = {"Personal goal:", "Common goal 1:", "Common goal 2:", "Group points:", "Final point:"};
         //TODO For each player (in arrival order) specific point array --
@@ -811,7 +900,7 @@ public class GUIApplication extends Application{
 
         Popup[] pointsPopupList = new Popup[4];
 
-        for(int i=0; i<4; i++) {
+        for(int i=0; i<state.getNumPlayers(); i++) {
             GridPane specificPointsPopup = new GridPane();
             specificPointsPopup.setMaxWidth(50);
             specificPointsPopup.setMaxHeight(50);
@@ -849,45 +938,41 @@ public class GUIApplication extends Application{
 
 
         //TODO List of arrival scoring points (in descending order)
+        /*
+        Integer[] Points = state.getFinalPoints().toArray(new Integer[state.getFinalPoints().size()]);
+        Arrays.sort(Points, Collections.reverseOrder());
+        */
         int[] points = {12, 9, 8, 7};
 
-        //TODO Change 4(for) into numPlayers
-        for(int i=0; i<4; i++) {
+        for(int i=0; i<state.getNumPlayers(); i++) {
             Text playerEntry = new Text(playerEntryNames[i]);
             playerEntry.setTextAlignment(TextAlignment.CENTER);
-            if(i==0){
-
-                playerEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
-                playerEntry.setFill(Color.GREEN);
-            } else {
-                playerEntry.setFont(Font.font("Calibri", 50));
-            }
-            resultPane.add(playerEntry, 0, i);
-        }
-        for(int i=0; i<4; i++) {
             Text pointsEntry = new Text(String.valueOf(points[i]));
             pointsEntry.setTextAlignment(TextAlignment.RIGHT);
 
             if(i==0){
-
+                //FIRST PLAYER
+                playerEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
+                playerEntry.setFill(Color.GREEN);
                 pointsEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
                 pointsEntry.setFill(Color.GREEN);
+
             } else {
+                //Other players
+                playerEntry.setFont(Font.font("Calibri", 50));
                 pointsEntry.setFont(Font.font("Calibri", 50));
             }
+            resultPane.add(playerEntry, 0, i);
             resultPane.add(pointsEntry, 1, i);
 
-
+            //SCORE POPUP
             int finalI = i;
             pointsEntry.setOnMouseEntered(event -> {
                 // Shows popup when mouse gets over score
                 pointsPopupList[finalI].show(pointsEntry, event.getScreenX()+35, event.getScreenY()+10);
-
-
             });
-            int finalI1 = i;
             pointsEntry.setOnMouseExited(event -> {
-                pointsPopupList[finalI1].hide();
+                pointsPopupList[finalI].hide();
             });
         }
 

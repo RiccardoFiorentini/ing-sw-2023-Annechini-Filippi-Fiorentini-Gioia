@@ -19,6 +19,9 @@ public class GameState {
     private List<String> nicknames;
     private List<Integer> turnIds;
     private TileColor[][] personalGoal;
+
+    private int numPlayers;
+
     private List<Integer> commonGoalPoints1;
     private List<Integer> commonGoalPoints2;
     private List<Boolean> connected;
@@ -307,4 +310,12 @@ public class GameState {
     public void setFinalPoints(List<Integer> finalPoints) {
         this.finalPoints = finalPoints;
     }
+    public int getNumPlayers() {
+        return numPlayers;
+    }
+
+    public void setNumPlayers(int numPlayers) {
+        this.numPlayers = numPlayers;
+    }
+
 }
