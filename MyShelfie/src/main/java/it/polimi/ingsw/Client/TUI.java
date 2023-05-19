@@ -352,7 +352,7 @@ public class TUI{
                     commonGoalsRemainingPoint[0]=resp.getIntParameter("remainingpoints");
                 }else{
                     commonGoalPoints2.set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
-                    commonGoalsRemainingPoint[0]=resp.getIntParameter("remainingpoints");
+                    commonGoalsRemainingPoint[1]=resp.getIntParameter("remainingpoints");
                 }
                 clearConsole();
                 printGameScreen();

@@ -26,6 +26,10 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import main.java.it.polimi.ingsw.Connection.ClientConnectionHandler;
+import main.java.it.polimi.ingsw.Controller.Command;
+import main.java.it.polimi.ingsw.Controller.CommandType;
+import main.java.it.polimi.ingsw.Controller.Response;
+import main.java.it.polimi.ingsw.Model.*;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -33,6 +37,9 @@ import java.util.List;
 
 public class GUIApplication extends Application{
 
+    private GameState state;
+    private String playerNickname;
+    private int playerTurnId;
     private Stage stage;
     private Parent root;
     private ImageView imageViewWallpaper;
@@ -56,8 +63,6 @@ public class GUIApplication extends Application{
     private StackPane stackPane;
     private VBox vBox;
     private Scene scene;
-    private String nickname;
-    private GUI gui;
     private Rectangle2D bounds;
     private Label messages;
 
@@ -181,37 +186,16 @@ public class GUIApplication extends Application{
         buttonRMI.addEventHandler(MouseEvent.MOUSE_EXITED_TARGET, e -> buttonRMI.setEffect(null));
 
         buttonSocket.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            //TODO connect with server and handle the response
-
-            try {
-                cch = Client.createConnection(2);
-            } catch (RemoteException ex) {
-                //
-            }
-            nicknameLabel.setText("Choose the nickname");
-            textField.setVisible(true);
-            vBox.setVisible(true);
-            hBoxNet.setVisible(false);
+            startConnection(2);
         });
 
         buttonRMI.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            //TODO connect with server and handle the response
-            //for now:
-            try {
-                cch = Client.createConnection(1);
-            } catch (RemoteException ex) {
-                //
-            }
-            nicknameLabel.setText("Choose the nickname");
-            textField.setVisible(true);
-            vBox.setVisible(true);
-            hBoxNet.setVisible(false);
+            startConnection(1);
         });
 
         hBoxNet = new HBox(10, buttonRMI, buttonSocket);
         hBoxNet.setPadding(new Insets(10));
         hBoxNet.setAlignment(Pos.CENTER);
-
 
         wallpaper = new Image(getClass().getResource("/misc/sfondo parquet.jpg").toString());
         imageViewWallpaper = new ImageView(wallpaper);
@@ -234,11 +218,9 @@ public class GUIApplication extends Application{
         textField = new TextField();
         textField.setFont(font);
         textField.setOnAction((event)->{if(textField.isEditable()){
-            nickname = textField.getText();
-            //TODO login
-            askNumberPlayer(0);
-
+           doLogin(textField.getText());
         }});
+
         textField.setEditable(false);
         textField.setOnMouseClicked((event)->{textField.setEditable(true);});
         textField.setMaxWidth(bounds.getWidth()/3);
@@ -266,6 +248,316 @@ public class GUIApplication extends Application{
     }
 
     /**
+     * Starts the View of the game, creates the thread that handles the responses from the server
+     * @author Nicole Filippi
+     */
+    public void startConnection(int type) {
+        try {
+            cch = Client.createConnection(type);
+        } catch (RemoteException ex) {
+            //TODO
+        }
+        nicknameLabel.setText("Choose the nickname");
+        textField.setVisible(true);
+        vBox.setVisible(true);
+        hBoxNet.setVisible(false);
+
+        while (true) {
+            Response resp = null;
+            try {
+                resp = cch.getNextResponse();
+            } catch (Exception e) {
+                //TODO
+            }
+
+            final Response response = resp;
+
+            if (response != null) {
+                new Thread(() -> handleResponse(response)).start();
+
+            }
+        }
+    }
+
+    /**
+     * Method that handles responses sent by the server to the client
+     * @author Nicole Filippi
+     * @param resp is the response sent from the server
+     */
+    public void handleResponse(Response resp) {
+        if(resp == null) return;
+        switch(resp.getResponseType()) {
+            case LOGIN_ERROR:
+                nicknameResponse(false, resp.getStrParameter("newnickname"));
+                break;
+
+            case LOGIN_CONFIRMED:
+                nicknameResponse(true, resp.getStrParameter("nickname"));
+                playerNickname = resp.getStrParameter("nickname");
+                waitingRoom();
+                break;
+
+            case ASK_PLAYERS_NUM:
+                if (resp.getStrParameter("result").equals("success")) {  //accepted value
+                    waitingRoom();
+                }
+                break;
+
+            case GAME_STARTED:
+                Command command = new Command(CommandType.GAME_JOINED);
+                sendCommand(command);
+                state.setBuffer(new Tile[]{Tile.EMPTY,Tile.EMPTY,Tile.EMPTY});
+                state.setFirstPlayerId(resp.getIntParameter("firstPlayerId"));
+                state.setCommonGoalsId(0, resp.getIntParameter("commongoal1"));
+                state.setCommonGoalsId(1, resp.getIntParameter("commongoal2"));
+                state.setCommonGoalsRemainingPoint(0, resp.getIntParameter("commongoalsremainingpoint1"));
+                state.setCommonGoalsRemainingPoint(1, resp.getIntParameter("commongoalsremainingpoint2"));
+                state.setCurrPlayerId(resp.getIntParameter("currentplayer"));
+                state.setBoard((BoardBean) resp.getObjParameter("board"));
+                state.setChat((ChatBean)resp.getObjParameter("chat"));
+                state.setShelves((List<ShelfBean>)resp.getObjParameter("shelves"));
+                state.setNicknames((List<String>)resp.getObjParameter("nicknames"));
+                state.setTurnIds((List<Integer>)resp.getObjParameter("turnIds"));
+                for(int i=0; i<state.getTurnIds().size(); i++){
+                    if((state.getNicknames().get(i)).equals(playerNickname))
+                        playerTurnId=state.getTurnIds().get(i);
+                }
+                state.setPersonalGoal((TileColor[][])resp.getObjParameter("personalgoalmatrix"));
+                state.setCommonGoalPoints1((List<Integer>)resp.getObjParameter("commongoalpoints1"));
+                state.setCommonGoalPoints2((List<Integer>)resp.getObjParameter("commongoalpoints2"));
+                state.setConnected((List<Boolean>)resp.getObjParameter("connected"));
+                setupGameScreen();
+                break;
+
+            case NEW_MEX_CHAT:
+                state.setChat((ChatBean) resp.getObjParameter("chat"));
+                //TODO
+                break;
+
+            case NEW_TURN:
+                state.setCurrPlayerId(resp.getIntParameter("CurrentPlayerId"));
+                if(playerTurnId==state.getCurrPlayerId()){
+                    //TODO
+                }else{
+                    //TODO
+                }
+                //TODO
+                break;
+
+            case SELECT_COLUMN_RESULT:
+                if("success".equals(resp.getStrParameter("result"))){ //andato a buon fine
+                    //TODO
+                }else{
+                    //TODO
+                }
+                //TODO
+                break;
+
+            case SELECT_TILE_RESULT:
+                if("success".equals(resp.getStrParameter("result"))){ //andato a buon fine
+                    //TODO
+                    //if(first tile){}
+                    //else{
+                    //  buffer=(Tile[]) resp.getObjParameter("buffer");
+                    // }
+                }else{
+                    //TODO
+                }
+                //TODO
+                break;
+
+            case PUT_IN_COLUMN_RESULT:
+                if("success".equals(resp.getStrParameter("result"))){ //andato a buon fine
+                    //TODO
+                    state.setBuffer((Tile[]) resp.getObjParameter("buffer"));
+                    if(resp.getIntParameter("turnFinished")==0) {
+                        //TODO
+                    }else{
+                        //TODO
+                    }
+                }else{
+                    //TODO
+                }
+                //TODO
+                break;
+
+            case UPDATE_BOARD:
+                state.setBoard((BoardBean)resp.getObjParameter("board"));
+                //TODO
+                break;
+
+            case UPDATE_PLAYER_SHELF:
+                state.getShelves().set(resp.getIntParameter("playerid"),(ShelfBean)resp.getObjParameter("shelf"));
+                //TODO
+                break;
+
+            case PLAYER_DISCONNECTED:
+                state.getConnected().set(resp.getIntParameter("playerid"),false);
+                //TODO
+                break;
+
+            case PLAYER_RECONNECTED:
+                state.getConnected().set(resp.getIntParameter("playerid"),true);
+                //TODO
+                break;
+
+            case ONLY_ONE_CONNECTED:
+                //TODO
+                break;
+
+            case ONLY_ONE_CONNECTED_TIMER:
+                //TODO
+                break;
+
+            case GAME_ENDED:
+                if(resp.getIntParameter("interrupted")==0){ //finished correctly
+                    state.setFinalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
+                    state.setFinalPersonalGoalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
+                    state.setFinalColorGroupPoints((List<Integer>)resp.getObjParameter("finalPoints"));
+                    List<Integer> tmpPoints = new ArrayList<>(state.getFinalPoints());
+                    List<String> tmpNick = new ArrayList<>(state.getNicknames());
+                    List<Integer> resPoints = new ArrayList<>();
+                    List<String> resNick = new ArrayList<>();
+                    int max, maxPos;
+                    while(tmpNick.size()>0){
+                        max=-1;
+                        maxPos=-1;
+                        for(int i=0; i<tmpNick.size(); i++){
+                            if(tmpPoints.get(i)>max) {
+                                max = tmpPoints.get(i);
+                                maxPos = i;
+                            }
+                        }
+                        resPoints.add(max);
+                        resNick.add(tmpNick.get(maxPos));
+                        tmpPoints.remove((Integer)max);
+                        tmpNick.remove(maxPos);
+                    }
+                    //TODO
+                }
+                else{
+                    //TODO
+                }
+                //TODO
+                break;
+
+            case COMMON_GOAL_WON:
+                if(resp.getIntParameter("commongoalid")==0) {
+                    state.getCommonGoalPoints1().set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
+                    state.setCommonGoalsRemainingPoint(0, resp.getIntParameter("remainingpoints"));
+                }else{
+                    state.getCommonGoalPoints2().set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
+                    state.setCommonGoalsRemainingPoint(1, resp.getIntParameter("remainingpoints"));
+                }
+                //TODO
+                break;
+
+            case SHELF_COMPLETED:
+                state.setLastPlayerId(resp.getIntParameter("playerid"));
+                //TODO
+        }
+    }
+
+
+    /**
+     * Method that sends a given command to the server
+     * @author Nicole Filippi
+     * @param command is the command that has to be sent
+     */
+    public void sendCommand(Command command){
+        try{
+            cch.sendCommand(command);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method that sends the command login to the server
+     * @author Nicole Filippi
+     * @param nickname the nickname chosen by the user
+     */
+    public void doLogin(String nickname) {
+        if (nickname == null || nickname.equals("")) {
+            //TODO handle error
+            return;
+        }
+        Command command = new Command(CommandType.LOGIN);
+        command.setStrParameter("nickname", nickname);
+        sendCommand(command);
+    }
+
+    /**
+     * Method that sends the command players num to the server
+     * @author Nicole Filippi
+     * @param num the number of players chosen by the user
+     */
+    public void doAskNumberPlayer(int num){
+        Command command = new Command(CommandType.PLAYERS_NUM);
+        command.setIntParameter("num", num);
+        sendCommand(command);
+    }
+
+    /**
+     * Method that sends the command select column to the server, checks if is user's turn
+     * @author Nicole Filippi
+     * @param column the column chosen by the user
+     */
+    public void doSelectColumn(int column) {
+        if(playerTurnId==state.getCurrPlayerId()){
+            Command command = new Command(CommandType.SELECT_COLUMN);
+            command.setIntParameter("value", column);
+            sendCommand(command);
+        }
+    }
+
+    /**
+     * Method that sends the command select tile to the server, checks if is user's turn
+     * @author Nicole Filippi
+     * @param row the row of the tile chosen by the user
+     * @param col the column of the tile chosen by the user
+     */
+    public void doSelectTile(int row, int col) {
+        if(playerTurnId==state.getCurrPlayerId()){
+            Command command = new Command(CommandType.SELECT_TILE);
+            command.setIntParameter("row", row);
+            command.setIntParameter("col", col);
+            sendCommand(command);
+        }
+    }
+
+    /**
+     * Method that sends the command put in column to the server, checks if is user's turn
+     * @author Nicole Filippi
+     * @param index the index of the buffer chosen by the user
+     */
+    public void doPutInColumn(int index) {
+        if(playerTurnId==state.getCurrPlayerId()){
+            Command command = new Command(CommandType.PUT_IN_COLUMN);
+            command.setIntParameter("index", index);
+            sendCommand(command);
+        }
+    }
+
+    /**
+     * Method that sends the command send mex chat to the server
+     * @author Nicole Filippi
+     * @param message the text of the message written by the sender
+     * @param receiver the receiver of the private message chosen by the sender (null if broadcast)
+     */
+    public void doSendMex(String message, String receiver) {
+        if (message == null || message.equals("")) {
+            //TODO handle error
+            return;
+        }
+        Command command = new Command(CommandType.SEND_MEX_CHAT);
+        command.setStrParameter("text", message);
+        command.setStrParameter("receiver", receiver); //null if broadcast message
+        sendCommand(command);
+    }
+
+
+    /**
      * It handles the server's response when the user choose the nickname
      * @param valid true if the nickname is valid
      * @param newNick if the nickname already exists it's a valid substitute
@@ -276,7 +568,7 @@ public class GUIApplication extends Application{
         textField.setEditable(false);
         if(valid){
             textField.setOnMouseClicked((event)->{textField.setEditable(false);});
-            messages.setText("Your nickname is valid!");
+            messages.setText("Your nickname " + newNick + " is valid!");
         } else {
             if(newNick==null){
                 textField.setOnMouseClicked((event)->{textField.setEditable(true);});
@@ -312,11 +604,12 @@ public class GUIApplication extends Application{
         button2.addEventHandler(MouseEvent.MOUSE_EXITED_TARGET, e -> button2.setEffect(null));
         button3.addEventHandler(MouseEvent.MOUSE_EXITED_TARGET, e -> button3.setEffect(null));
 
-        //button1.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  //TODO 2 player);
-        //button2.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  //TODO 3 player);
-        //button3.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  //TODO 4 player);
-
+        button1.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  doAskNumberPlayer(2));
+        button2.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  doAskNumberPlayer(3));
+        button3.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  doAskNumberPlayer(4));
     }
+
+
 
     /**
      * This method prepares all the elements in the Game scene

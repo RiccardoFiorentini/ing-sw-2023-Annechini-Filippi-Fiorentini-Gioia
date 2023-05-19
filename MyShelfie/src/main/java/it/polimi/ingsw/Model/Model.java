@@ -22,6 +22,8 @@ public class Model {
     private int firstToStart;
     private final CommonGoal[] commonGoals;
     private final List<Integer> finalPoints;
+    private final List<Integer> finalPersonalGoalPoints;
+    private final List<Integer> finalColorGroupPoints;
     private final Chat chat;
 
     /**
@@ -81,9 +83,10 @@ public class Model {
         initCommonGoal(valuesCG);
 
         finalPoints = new ArrayList<>();
+        finalPersonalGoalPoints = new ArrayList<>();
+        finalColorGroupPoints = new ArrayList<>();
         chat = new Chat(players);
         getPlayerByTurnId(turnId).beginTurn();
-
     }
 
     /**
@@ -264,14 +267,20 @@ public class Model {
      */
     private void countPoints(){
         int points;
+        int pg;
+        int gp;
         for(int i=0; i<numPlayers; i++){
             points=0;
             points+=players.get(i).getPointsCommonGoal()[0];
             points+=players.get(i).getPointsCommonGoal()[1];
-            points+=players.get(i).getPersonalGoal().getPoints(players.get(i).getShelf());
+            pg=players.get(i).getPersonalGoal().getPoints(players.get(i).getShelf());
+            points+=pg;
+            finalPersonalGoalPoints.add(i, pg);
             if(i==firstToEnd)
                 points++;
-            points+=players.get(i).getShelf().getGroupsPoints();
+            gp=players.get(i).getShelf().getGroupsPoints();
+            points+=gp;
+            finalColorGroupPoints.add(i, gp);
             finalPoints.add(points);
         }
         turnId=-1;
@@ -388,6 +397,8 @@ public class Model {
     public void updateGameEnd(int interrupted){
         Response end = new Response(GAME_ENDED);
         end.setObjParameter("finalPoints", finalPoints);
+        end.setObjParameter("finalPersonalGoalPoints", finalPersonalGoalPoints);
+        end.setObjParameter("finalColorGroupPoints", finalColorGroupPoints);
         end.setIntParameter("interrupted", interrupted);
         broadcast(end);
     }

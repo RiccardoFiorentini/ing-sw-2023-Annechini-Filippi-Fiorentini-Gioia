@@ -85,7 +85,7 @@ public enum ResponseType {
     // The game ended, if it ends correctly the points (in order of
     // turnId) are sent, if the game ends because all but one player
     // disconnected, the victory of the remaining player is signaled
-    // Map<String, Object> : {<"finalPoints", List<int>>}
+    // Map<String, Object> : {<"finalPoints", List<int>>, <"finalPersonalGoalPoints", List<int>>, <"finalColorGroupPoints", List<int>>}
     // Map<String, Integer>: {<"interrupted", 0 if it finished correctly, 1 if not>}
     GAME_ENDED,
 
