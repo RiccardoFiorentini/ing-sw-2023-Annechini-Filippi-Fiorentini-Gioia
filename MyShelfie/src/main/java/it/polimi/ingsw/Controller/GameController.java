@@ -99,6 +99,9 @@ public class GameController {
                 } catch (WrongPhaseException e) {
                     result1.setStrParameter("result", "Wrong phase");
                     virtualView.sendResponse(result1);
+                } catch (FullColumnException e){
+                    result1.setStrParameter("result", "Full column");
+                    virtualView.sendResponse(result1);
                 } catch(Exception e){
                     result1.setStrParameter("result", "Error");
                     virtualView.sendResponse(result1);

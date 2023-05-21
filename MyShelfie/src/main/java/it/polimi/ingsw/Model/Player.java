@@ -98,13 +98,17 @@ public class Player {
      * @throws WrongPhaseException when the player tries to select the column when it's already selected
      * @throws WrongTurnException when the player tries to do an action when it's not his turn
      * */
-    public void setSelectedColumn(int column) throws WrongTurnException, WrongPhaseException {
+    public void setSelectedColumn(int column) throws WrongTurnException, WrongPhaseException, FullColumnException {
         if(this.selectedColumn != -1){
             throw new WrongPhaseException();
         }
 
         if(this.model.getTurnId() != this.turnId){
             throw new WrongTurnException();
+        }
+
+        if(shelf.spaceInCol(column)<=0){
+            throw new FullColumnException();
         }
 
         this.selectedColumn = column;

@@ -14,7 +14,7 @@ public class CommonGoal11 extends CommonGoal{
         for(int i=0;i<2;i++){
             //DESCENDING
             if(!shelf.getTile(i,0).isFree() &&
-                    shelf.getTile(i,0).equals(shelf.getTile(i+1,2)) &&
+                    shelf.getTile(i,0).equals(shelf.getTile(i+1,1)) &&
                     shelf.getTile(i,0).equals(shelf.getTile(i+2,2)) &&
                     shelf.getTile(i,0).equals(shelf.getTile(i+3,3)) &&
                     shelf.getTile(i,0).equals(shelf.getTile(i+4,4)))

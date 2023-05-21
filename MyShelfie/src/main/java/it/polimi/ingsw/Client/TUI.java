@@ -226,11 +226,11 @@ public class TUI{
                 if("success".equals(resp.getStrParameter("result"))){
                     state=ClientState.SELECT_FIRST_TILE;
                     phase="Now select the first tile you want to pick, writing row and column ('r c') desired using the indexing.\n";
-                    System.out.println(phase);
+                    System.out.print(phase);
                 }else{
                     state=ClientState.SELECT_COLUMN;
                     phase="You chose a non-valid column, please select a number between 0 and 4: \n";
-                    System.out.println(phase);
+                    System.out.print(phase);
                 }
                 break;
 
@@ -240,7 +240,7 @@ public class TUI{
                         state = ClientState.SELECT_SECOND_TILE;
                         phase="Now select the last tile you want to pick, it has to be on the same row or on the same column\n" +
                                 "and with a max distance of 2. If you want to pick just one tile, select the same tile: \n";
-                        System.out.println(phase);
+                        System.out.print(phase);
                     }else{
                         state=ClientState.PUT_IN_COLUMN;
                         buffer=(Tile[]) resp.getObjParameter("buffer");
@@ -254,11 +254,11 @@ public class TUI{
                     if(state==ClientState.SELECT_FIRST_TILE) {
                         state = ClientState.SELECT_FIRST_TILE;
                         phase="Invalid coordinates, select another tile: \n";
-                        System.out.println(phase);
+                        System.out.print(phase);
                     }else{
                         state=ClientState.SELECT_SECOND_TILE;
                         phase="Invalid coordinates, select another tile: \n";
-                        System.out.println(phase);
+                        System.out.print(phase);
                     }
                 }
                 break;
@@ -277,7 +277,7 @@ public class TUI{
                 }else{
                     state=ClientState.PUT_IN_COLUMN;
                     phase="You chose a non-valid position, please select a valid number between 0 and 2: \n";
-                    System.out.println(phase);
+                    System.out.print(phase);
                 }
                 break;
 
@@ -295,26 +295,31 @@ public class TUI{
 
             case PLAYER_DISCONNECTED:
                 connected.set(resp.getIntParameter("playerid"),false);
-                System.out.println("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has disconnected. \n");
+                System.out.print("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has disconnected. \n");
                 break;
 
             case PLAYER_RECONNECTED:
                 connected.set(resp.getIntParameter("playerid"),true);
-                System.out.println("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has reconnected.");
+                System.out.print("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has reconnected. \n");
                 break;
 
             case ONLY_ONE_CONNECTED:
-                System.out.println("You are the only one connected... please wait for other players to reconnect");
+                System.out.print("You are the only one connected... please wait for other players to reconnect \n");
                 break;
 
             case ONLY_ONE_CONNECTED_TIMER:
-                System.out.println("You are the only one connected... please wait "+resp.getIntParameter("timermilliseconds")/1000+" seconds.");
+                System.out.print("You are the only one connected... please wait "+resp.getIntParameter("timermilliseconds")/1000+" seconds. \n");
                 break;
 
             case GAME_ENDED:
                 clearConsole();
                 List<Integer> points;
-                System.out.println("GAME ENDED!!!");
+                System.out.println(" ██████╗  █████╗ ███╗   ███╗███████╗    ███████╗███╗   ██╗██████╗ ███████╗██████╗ \n" +
+                                   "██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔════╝████╗  ██║██╔══██╗██╔════╝██╔══██╗\n" +
+                                   "██║  ███╗███████║██╔████╔██║█████╗      █████╗  ██╔██╗ ██║██║  ██║█████╗  ██║  ██║\n" +
+                                   "██║   ██║██╔══██║██║╚██╔╝██║██╔══╝      ██╔══╝  ██║╚██╗██║██║  ██║██╔══╝  ██║  ██║\n" +
+                                   "╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗    ███████╗██║ ╚████║██████╔╝███████╗██████╔╝\n" +
+                                   " ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝    ╚══════╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═════╝");
                 if(resp.getIntParameter("interrupted")==0){ //finished correctly
                     System.out.println("RESULTS: ");
                     points=(List<Integer>)resp.getObjParameter("finalPoints");
