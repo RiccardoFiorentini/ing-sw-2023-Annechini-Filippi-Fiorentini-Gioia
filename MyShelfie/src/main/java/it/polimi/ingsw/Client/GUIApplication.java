@@ -383,6 +383,7 @@ public class GUIApplication extends Application{
 
                 Command command = new Command(CommandType.GAME_JOINED);
                 sendCommand(command);
+                state = new GameState();
                 state.setBuffer(new Tile[]{Tile.EMPTY,Tile.EMPTY,Tile.EMPTY});
                 state.setFirstPlayerId(resp.getIntParameter("firstPlayerId"));
                 state.setCommonGoalsId(0, resp.getIntParameter("commongoal1"));
@@ -399,11 +400,11 @@ public class GUIApplication extends Application{
                     if((state.getNicknames().get(i)).equals(playerNickname))
                         playerTurnId=state.getTurnIds().get(i);
                 }
-                state.setPersonalGoal((TileColor[][])resp.getObjParameter("personalgoalmatrix"));
+                personalGoalId = resp.getIntParameter("personalgoal");
                 state.setCommonGoalPoints1((List<Integer>)resp.getObjParameter("commongoalpoints1"));
                 state.setCommonGoalPoints2((List<Integer>)resp.getObjParameter("commongoalpoints2"));
                 state.setConnected((List<Boolean>)resp.getObjParameter("connected"));
-                setupGameScreen();
+                Platform.runLater(()->setupGameScreen());
                 break;
 
 
@@ -416,11 +417,11 @@ public class GUIApplication extends Application{
             case NEW_TURN:
                 state.setCurrPlayerId(resp.getIntParameter("CurrentPlayerId"));
                 if(playerTurnId==state.getCurrPlayerId()){
-                    //TODO
+                    //TODO current player scene
                 }else{
-                    //TODO
+                    //TODO other players scene
                 }
-                //TODO
+                //TODO common scene
                 break;
 
             case SELECT_COLUMN_RESULT:

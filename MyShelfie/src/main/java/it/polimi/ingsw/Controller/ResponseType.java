@@ -16,9 +16,9 @@ public enum ResponseType {
     //The game started, the initial conditions are sent as arguments
     // Initial conditions:
     // Map<String,Integer> intArgs : {<"firstPlayerId", id>, <"commonGoal1", id(1-12)>, <"commonGoal2", id(1-12)>, <"commonGoalsRemainingPoint1", points>, <"commonGoalsRemainingPoint2", points>,
-    //                          <"currentPlayer",id>, <"isStart", 1 if it's the starting message or 0 if it is used for reconnection>}
+    //                          <"currentPlayer",id>, <"personalGoal", personalGoal id>, <"isStart", 1 if it's the starting message or 0 if it is used for reconnection>}
     // Map<String,Object> objArgs : {<"board", board>, <"chat", chat>, <"shelves", List<Shelf>>, <"nicknames", List<String>>, <"turnIds", List<Integer>>,
-    // <"personalGoal", TilesColor[][] >, <"commonGoalPoints1", List<Integer>>, <"commonGoalPoints2", List<Integer>>, <"connected", List<Boolean>>}
+    // <"personalGoalMatrix", TilesColor[][] >, <"commonGoalPoints1", List<Integer>>, <"commonGoalPoints2", List<Integer>>, <"connected", List<Boolean>>}
     // Map<String,String> strArgs : {<"commonGoalDescription1", description>, <"commonGoalDescription2", description>}
     // shelves, nicknames, turnIds, personalGoal, connected, commonGoalPoints1 and commonGoalPoints2 follow the order of the players in the list.
     GAME_STARTED,

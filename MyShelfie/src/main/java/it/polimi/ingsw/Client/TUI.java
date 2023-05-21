@@ -343,7 +343,7 @@ public class TUI{
                         tmpNick.remove(maxPos);
                     }
                     for(int i=0; i<resPoints.size(); i++){
-                        System.out.println(i +") " + resNick.get(i) + ": " + resPoints.get(i));
+                        System.out.println((i+1) +") " + resNick.get(i) + ": " + resPoints.get(i));
                     }
                 }
                 else{

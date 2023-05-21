@@ -135,6 +135,8 @@ public class PlayerTest {
             throw new RuntimeException(e);
         } catch (WrongPhaseException e) {
             throw new RuntimeException(e);
+        } catch (FullColumnException e) {
+            throw new RuntimeException(e);
         }
 
         assertTrue(AllPlayer.get(model.getTurnId()).getSelectedColumn() == 0 &&
@@ -240,6 +242,8 @@ public class PlayerTest {
         } catch (WrongTurnException e) {
             throw new RuntimeException(e);
         } catch (WrongPhaseException e) {
+            throw new RuntimeException(e);
+        } catch (FullColumnException e) {
             throw new RuntimeException(e);
         }
 
