@@ -2,11 +2,6 @@ package main.java.it.polimi.ingsw.Client;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.DoubleBinding;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,16 +9,20 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -38,8 +37,6 @@ import main.java.it.polimi.ingsw.Controller.CommandType;
 import main.java.it.polimi.ingsw.Controller.Response;
 import main.java.it.polimi.ingsw.Model.*;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -122,6 +119,8 @@ public class GUIApplication extends Application{
     private Pane winnerPane;
 
     private ClientConnectionHandler cch;
+    private ImageView finalPointsBg;
+    private List<Popup> specificPointsPopups;
 
     public static void main(String[] args){
         launch(args);
@@ -130,7 +129,7 @@ public class GUIApplication extends Application{
     @Override
     public void start(Stage stage) throws Exception {
         this.stage = stage;
-        setupGameScreen();
+        setupInterruptedEndGameScreen();
     }
 
     /**
@@ -251,7 +250,7 @@ public class GUIApplication extends Application{
         textField = new TextField();
         textField.setFont(font);
         textField.setOnAction((event)->{if(textField.isEditable()){
-           doLogin(textField.getText());
+            doLogin(textField.getText());
         }});
 
         hBoxWaiting = new HBox(10);
@@ -998,6 +997,7 @@ public class GUIApplication extends Application{
      */
     public void setupEndGameScreen(){
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        stdScreenRatio = bounds.getWidth()/bounds.getHeight();
         stage.setX(bounds.getMinX());
         stage.setY(bounds.getMinY());
         stage.setWidth(bounds.getWidth());
@@ -1007,30 +1007,34 @@ public class GUIApplication extends Application{
         endWallpaper = new ImageView(new Image(getClass().getResource("/Publisher material/Display_5.jpg").toString()));
         endWallpaper.setFitHeight(bounds.getHeight());
         endWallpaper.setFitWidth(bounds.getWidth());
+        endWallpaper.setEffect(new GaussianBlur(20));
         StackPane.setAlignment(endWallpaper, Pos.CENTER);
+
+        finalPointsBg = new ImageView(new Image(getClass().getResource("/misc/base_pagina2.jpg").toString()));
+        finalPointsBg.setFitWidth(bounds.getWidth()*0.4);
+        finalPointsBg.setFitHeight(bounds.getHeight()*0.35);
+        Rectangle clip = new Rectangle( finalPointsBg.getFitWidth(), finalPointsBg.getFitHeight() );
+        clip.setArcWidth(20);
+        clip.setArcHeight(20);
+        finalPointsBg.setClip(clip);
+        SnapshotParameters parameters = new SnapshotParameters();
+        parameters.setFill(Color.TRANSPARENT);
+        WritableImage image = finalPointsBg.snapshot(parameters, null);
+        finalPointsBg.setClip(null);
+        finalPointsBg.setEffect(new DropShadow(20, Color.BLACK));
+        finalPointsBg.setImage(image);
+        StackPane.setAlignment(finalPointsBg, Pos.CENTER);
+
         endStackPane.getChildren().add(endWallpaper);
+        endStackPane.getChildren().add(finalPointsBg);
 
-
-        //TODO player with highest score
-
-        winner = new Text("Pasquale WON!!!!");
-        winner.setFill(Color.BLUE);
-        winnerPane = new Pane(winner);
-
-        endStackPane.getChildren().add(winnerPane);
 
         resultPane = new GridPane();
-
-        /*
-        SET RESULTPANE BACKGROUND COLOR -- NOT WORKING??
-        Color backgroundColor = Color.rgb(0, 0, 255, 0.5);
-        resultPane.setBackground(new Background(new BackgroundFill(backgroundColor, null, null)));
-        */
 
         resultPane.setHgap(25);
         resultPane.setVgap(10);
 
-        /*Setting column properties for leaderboard pane
+        //Setting column properties for leaderboard pane
         ColumnConstraints col1Constraints = new ColumnConstraints();
         col1Constraints.setHgrow(Priority.ALWAYS);
         col1Constraints.setPercentWidth(90);
@@ -1039,7 +1043,17 @@ public class GUIApplication extends Application{
         col2Constraints.setHgrow(Priority.ALWAYS);
         col2Constraints.setPercentWidth(10);
         resultPane.getColumnConstraints().addAll(col1Constraints, col2Constraints);
-        */
+
+        //TODO player with highest score
+        winner = new Text("Pasquale WON!!!!");
+        winner.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 100));
+        winner.setFill(Color.BLUE);
+        winner.setY(bounds.getHeight()*0.2);
+        winner.setX(bounds.getWidth()*0.5 - winner.getLayoutBounds().getWidth()*0.5);
+        winner.setStroke(Color.BLACK);
+        winner.setFill(Color.WHITE);
+        Pane winnerPane = new Pane(winner);
+        endStackPane.getChildren().add(winnerPane);
 
         //TODO: ADJUST SIZES, MAKE EVERYTHING RESIZABLE
 
@@ -1052,10 +1066,12 @@ public class GUIApplication extends Application{
                 {2, 2, 3, 1, 0}};
 
         //TODO A list of Popup pointsPopup ? one popup for each player
-
+        state = new GameState();
+        state.setNumPlayers(4);
         Popup[] pointsPopupList = new Popup[4];
 
-        for(int i=0; i<state.getNumPlayers(); i++) {
+        specificPointsPopups = new ArrayList<>();
+        for(int i=0; i < state.getNumPlayers(); i++) {
             GridPane specificPointsPopup = new GridPane();
             specificPointsPopup.setMaxWidth(50);
             specificPointsPopup.setMaxHeight(50);
@@ -1064,33 +1080,31 @@ public class GUIApplication extends Application{
                 Text specificPointsEntry = new Text(String.valueOf(specificPoints[i][j]));
                 specificPointsEntry.setTextAlignment(TextAlignment.RIGHT);
                 specificPointsEntry.setFont(Font.font("Helvetica", 35));
+                specificPointsEntry.setFill(Color.WHITE);
                 Text typeOfPointEntry = new Text(typeOfPointEntryNames[j]);
                 typeOfPointEntry.setTextAlignment(TextAlignment.LEFT);
                 typeOfPointEntry.setFont(Font.font("Helvetica", 35));
-
+                typeOfPointEntry.setFill(Color.WHITE);
 
                 specificPointsPopup.add(typeOfPointEntry, 0, j);
                 specificPointsPopup.add(specificPointsEntry, 1, j);
-
-
-                //Setting popup properties
-                //specificPointsPopup.getColumnConstraints().addAll(col1Constraints, col2Constraints);
-                specificPointsPopup.setHgap(25);
-                specificPointsPopup.setStyle("-fx-background-color: white;");
             }
+
+            //Setting popup properties
+            //specificPointsPopup.getColumnConstraints().addAll(col1Constraints, col2Constraints);
+            specificPointsPopup.setHgap(25);
+            specificPointsPopup.setStyle("-fx-background-color: black;");
+            specificPointsPopup.setOpacity(0.8);
+
             Popup popup = new Popup();
             popup.getContent().add(specificPointsPopup);
             pointsPopupList[i] = popup;
+            specificPointsPopups.add(popup);
 
         }
 
-
-
-
-
         //TODO List of arrival nicknames (in descending order)
         String[] playerEntryNames = {"Pasquale", "Nicole", "Alessandro", "Riccardo"};
-
 
         //TODO List of arrival scoring points (in descending order)
         /*
@@ -1107,7 +1121,6 @@ public class GUIApplication extends Application{
 
             if(i==0){
                 //FIRST PLAYER
-
                 playerEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
                 playerEntry.setFill(Color.GREEN);
                 pointsEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
@@ -1117,13 +1130,15 @@ public class GUIApplication extends Application{
                 //Other players
                 playerEntry.setFont(Font.font("Calibri", 50));
                 pointsEntry.setFont(Font.font("Calibri", 50));
+                playerEntry.setFill(Color.WHITE);
+                pointsEntry.setFill(Color.WHITE);
             }
             resultPane.add(playerEntry, 0, i);
             resultPane.add(pointsEntry, 1, i);
 
             //SCORE POPUP
             int finalI = i;
-            pointsEntry.setOnMouseEntered(event -> {
+            pointsEntry.setOnMouseMoved(event -> {
                 // Shows popup when mouse gets over score
                 pointsPopupList[finalI].show(pointsEntry, event.getScreenX()+35, event.getScreenY()+10);
             });
@@ -1132,21 +1147,191 @@ public class GUIApplication extends Application{
             });
         }
 
-        resultPane.setStyle("-fx-background-color: white;");
-
+        StackPane.setAlignment(resultPane, Pos.CENTER);
+        resultPane.setMaxWidth(bounds.getWidth()/4);
+        resultPane.setMaxHeight(bounds.getWidth()/7);
         endStackPane.getChildren().add(resultPane);
-
-
-
-
 
         scene = new Scene(endStackPane, bounds.getWidth(), bounds.getHeight());
         stage.setScene(scene);
         stage.sizeToScene();
         stage.show();
         stage.setTitle("Game has ended");
-        //TODO: POSITIONING and SIZING winnerPane and resultPane(with text elements) in Stage
 
+        stage.widthProperty().addListener( (x)->setEndGameGraphicsProportions() );
+        stage.heightProperty().addListener( (x)->setEndGameGraphicsProportions() );
+        setEndGameGraphicsProportions();
+    }
+
+    /**
+     * This method sets the positions of the End Game
+     * elements with respect to the window size
+     * @author Pasquale Gioia,Alessandro Annechini
+     */
+    public void setEndGameGraphicsProportions(){
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        double stdHeight = Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight());
+        double stdHeightRatio = Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight())/bounds.getHeight();
+
+        finalPointsBg.setFitWidth(stdHeight*stdScreenRatio*0.4);
+        finalPointsBg.setFitHeight(finalPointsBg.getFitWidth()/(stdScreenRatio*0.4)*0.35);
+
+        resultPane.setHgap(25*stdHeightRatio);
+        resultPane.setVgap(10*stdHeightRatio);
+
+        //player with the highest score
+        winner.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 100*stdHeightRatio));
+        winner.setY(stage.getHeight()*0.2);
+        winner.setX(stage.getWidth()*0.5 - winner.getLayoutBounds().getWidth()*0.5);
+
+        for(Popup p : specificPointsPopups){
+            for(Node t : p.getContent()){
+                for(Node tt : ((GridPane)t).getChildren())
+                    ((Text) tt).setFont(Font.font("Helvetica", 35*stdHeightRatio));
+                ((GridPane)t).setHgap(25*stdHeightRatio);
+            }
+        }
+
+        for(Node n : resultPane.getChildren()){
+            ((Text) n).setFont(Font.font("Calibri", 50*stdHeightRatio));
+        }
+
+        resultPane.setMaxWidth(bounds.getWidth()/4*stdHeightRatio);
+        resultPane.setMaxHeight(bounds.getWidth()/7*stdHeightRatio);
+    }
+
+    /**
+     * This method defines interrupted end game scene
+     * @author Pasquale Gioia, Alessandro Annechini
+     */
+    public void setupInterruptedEndGameScreen(){
+
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        stdScreenRatio = bounds.getWidth()/bounds.getHeight();
+        stage.setX(bounds.getMinX());
+        stage.setY(bounds.getMinY());
+        stage.setWidth(bounds.getWidth());
+        stage.setHeight(bounds.getHeight());
+
+        endStackPane = new StackPane();
+        endWallpaper = new ImageView(new Image(getClass().getResource("/Publisher material/Display_5.jpg").toString()));
+        endWallpaper.setFitHeight(bounds.getHeight());
+        endWallpaper.setFitWidth(bounds.getWidth());
+        endWallpaper.setEffect(new GaussianBlur(20));
+        StackPane.setAlignment(endWallpaper, Pos.CENTER);
+
+        finalPointsBg = new ImageView(new Image(getClass().getResource("/misc/base_pagina2.jpg").toString()));
+        finalPointsBg.setFitWidth(bounds.getWidth()*0.4);
+        finalPointsBg.setFitHeight(bounds.getHeight()*0.35);
+        Rectangle clip = new Rectangle( finalPointsBg.getFitWidth(), finalPointsBg.getFitHeight() );
+        clip.setArcWidth(20);
+        clip.setArcHeight(20);
+        finalPointsBg.setClip(clip);
+        SnapshotParameters parameters = new SnapshotParameters();
+        parameters.setFill(Color.TRANSPARENT);
+        WritableImage image = finalPointsBg.snapshot(parameters, null);
+        finalPointsBg.setClip(null);
+        finalPointsBg.setEffect(new DropShadow(20, Color.BLACK));
+        finalPointsBg.setImage(image);
+        StackPane.setAlignment(finalPointsBg, Pos.CENTER);
+
+        endStackPane.getChildren().add(endWallpaper);
+        endStackPane.getChildren().add(finalPointsBg);
+
+
+        resultPane = new GridPane();
+
+        resultPane.setHgap(25);
+        resultPane.setVgap(10);
+
+        //Setting column properties for leaderboard pane
+        ColumnConstraints col1Constraints = new ColumnConstraints();
+        col1Constraints.setHgrow(Priority.ALWAYS);
+        col1Constraints.setPercentWidth(90);
+
+        ColumnConstraints col2Constraints = new ColumnConstraints();
+        col2Constraints.setHgrow(Priority.ALWAYS);
+        col2Constraints.setPercentWidth(10);
+        resultPane.getColumnConstraints().addAll(col1Constraints, col2Constraints);
+
+        //TODO player with highest score
+        winner = new Text("You won!");
+        winner.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 100));
+        winner.setFill(Color.BLUE);
+        winner.setY(bounds.getHeight()*0.2);
+        winner.setX(bounds.getWidth()*0.5 - winner.getLayoutBounds().getWidth()*0.5);
+        winner.setStroke(Color.BLACK);
+        winner.setFill(Color.WHITE);
+        Pane winnerPane = new Pane(winner);
+        endStackPane.getChildren().add(winnerPane);
+
+        //TODO: ADJUST SIZES, MAKE EVERYTHING RESIZABLE
+
+        //TODO List of arrival nicknames (in descending order)
+        String[] playerEntryNames = {"Pasquale", "Nicole", "Alessandro", "Riccardo"};
+        state = new GameState();
+        state.setNumPlayers(4);
+        //TODO List of arrival scoring points (in descending order)
+
+        for(int i=0; i<state.getNumPlayers(); i++) {
+            Text playerEntry = new Text(playerEntryNames[i]);
+            playerEntry.setTextAlignment(TextAlignment.CENTER);
+
+            if(i==0){
+                //FIRST PLAYER
+                playerEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
+                playerEntry.setFill(Color.GREEN);
+
+            } else {
+                //Other players
+                playerEntry.setFont(Font.font("Calibri", 50));
+                playerEntry.setFill(Color.RED);
+            }
+            resultPane.add(playerEntry, 0, i);
+        }
+        StackPane.setAlignment(resultPane, Pos.CENTER);
+        resultPane.setMaxWidth(bounds.getWidth()/4);
+        resultPane.setMaxHeight(bounds.getWidth()/7);
+        endStackPane.getChildren().add(resultPane);
+
+        scene = new Scene(endStackPane, bounds.getWidth(), bounds.getHeight());
+        stage.setScene(scene);
+        stage.sizeToScene();
+        stage.show();
+        stage.setTitle("Game has ended");
+
+        stage.widthProperty().addListener( (x)->setInterruptedEndGameGraphicsProportions() );
+        stage.heightProperty().addListener( (x)->setInterruptedEndGameGraphicsProportions() );
+        setInterruptedEndGameGraphicsProportions();
+    }
+
+    /**
+     * This method sets the positions of the Interrupted End Game
+     * elements with respect to the window size
+     * @author Pasquale Gioia,Alessandro Annechini
+     */
+    public void setInterruptedEndGameGraphicsProportions(){
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        double stdHeight = Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight());
+        double stdHeightRatio = Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight())/bounds.getHeight();
+
+        finalPointsBg.setFitWidth(stdHeight*stdScreenRatio*0.4);
+        finalPointsBg.setFitHeight(finalPointsBg.getFitWidth()/(stdScreenRatio*0.4)*0.35);
+
+        resultPane.setHgap(25*stdHeightRatio);
+        resultPane.setVgap(10*stdHeightRatio);
+
+        //player with the highest score
+        winner.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 100*stdHeightRatio));
+        winner.setY(stage.getHeight()*0.2);
+        winner.setX(stage.getWidth()*0.5 - winner.getLayoutBounds().getWidth()*0.5);
+
+        for(Node n : resultPane.getChildren()){
+            ((Text) n).setFont(Font.font("Calibri", 50*stdHeightRatio));
+        }
+
+        resultPane.setMaxWidth(bounds.getWidth()/4*stdHeightRatio);
+        resultPane.setMaxHeight(bounds.getWidth()/7*stdHeightRatio);
     }
 
     /**
@@ -1200,7 +1385,6 @@ public class GUIApplication extends Application{
         chatStage.show();
 
     }
-
 
 
     /**
