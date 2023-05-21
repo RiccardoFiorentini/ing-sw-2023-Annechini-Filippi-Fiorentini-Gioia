@@ -2,6 +2,11 @@ package main.java.it.polimi.ingsw.Client;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,6 +16,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
@@ -32,6 +38,8 @@ import main.java.it.polimi.ingsw.Controller.CommandType;
 import main.java.it.polimi.ingsw.Controller.Response;
 import main.java.it.polimi.ingsw.Model.*;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +54,8 @@ public class GUIApplication extends Application{
     private String playerNickname;
     private int playerTurnId;
     private Stage stage;
+    private Stage chatStage;
+    private boolean isChatOpen;
     private Parent root;
     private ImageView imageViewWallpaper;
     private ImageView endWallpaper;
@@ -64,6 +74,7 @@ public class GUIApplication extends Application{
     private StackPane stackPane;
     private VBox vBox;
     private Scene scene;
+    private Scene chatScene;
     private Rectangle2D bounds;
     private Label messages;
 
@@ -75,6 +86,16 @@ public class GUIApplication extends Application{
     private HBox hBox;
     private HBox hBoxNet;
     private HBox hBoxWaiting;
+    private HBox hboxBuffer;
+    private Pane bufferPane;
+
+    private ImageView tile1Buffer;
+    private ImageView tile2Buffer;
+    private ImageView tile3Buffer;
+
+    private Pane chatButtonPane;
+    private ImageView chat;
+    private StackPane chatPane;
     private FadeTransition fadeTransition1;
     private FadeTransition fadeTransition2;
     private FadeTransition fadeTransition3;
@@ -98,6 +119,8 @@ public class GUIApplication extends Application{
     private ImageView tokenCommonGoal2;
     private ImageView tokenLastPlayerId;
 
+    private Pane winnerPane;
+
     private ClientConnectionHandler cch;
 
     public static void main(String[] args){
@@ -107,7 +130,7 @@ public class GUIApplication extends Application{
     @Override
     public void start(Stage stage) throws Exception {
         this.stage = stage;
-        setupMenu();
+        setupGameScreen();
     }
 
     /**
@@ -358,6 +381,7 @@ public class GUIApplication extends Application{
                 break;
 
             case GAME_STARTED:
+
                 Command command = new Command(CommandType.GAME_JOINED);
                 sendCommand(command);
                 state.setBuffer(new Tile[]{Tile.EMPTY,Tile.EMPTY,Tile.EMPTY});
@@ -382,6 +406,8 @@ public class GUIApplication extends Application{
                 state.setConnected((List<Boolean>)resp.getObjParameter("connected"));
                 setupGameScreen();
                 break;
+
+
 
             case NEW_MEX_CHAT:
                 state.setChat((ChatBean) resp.getObjParameter("chat"));
@@ -675,6 +701,8 @@ public class GUIApplication extends Application{
         stage.show();
     }
 
+
+
     /**
      * This method prepares all the elements in the Game scene
      * @author Alessandro Annechini, Pasquale Gioia
@@ -720,9 +748,14 @@ public class GUIApplication extends Application{
         Pane shelfPane = new Pane();
         Pane tilePane = new Pane();
         Pane tokenPane = new Pane();
+        bufferPane = new Pane();
+        chatButtonPane = new Pane();
+
 
         shelfPane.getChildren().add(tilePane);
         tilePane.getChildren().add(boardPane);
+
+
         tokenPane.getChildren().add(shelfPane);
 
 
@@ -743,7 +776,8 @@ public class GUIApplication extends Application{
         ImageView background = new ImageView(new Image(getClass().getResource("/misc/sfondo parquet.jpg").toString()));
 
 
-        //PersonalGoal, CommonGoals, Remaining points
+        //PersonalGoal, CommonGoals, Remaining points, Buffer, Chat
+        //---------------------------------------------------------
 
         //TODO: make sure this is correct?
         /*
@@ -761,6 +795,7 @@ public class GUIApplication extends Application{
         */
         tokenLastPlayerId = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
 
+
         //STATIC EXAMPLE
         personalGoal = new ImageView(new Image(getClass().getResource("/personal goal cards/Personal_Goals.png").toString()));
         commonGoal1 = new ImageView(new Image(getClass().getResource("/common goal cards/1.jpg").toString()));
@@ -768,12 +803,40 @@ public class GUIApplication extends Application{
         tokenCommonGoal1 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
         tokenCommonGoal2 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
 
+
+
+
+
+        tile1Buffer = new ImageView(new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString()));
+        tile2Buffer = new ImageView(new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString()));
+        tile3Buffer = new ImageView(new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString()));
+        hboxBuffer = new HBox(tile1Buffer, tile2Buffer, tile3Buffer);
+
+        hboxBuffer.setPadding(new Insets(10));
+        hboxBuffer.setSpacing(10);
+        hboxBuffer.setStyle("-fx-background-color: #F0F0F0; -fx-border-color: #000000;");
+        bufferPane.getChildren().add(hboxBuffer);
+
+
+        chat = new ImageView(new Image(getClass().getResource("/external/chat.png").toString()));
+        chatButtonPane = new Pane(chat);
+
+
+
         tokenPane.getChildren().add(tokenLastPlayerId);
         tokenPane.getChildren().add(tokenCommonGoal1);
         tokenPane.getChildren().add(tokenCommonGoal2);
+
+
         boardPane.getChildren().add(commonGoal1);
         boardPane.getChildren().add(commonGoal2);
         boardPane.getChildren().add(personalGoal);
+        boardPane.getChildren().add(bufferPane);
+        boardPane.getChildren().add(chatButtonPane);
+
+
+
+
 
         //ORDER OF PANELS
         StackPane stackPane = new StackPane(background,tokenPane);
@@ -788,6 +851,16 @@ public class GUIApplication extends Application{
 
         playerShelf.setOnMouseClicked((e)->System.out.println("CLICK SHELF!!!"));
         board.setOnMouseClicked((e)->System.out.println("CLICK BOARD!!!"));
+        tile1Buffer.setOnMouseClicked((e)->System.out.println("CLICK BUFFER1 TILE!!"));
+        tile2Buffer.setOnMouseClicked((e)->System.out.println("CLICK BUFFER2 TILE!!"));
+        tile3Buffer.setOnMouseClicked((e)->System.out.println("CLICK BUFFER3 TILE!!"));
+        chat.setOnMouseClicked((e) -> {
+            if(!isChatOpen){
+                openChatWindow();
+                isChatOpen = true;
+            }
+
+        });
 
         scene = new Scene(stackPane,bounds.getWidth(),bounds.getHeight());
         stage.setScene(scene);
@@ -801,6 +874,8 @@ public class GUIApplication extends Application{
         stage.heightProperty().addListener((x)->setGameGraphicsProportions());
         setGameGraphicsProportions();
     }
+
+
 
     /**
      * This method sets the positions of the Game
@@ -873,11 +948,29 @@ public class GUIApplication extends Application{
 
         tokenCommonGoal2.setFitHeight(commonGoal2.getFitHeight()*0.5);
         tokenCommonGoal2.setFitWidth(tokenCommonGoal2.getFitHeight());
-        tokenCommonGoal2.setX(tokenCommonGoal1.getX());
-        tokenCommonGoal2.setY(tokenCommonGoal1.getFitHeight()+140);
+        tokenCommonGoal2.setX(commonGoal2.getFitWidth()*0.57+commonGoal2.getX());
+        tokenCommonGoal2.setY(commonGoal2.getFitHeight()*0.225+commonGoal2.getY());
         tokenCommonGoal2.setRotate(-8.7);
 
         //TODO: BUFFER HBOX, CHAT
+        hboxBuffer.setPrefHeight(Math.min(board.getFitWidth()/stdScreenRatio,stage.getHeight())*0.25);
+        hboxBuffer.setPrefWidth(board.getFitHeight()*0.37);
+        hboxBuffer.setLayoutX(stage.getWidth()*0.44);
+        hboxBuffer.setLayoutY(board.getY()- board.getFitHeight()*0.156);
+
+        tile1Buffer.setFitWidth(hboxBuffer.getPrefWidth()*0.3333333);
+        tile1Buffer.setFitHeight(hboxBuffer.getPrefHeight()*0.87);
+        tile2Buffer.setFitWidth(hboxBuffer.getPrefWidth()*0.3333333);
+        tile2Buffer.setFitHeight(hboxBuffer.getPrefHeight()*0.87);
+        tile3Buffer.setFitWidth(hboxBuffer.getPrefWidth()*0.3333333);
+        tile3Buffer.setFitHeight(hboxBuffer.getPrefHeight()*0.87);
+
+        chat.setFitHeight((Math.min(board.getFitWidth()/stdScreenRatio,stage.getHeight())*0.28));
+        chat.setFitWidth(board.getFitHeight()*0.24);
+        chat.setX(stage.getWidth()*0.27);
+        chat.setY(board.getY()- board.getFitHeight()*0.156);
+
+
     }
 
     /**
@@ -917,6 +1010,15 @@ public class GUIApplication extends Application{
         StackPane.setAlignment(endWallpaper, Pos.CENTER);
         endStackPane.getChildren().add(endWallpaper);
 
+
+        //TODO player with highest score
+
+        winner = new Text("Pasquale WON!!!!");
+        winner.setFill(Color.BLUE);
+        winnerPane = new Pane(winner);
+
+        endStackPane.getChildren().add(winnerPane);
+
         resultPane = new GridPane();
 
         /*
@@ -928,7 +1030,7 @@ public class GUIApplication extends Application{
         resultPane.setHgap(25);
         resultPane.setVgap(10);
 
-        //Setting column properties for leaderboard pane
+        /*Setting column properties for leaderboard pane
         ColumnConstraints col1Constraints = new ColumnConstraints();
         col1Constraints.setHgrow(Priority.ALWAYS);
         col1Constraints.setPercentWidth(90);
@@ -937,7 +1039,7 @@ public class GUIApplication extends Application{
         col2Constraints.setHgrow(Priority.ALWAYS);
         col2Constraints.setPercentWidth(10);
         resultPane.getColumnConstraints().addAll(col1Constraints, col2Constraints);
-
+        */
 
         //TODO: ADJUST SIZES, MAKE EVERYTHING RESIZABLE
 
@@ -982,6 +1084,10 @@ public class GUIApplication extends Application{
 
         }
 
+
+
+
+
         //TODO List of arrival nicknames (in descending order)
         String[] playerEntryNames = {"Pasquale", "Nicole", "Alessandro", "Riccardo"};
 
@@ -1001,6 +1107,7 @@ public class GUIApplication extends Application{
 
             if(i==0){
                 //FIRST PLAYER
+
                 playerEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
                 playerEntry.setFill(Color.GREEN);
                 pointsEntry.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 50));
@@ -1026,26 +1133,75 @@ public class GUIApplication extends Application{
         }
 
         resultPane.setStyle("-fx-background-color: white;");
-        StackPane.setAlignment(resultPane, Pos.CENTER);
-        resultPane.setMaxWidth(bounds.getWidth()/4);
-        resultPane.setMaxHeight(bounds.getWidth()/7);
+
         endStackPane.getChildren().add(resultPane);
 
 
-        //TODO player with highest score
-        winner = new Text("Pasquale WON!!!!");
-        winner.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 100));
-        winner.setFill(Color.BLUE);
 
-        StackPane.setAlignment(winner, Pos.TOP_CENTER);
-        endStackPane.getChildren().add(winner);
+
 
         scene = new Scene(endStackPane, bounds.getWidth(), bounds.getHeight());
         stage.setScene(scene);
         stage.sizeToScene();
         stage.show();
         stage.setTitle("Game has ended");
+        //TODO: POSITIONING and SIZING winnerPane and resultPane(with text elements) in Stage
+
     }
+
+    /**
+     * This method creates a chat Stage
+     * @author Pasquale Gioia
+     */
+    private void openChatWindow() {
+        chatStage = new Stage();
+
+        //Make it possible to open only one chat window at a time
+        chatStage.setOnCloseRequest((e)->{
+            isChatOpen = false;
+        });
+
+        chatStage.setX(stage.getX());
+        chatStage.setY(stage.getY()*1.4);
+        chatStage.setWidth(stage.getWidth()/4.5);
+        chatStage.setHeight(stage.getHeight()*0.95);
+
+        //TODO: implement private sending message, implement message reading from chatBean, implement connection with Chat class
+
+        TextArea chatArea = new TextArea();
+        chatArea.setEditable(false);
+
+        TextField messageField = new TextField();
+        messageField.setPromptText("Write a message...");
+        Button sendButton = new Button("Send");
+        sendButton.setOnAction((e)-> {
+            String message = messageField.getText().trim();
+            if (!message.isEmpty()) {
+                chatArea.appendText(message + "\n");
+                messageField.clear();
+            }
+        });
+
+        HBox inputBox = new HBox(messageField, sendButton);
+        HBox.setHgrow(messageField, Priority.ALWAYS);
+        HBox.setHgrow(sendButton, Priority.ALWAYS);
+        inputBox.setSpacing(10);
+        inputBox.setPadding(new Insets(10));
+
+        BorderPane chatPane = new BorderPane();
+        chatPane.setCenter(chatArea);
+        chatPane.setBottom(inputBox);
+        BorderPane.setMargin(chatArea, new Insets(10));
+
+
+
+        chatScene = new Scene(chatPane, chatStage.getX(), chatStage.getY());
+        chatStage.setScene(chatScene);
+        chatStage.show();
+
+    }
+
+
 
     /**
      * Animation for the waiting room
