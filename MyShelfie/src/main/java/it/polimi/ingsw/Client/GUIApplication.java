@@ -2,6 +2,7 @@ package main.java.it.polimi.ingsw.Client;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -33,13 +34,15 @@ import main.java.it.polimi.ingsw.Model.*;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static main.java.it.polimi.ingsw.Client.ClientState.*;
 
 public class GUIApplication extends Application{
 
     private GameState state;
+    private ClientState cState;
     private String playerNickname;
     private int playerTurnId;
     private Stage stage;
@@ -71,6 +74,7 @@ public class GUIApplication extends Application{
     private Button buttonSocket;
     private HBox hBox;
     private HBox hBoxNet;
+    private HBox hBoxWaiting;
     private FadeTransition fadeTransition1;
     private FadeTransition fadeTransition2;
     private FadeTransition fadeTransition3;
@@ -103,7 +107,7 @@ public class GUIApplication extends Application{
     @Override
     public void start(Stage stage) throws Exception {
         this.stage = stage;
-        setupEndGameScreen();
+        setupMenu();
     }
 
     /**
@@ -112,6 +116,7 @@ public class GUIApplication extends Application{
      */
     public void setupMenu(){
 
+        cState = BEFORE_LOGIN;
         Screen screen = Screen.getPrimary();
         bounds = screen.getVisualBounds();
         stage.setX(bounds.getMinX());
@@ -158,10 +163,9 @@ public class GUIApplication extends Application{
 
         hBox = new HBox(10, button1, button2, button3);
         hBox.setPadding(new Insets(10));
-        hBox.setVisible(false);
+
         hBox.setAlignment(Pos.CENTER);
 
-        //RMI e SOCKET Buttons
         buttonRMI = new Button("RMI");
         buttonSocket = new Button("SOCKET");
         buttonRMI.setPrefWidth(ratio*3);
@@ -213,7 +217,7 @@ public class GUIApplication extends Application{
         title = new Image(getClass().getResource("/Publisher material/Title 2000x618px.png").toString());
         imageViewTitle = new ImageView(title);
         imageViewTitle.setPreserveRatio(true);
-        imageViewTitle.setFitHeight(bounds.getHeight()/4);
+        imageViewTitle.setFitHeight(bounds.getHeight()/3.5);
         StackPane.setAlignment(imageViewTitle, Pos.TOP_CENTER);
         stackPane.getChildren().add(imageViewTitle);
 
@@ -227,6 +231,7 @@ public class GUIApplication extends Application{
            doLogin(textField.getText());
         }});
 
+        hBoxWaiting = new HBox(10);
         textField.setEditable(false);
         textField.setOnMouseClicked((event)->{textField.setEditable(true);});
         textField.setMaxWidth(bounds.getWidth()/3);
@@ -236,7 +241,8 @@ public class GUIApplication extends Application{
         vBox.getChildren().add(textField);
         vBox.getChildren().add(messages);
         vBox.setAlignment(Pos.CENTER);
-        textField.setVisible(false);
+
+        stackPane.getChildren().add(hBoxWaiting);
         stackPane.getChildren().add(vBox);
         stackPane.getChildren().add(hBox);
         stackPane.getChildren().add(hBoxNet);
@@ -244,6 +250,12 @@ public class GUIApplication extends Application{
 
         scene = new Scene(stackPane, bounds.getWidth(), bounds.getHeight());
         scene.setOnMouseClicked((event)->{textField.setEditable(false);});
+
+        stage.widthProperty().addListener(event -> setUpLoginProportion());
+
+        textField.setVisible(false);
+        hBox.setVisible(false);
+        hBoxWaiting.setVisible(false);
 
         stage.setTitle("Access");
         stage.setScene(scene);
@@ -265,24 +277,55 @@ public class GUIApplication extends Application{
         }
         nicknameLabel.setText("Choose the nickname");
         textField.setVisible(true);
-        vBox.setVisible(true);
         hBoxNet.setVisible(false);
+        hBox.setVisible(false);
+        hBoxWaiting.setVisible(false);
+        messages.setVisible(true);
+        messages.setText("");
+        new Thread(()-> {
+            while (true) {
+                Response resp = null;
+                try {
+                    resp = cch.getNextResponse();
+                } catch (Exception e) {
+                    //TODO
+                }
 
-        while (true) {
-            Response resp = null;
-            try {
-                resp = cch.getNextResponse();
-            } catch (Exception e) {
-                //TODO
+                final Response response = resp;
+
+                if (response != null) {
+                    new Thread(() -> handleResponse(response)).start();
+
+                }
             }
+        }).start();
+    }
 
-            final Response response = resp;
+    /**
+     * It resizes all the objects in the login stage if it changes its dimensions
+     * @author Fiorentini Riccardo
+     */
+    public void setUpLoginProportion(){
+        button1.setPrefWidth(stage.getWidth()*0.05);
+        button1.setMaxHeight(stage.getWidth()*0.05);
+        button2.setPrefWidth(stage.getWidth()*0.05);
+        button2.setMaxHeight(stage.getWidth()*0.05);
+        button3.setPrefWidth(stage.getWidth()*0.05);
+        button3.setMaxHeight(stage.getWidth()*0.05);
+        buttonRMI.setMaxHeight(stage.getWidth()*0.05);
+        buttonSocket.setMaxHeight(stage.getWidth()*0.05);
+        buttonRMI.setPrefWidth(stage.getWidth()*0.15);
+        buttonSocket.setPrefWidth(stage.getWidth()*0.15);
+        vBox.setMaxWidth(stage.getWidth());
+        vBox.setMaxHeight(stage.getHeight()/3);
+        hBox.setMaxWidth(stage.getWidth());
+        hBox.setMaxHeight(stage.getHeight()/3);
+        hBoxNet.setMaxWidth(stage.getWidth());
+        hBoxNet.setMaxHeight(stage.getHeight()/3);
+        textField.setMaxWidth(stage.getWidth()/3);
+        imageViewTitle.setPreserveRatio(true);
+        imageViewTitle.setFitHeight(stage.getHeight()/3.5);
 
-            if (response != null) {
-                new Thread(() -> handleResponse(response)).start();
-
-            }
-        }
     }
 
     /**
@@ -294,18 +337,23 @@ public class GUIApplication extends Application{
         if(resp == null) return;
         switch(resp.getResponseType()) {
             case LOGIN_ERROR:
-                nicknameResponse(false, resp.getStrParameter("newnickname"));
+                Platform.runLater(() ->nicknameResponse(false, resp.getStrParameter("newnickname")));
                 break;
 
             case LOGIN_CONFIRMED:
-                nicknameResponse(true, resp.getStrParameter("nickname"));
+                Platform.runLater(() -> nicknameResponse(true, resp.getStrParameter("nickname")));
                 playerNickname = resp.getStrParameter("nickname");
-                //waitingRoom();
+                if(cState != ASK_PLAYERS_NUM){
+                    Platform.runLater(() -> waitingRoom());
+                }
                 break;
 
             case ASK_PLAYERS_NUM:
-                if (resp.getStrParameter("result").equals("success")) {  //accepted value
-                    //waitingRoom();
+                cState = ASK_PLAYERS_NUM;
+                if(resp.getStrParameter("result") == null){
+                    Platform.runLater(()->askNumberPlayer());
+                } else if (resp.getStrParameter("result").equals("success")) {  //accepted value
+                    Platform.runLater(() -> waitingRoom());
                 }
                 break;
 
@@ -572,6 +620,10 @@ public class GUIApplication extends Application{
     public void nicknameResponse(Boolean valid, String newNick){
         Font font = new Font("Calibri", 33);
         textField.setEditable(false);
+        nicknameLabel.setVisible(true);
+        vBox.setVisible(true);
+        messages.setVisible(true);
+
         if(valid){
             textField.setOnMouseClicked((event)->{textField.setEditable(false);});
             messages.setText("Your nickname " + newNick + " is valid!");
@@ -589,14 +641,19 @@ public class GUIApplication extends Application{
 
     /**
      * show and handle numPlayer buttons
-     * @param number to handle server response
      * @author Fiorentini Riccardo
      */
-    public void askNumberPlayer(Integer number){
+    public void askNumberPlayer(){
+        stackPane = new StackPane(imageViewWallpaper);
+        scene = new Scene(stackPane, bounds.getWidth(), bounds.getHeight());
+        stackPane.getChildren().add(imageViewTitle);
         nicknameLabel.setText("Choose number of player");
+        stackPane.getChildren().add(nicknameLabel);
+        VBox tmp = new VBox(10.0, nicknameLabel, hBox);
+        tmp.setAlignment(Pos.CENTER);
         hBox.setVisible(true);
-        textField.setVisible(false);
-        messages.setVisible(false);
+        stackPane.getChildren().add(tmp);
+
         DropShadow shadow = new DropShadow();
 
         fadeTransition1.play();
@@ -613,9 +670,10 @@ public class GUIApplication extends Application{
         button1.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  doAskNumberPlayer(2));
         button2.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  doAskNumberPlayer(3));
         button3.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  doAskNumberPlayer(4));
+
+        stage.setScene(scene);
+        stage.show();
     }
-
-
 
     /**
      * This method prepares all the elements in the Game scene
@@ -703,7 +761,6 @@ public class GUIApplication extends Application{
         */
         tokenLastPlayerId = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
 
-
         //STATIC EXAMPLE
         personalGoal = new ImageView(new Image(getClass().getResource("/personal goal cards/Personal_Goals.png").toString()));
         commonGoal1 = new ImageView(new Image(getClass().getResource("/common goal cards/1.jpg").toString()));
@@ -711,16 +768,12 @@ public class GUIApplication extends Application{
         tokenCommonGoal1 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
         tokenCommonGoal2 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
 
-
-
-
         tokenPane.getChildren().add(tokenLastPlayerId);
         tokenPane.getChildren().add(tokenCommonGoal1);
         tokenPane.getChildren().add(tokenCommonGoal2);
         boardPane.getChildren().add(commonGoal1);
         boardPane.getChildren().add(commonGoal2);
         boardPane.getChildren().add(personalGoal);
-
 
         //ORDER OF PANELS
         StackPane stackPane = new StackPane(background,tokenPane);
@@ -929,10 +982,6 @@ public class GUIApplication extends Application{
 
         }
 
-
-
-
-
         //TODO List of arrival nicknames (in descending order)
         String[] playerEntryNames = {"Pasquale", "Nicole", "Alessandro", "Riccardo"};
 
@@ -996,6 +1045,120 @@ public class GUIApplication extends Application{
         stage.sizeToScene();
         stage.show();
         stage.setTitle("Game has ended");
+    }
+
+    /**
+     * Animation for the waiting room
+     * @author Fiorentini Riccardo
+     **/
+    public void waitingRoom(){
+        stackPane = new StackPane(imageViewWallpaper);
+        scene = new Scene(stackPane, bounds.getWidth(), bounds.getHeight());
+        stackPane.getChildren().add(imageViewTitle);
+        nicknameLabel.setText("Waiting for other players to join");
+        nicknameLabel.setAlignment(Pos.CENTER);
+        VBox tmp = new VBox(10.0, nicknameLabel);
+        tmp.setAlignment(Pos.CENTER);
+        StackPane.setAlignment(tmp, Pos.CENTER);
+        stackPane.getChildren().add(tmp);
+
+        Image tile1 = new Image(getClass().getResource("/item tiles/Gatti1.1.png").toString());
+        ImageView viewTile1 = new ImageView(tile1);
+        viewTile1.setFitHeight(bounds.getWidth()*0.05);
+        viewTile1.setFitWidth(bounds.getWidth()*0.05);
+        StackPane.setAlignment(viewTile1, Pos.CENTER);
+
+        Image tile2 = new Image(getClass().getResource("/item tiles/Giochi1.1.png").toString());
+        ImageView viewTile2 = new ImageView(tile2);
+        viewTile2.setFitHeight(bounds.getWidth()*0.05);
+        viewTile2.setFitWidth(bounds.getWidth()*0.05);
+        StackPane.setAlignment(viewTile2, Pos.CENTER);
+
+        Image tile3 = new Image(getClass().getResource("/item tiles/Libri1.1.png").toString());
+        ImageView viewTile3 = new ImageView(tile3);
+        viewTile3.setFitHeight(bounds.getWidth()*0.05);
+        viewTile3.setFitWidth(bounds.getWidth()*0.05);
+        StackPane.setAlignment(viewTile3, Pos.CENTER);
+
+        Image tile4 = new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString());
+        ImageView viewTile4 = new ImageView(tile4);
+        viewTile4.setFitHeight(bounds.getWidth()*0.05);
+        viewTile4.setFitWidth(bounds.getWidth()*0.05);
+        StackPane.setAlignment(viewTile4, Pos.CENTER);
+
+        Image tile5 = new Image(getClass().getResource("/item tiles/Piante1.1.png").toString());
+        ImageView viewTile5 = new ImageView(tile5);
+        viewTile5.setFitHeight(bounds.getWidth()*0.05);
+        viewTile5.setFitWidth(bounds.getWidth()*0.05);
+        StackPane.setAlignment(viewTile5, Pos.CENTER);
+
+        Image tile6 = new Image(getClass().getResource("/item tiles/Trofei1.1.png").toString());
+        ImageView viewTile6 = new ImageView(tile6);
+        viewTile6.setFitHeight(bounds.getWidth()*0.05);
+        viewTile6.setFitWidth(bounds.getWidth()*0.05);
+
+        hBoxWaiting.setPadding(new Insets(10));
+        hBoxWaiting.setAlignment(Pos.CENTER);
+        hBoxWaiting.setVisible(true);
+
+        FadeTransition T1 = new FadeTransition(Duration.seconds(2), viewTile1);
+        T1.setFromValue(0.0);
+        T1.setToValue(1);
+        T1.setAutoReverse(true);
+        T1.setCycleCount(FadeTransition.INDEFINITE);
+
+        FadeTransition T2 = new FadeTransition(Duration.seconds(2), viewTile2);
+        T2.setFromValue(0.0);
+        T2.setToValue(1);
+        T2.setAutoReverse(true);
+        T2.setCycleCount(FadeTransition.INDEFINITE);
+
+        FadeTransition T3 = new FadeTransition(Duration.seconds(2), viewTile3);
+        T3.setFromValue(0.0);
+        T3.setToValue(1);
+        T3.setAutoReverse(true);
+        T3.setCycleCount(FadeTransition.INDEFINITE);
+
+        FadeTransition T4 = new FadeTransition(Duration.seconds(2), viewTile4);
+        T4.setFromValue(0.0);
+        T4.setToValue(1);
+        T4.setAutoReverse(true);
+        T4.setCycleCount(FadeTransition.INDEFINITE);
+
+        FadeTransition T5 = new FadeTransition(Duration.seconds(2), viewTile5);
+        T5.setFromValue(0.0);
+        T5.setToValue(1);
+        T5.setAutoReverse(true);
+        T5.setCycleCount(FadeTransition.INDEFINITE);
+
+        FadeTransition T6 = new FadeTransition(Duration.seconds(2), viewTile6);
+        T6.setFromValue(0.0);
+        T6.setToValue(1);
+        T6.setAutoReverse(true);
+        T6.setCycleCount(FadeTransition.INDEFINITE);
+
+        hBoxWaiting.getChildren().clear();
+        hBoxWaiting.getChildren().addAll(viewTile1, viewTile2, viewTile3, viewTile4, viewTile5, viewTile6);
+        StackPane.setAlignment(hBoxWaiting,Pos.CENTER);
+        tmp.getChildren().add(hBoxWaiting);
+
+        try {
+            T1.play();
+            TimeUnit.MILLISECONDS.sleep(200);
+            T2.play();
+            TimeUnit.MILLISECONDS.sleep(200);
+            T3.play();
+            TimeUnit.MILLISECONDS.sleep(200);
+            T4.play();
+            TimeUnit.MILLISECONDS.sleep(200);
+            T5.play();
+            TimeUnit.MILLISECONDS.sleep(200);
+            T6.play();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        stage.setScene(scene);
+        stage.show();
     }
 
 }
