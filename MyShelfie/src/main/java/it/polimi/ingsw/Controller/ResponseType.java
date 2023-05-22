@@ -79,7 +79,7 @@ public enum ResponseType {
 
     // The player is the only one remaining, the time
     // remaining for his victory is sent
-    // Map<String, Integer>: {<"Timer", timerMilliSeconds>},
+    // Map<String, Integer>: {<"Timermilliseconds", timerMilliSeconds>},
     ONLY_ONE_CONNECTED_TIMER,
 
     // The game ended, if it ends correctly the points (in order of

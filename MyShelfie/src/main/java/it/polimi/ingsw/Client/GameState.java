@@ -150,10 +150,10 @@ public class GameState {
                 }
             }
 
-            if(currPos == pos) return tmpIds.get(max);
+            if(currPos == pos) return tmpIds.get(maxPos);
 
-            tmpIds.remove(max);
-            tmpPoints.remove(max);
+            tmpIds.remove(maxPos);
+            tmpPoints.remove(maxPos);
             currPos++;
         }
         return -1;

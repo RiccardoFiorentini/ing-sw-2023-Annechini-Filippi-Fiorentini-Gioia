@@ -112,7 +112,6 @@ public class GUIApplication extends Application{
     private double shelfTileRatio = 0.127;
     private ImageView[][] boardTiles;
     private ImageView[][] playerShelfTiles;
-    int numPlayers=4;
     private List<ImageView> otherPlayerShelves;
     private List<ImageView[][]> otherPlayersTiles;
 
@@ -136,8 +135,7 @@ public class GUIApplication extends Application{
     @Override
     public void start(Stage stage) throws Exception {
         this.stage = stage;
-        setupGameScreen();
-        //signalTimer(40000);
+        setupMenu();
     }
 
     /**
@@ -502,28 +500,9 @@ public class GUIApplication extends Application{
                     state.setFinalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
                     state.setFinalPersonalGoalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
                     state.setFinalColorGroupPoints((List<Integer>)resp.getObjParameter("finalPoints"));
-                    List<Integer> tmpPoints = new ArrayList<>(state.getFinalPoints());
-                    List<String> tmpNick = new ArrayList<>(state.getNicknames());
-                    List<Integer> resPoints = new ArrayList<>();
-                    List<String> resNick = new ArrayList<>();
-                    int max, maxPos;
-                    while(tmpNick.size()>0){
-                        max=-1;
-                        maxPos=-1;
-                        for(int i=0; i<tmpNick.size(); i++){
-                            if(tmpPoints.get(i)>max) {
-                                max = tmpPoints.get(i);
-                                maxPos = i;
-                            }
-                        }
-                        resPoints.add(max);
-                        resNick.add(tmpNick.get(maxPos));
-                        tmpPoints.remove((Integer)max);
-                        tmpNick.remove(maxPos);
-                    }
-                    Platform.runLater(()->setInterruptedEndGameGraphicsProportions());
+                    Platform.runLater(()-> setupEndGameScreen());
                 } else {
-                    setInterruptedEndGameGraphicsProportions();
+                    Platform.runLater(()-> setupInterruptedEndGameScreen());
                 }
                 break;
 
@@ -782,7 +761,7 @@ public class GUIApplication extends Application{
 
         otherPlayerShelves = new ArrayList<>();
         otherPlayersTiles = new ArrayList<>();
-        for(int k=0;k<numPlayers-1;k++){
+        for(int k=0;k<state.getNumPlayers()-1;k++){
             ImageView shelf = new ImageView(new Image(getClass().getResource("/boards/bookshelf_orth.png").toString()));
             otherPlayerShelves.add(shelf);
             ImageView[][] tmp = new ImageView[6][5];
@@ -870,7 +849,7 @@ public class GUIApplication extends Application{
             ImageView chair = new ImageView(new Image(getClass().getResource("/misc/firstplayertoken.png").toString()));
             othersChair.add(chair);
         }
-        
+
         /*STATIC EXAMPLE
         allNickTexts = new ArrayList<>();
         state = new GameState();
@@ -903,7 +882,7 @@ public class GUIApplication extends Application{
             shelfPane.getChildren().add(playerNickText);
             allNickTexts.add(playerNickText);
         }
-        
+
         tokenPane.getChildren().add(tokenLastPlayerId);
         tokenPane.getChildren().add(tokenCommonGoal1);
         tokenPane.getChildren().add(tokenCommonGoal2);
@@ -985,7 +964,7 @@ public class GUIApplication extends Application{
 
         setTilesPositionInShelf(-1);
 
-        for(int k=0;k<numPlayers-1;k++){
+        for(int k=0;k<state.getNumPlayers()-1;k++){
             ImageView shelf = otherPlayerShelves.get(k);
             shelf.setFitWidth(Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight()) * 0.275 );
             shelf.setFitHeight(shelf.getFitWidth()*((double)1411/1414));
@@ -1148,8 +1127,7 @@ public class GUIApplication extends Application{
         col2Constraints.setPercentWidth(10);
         resultPane.getColumnConstraints().addAll(col1Constraints, col2Constraints);
 
-        //TODO player with highest score
-        winner = new Text("Pasquale WON!!!!");
+        winner = new Text(state.getNicknames().get(state.getTurnIdInPosition(1)) + " WON!!!!");
         winner.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 100));
         winner.setFill(Color.BLUE);
         winner.setY(bounds.getHeight()*0.2);
@@ -1159,22 +1137,23 @@ public class GUIApplication extends Application{
         Pane winnerPane = new Pane(winner);
         endStackPane.getChildren().add(winnerPane);
 
-
-
         String[] typeOfPointEntryNames = {"Personal goal:", "Common goal 1:", "Common goal 2:", "Group points:", "Final point:"};
-        //TODO For each player (in arrival order) specific point array --
-        int[][] specificPoints = {
-                {4, 3, 0, 2, 0},
-                {5, 6, 2, 5, 1},
-                {3, 1, 0, 5, 0},
-                {2, 2, 3, 1, 0}};
+        //For each player (in arrival order) specific point array --
+        List<int[]> specificPoints = new ArrayList<>();
+        for(int i=0; i<state.getNumPlayers(); i++){
+            int[] points = new int[5];
+            points[0] = state.getFinalPersonalGoalPoints().get(i);
+            points[1] = state.getCommonGoalPoints1().get(i);
+            points[2] = state.getCommonGoalPoints2().get(i);
+            points[3] = state.getFinalColorGroupPoints().get(i);
+            if(i==state.getLastPlayerId())
+                points[4] = 1;
+            else
+                points[4] = 0;
+            specificPoints.add(points); //in ordine di turn id
+        }
 
-        //TODO A list of Popup pointsPopup ? one popup for each player
-        state = new GameState();
-        state.setNumPlayers(4);
-
-        Popup[] pointsPopupList = new Popup[4];
-
+        List<Popup> pointsPopupList = new ArrayList<>();
         specificPointsPopups = new ArrayList<>();
         for(int i=0; i < state.getNumPlayers(); i++) {
             GridPane specificPointsPopup = new GridPane();
@@ -1182,7 +1161,7 @@ public class GUIApplication extends Application{
             specificPointsPopup.setMaxHeight(50);
 
             for (int j = 0; j < 5; j++) {
-                Text specificPointsEntry = new Text(String.valueOf(specificPoints[i][j]));
+                Text specificPointsEntry = new Text(String.valueOf(specificPoints.get(state.getTurnIdInPosition(i+1))[j]));
                 specificPointsEntry.setTextAlignment(TextAlignment.RIGHT);
                 specificPointsEntry.setFont(Font.font("Helvetica", 35));
                 specificPointsEntry.setFill(Color.WHITE);
@@ -1203,25 +1182,28 @@ public class GUIApplication extends Application{
 
             Popup popup = new Popup();
             popup.getContent().add(specificPointsPopup);
-            pointsPopupList[i] = popup;
+            pointsPopupList.add(popup);
             specificPointsPopups.add(popup);
 
         }
 
-        //TODO List of arrival nicknames (in descending order)
-        String[] playerEntryNames = {"Pasquale", "Nicole", "Alessandro", "Riccardo"};
+        //List of arrival nicknames (in descending order)
+        String[] playerEntryNames = new String[state.getNumPlayers()];
+        for(int i=0; i<state.getNumPlayers(); i++){
+            playerEntryNames[i]=state.getNicknames().get(state.getTurnIdInPosition(i+1));
+        }
 
-        //TODO List of arrival scoring points (in descending order)
-        /*
-        Integer[] Points = state.getFinalPoints().toArray(new Integer[state.getFinalPoints().size()]);
-        Arrays.sort(Points, Collections.reverseOrder());
-        */
-        int[] points = {12, 9, 8, 7};
+        // List of arrival scoring points (in descending order)
+
+        List<Integer> finalPoints = new ArrayList<>();
+        for(int i=0; i<state.getNumPlayers(); i++){
+            finalPoints.add(state.getFinalPoints().get(state.getTurnIdInPosition(i+1)));
+        }
 
         for(int i=0; i<state.getNumPlayers(); i++) {
             Text playerEntry = new Text(playerEntryNames[i]);
             playerEntry.setTextAlignment(TextAlignment.CENTER);
-            Text pointsEntry = new Text(String.valueOf(points[i]));
+            Text pointsEntry = new Text(String.valueOf(finalPoints.get(i)));
             pointsEntry.setTextAlignment(TextAlignment.RIGHT);
 
             if(i==0){
@@ -1245,10 +1227,10 @@ public class GUIApplication extends Application{
             int finalI = i;
             pointsEntry.setOnMouseMoved(event -> {
                 // Shows popup when mouse gets over score
-                pointsPopupList[finalI].show(pointsEntry, event.getScreenX()+35, event.getScreenY()+10);
+                pointsPopupList.get(finalI).show(pointsEntry, event.getScreenX()+35, event.getScreenY()+10);
             });
             pointsEntry.setOnMouseExited(event -> {
-                pointsPopupList[finalI].hide();
+                pointsPopupList.get(finalI).hide();
             });
         }
 
@@ -1348,17 +1330,6 @@ public class GUIApplication extends Application{
         resultPane.setHgap(25);
         resultPane.setVgap(10);
 
-        //Setting column properties for leaderboard pane
-        ColumnConstraints col1Constraints = new ColumnConstraints();
-        col1Constraints.setHgrow(Priority.ALWAYS);
-        col1Constraints.setPercentWidth(90);
-
-        ColumnConstraints col2Constraints = new ColumnConstraints();
-        col2Constraints.setHgrow(Priority.ALWAYS);
-        col2Constraints.setPercentWidth(10);
-        resultPane.getColumnConstraints().addAll(col1Constraints, col2Constraints);
-
-        //TODO player with highest score
         winner = new Text("You won!");
         winner.setFont(Font.font("Calibri", FontWeight.EXTRA_BOLD, 100));
         winner.setFill(Color.BLUE);
@@ -1369,16 +1340,13 @@ public class GUIApplication extends Application{
         Pane winnerPane = new Pane(winner);
         endStackPane.getChildren().add(winnerPane);
 
-        //TODO: ADJUST SIZES, MAKE EVERYTHING RESIZABLE
-
-        //TODO List of arrival nicknames (in descending order)
-        String[] playerEntryNames = {"Pasquale", "Nicole", "Alessandro", "Riccardo"};
-        state = new GameState();
-        state.setNumPlayers(4);
-        //TODO List of arrival scoring points (in descending order)
-
+        List<String> playerEntryNames = new ArrayList<>();
+        playerEntryNames.add(playerNickname);
+        for(int i=0; i<state.getNumPlayers(); i++){
+            if(i!=playerTurnId) playerEntryNames.add(state.getNicknames().get(i));
+        }
         for(int i=0; i<state.getNumPlayers(); i++) {
-            Text playerEntry = new Text(playerEntryNames[i]);
+            Text playerEntry = new Text(playerEntryNames.get(i));
             playerEntry.setTextAlignment(TextAlignment.CENTER);
 
             if(i==0){
