@@ -408,6 +408,7 @@ public class GUIApplication extends Application{
                 state.setCommonGoalPoints1((List<Integer>)resp.getObjParameter("commongoalpoints1"));
                 state.setCommonGoalPoints2((List<Integer>)resp.getObjParameter("commongoalpoints2"));
                 state.setConnected((List<Boolean>)resp.getObjParameter("connected"));
+                state.setNumPlayers(state.getNicknames().size());
                 Platform.runLater(()->setupGameScreen());
                 break;
 
@@ -741,6 +742,8 @@ public class GUIApplication extends Application{
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         stdScreenRatio = bounds.getWidth()/bounds.getHeight();
 
+
+
         board = new ImageView(new Image(getClass().getResource("/boards/livingroom.png").toString()));
         boardTiles = new ImageView[9][9];
         for(int i=0;i<9;i++){
@@ -807,7 +810,7 @@ public class GUIApplication extends Application{
         //---------------------------------------------------------
         //TODO: link with state
 
-        state = new GameState();
+
         state.setCommonGoalsId(0, 4);
         state.setCommonGoalsId(1, 5);
         String commonGoal1Path = state.getCommonGoalImagePath(state.getCommonGoalsId()[0]);
@@ -845,38 +848,16 @@ public class GUIApplication extends Application{
 
         playerChair = new ImageView(new Image(getClass().getResource("/misc/firstplayertoken.png").toString()));
         othersChair = new ArrayList<>();
-        for(int i=0; i<3; i++){
+        for(int i=0; i<state.getNumPlayers()-1; i++){
             ImageView chair = new ImageView(new Image(getClass().getResource("/misc/firstplayertoken.png").toString()));
             othersChair.add(chair);
+            boardPane.getChildren().add(othersChair.get(i));
         }
 
-        /*STATIC EXAMPLE
+
+
+
         allNickTexts = new ArrayList<>();
-        state = new GameState();
-        state.setNumPlayers(4);
-        List<Boolean> connection = new ArrayList<>();
-        connection.add(true);
-        connection.add(true);
-        connection.add(true);
-        connection.add(true);
-        List<Integer> turnids = new ArrayList<>();
-        turnids.add(0);
-        turnids.add(1);
-        turnids.add(2);
-        turnids.add(3);
-
-
-        state.setConnected(connection);
-        state.setTurnIds(turnids);
-        state.setCurrPlayerId(2);
-        List<String> tmp = new ArrayList<>();
-        tmp.add("Ale");
-        tmp.add("Pq");
-        tmp.add("Rik");
-        tmp.add("Dio");
-        state.setNicknames(tmp);
-*/
-
         for(int i=0; i<state.getNumPlayers(); i++) {
             Text playerNickText = new Text(state.getNicknames().get(i));
             shelfPane.getChildren().add(playerNickText);
@@ -893,7 +874,6 @@ public class GUIApplication extends Application{
         boardPane.getChildren().add(bufferPane);
         boardPane.getChildren().add(chatButtonPane);
         boardPane.getChildren().add(playerChair);
-        boardPane.getChildren().addAll(othersChair.get(0), othersChair.get(1), othersChair.get(2));
 
         //ORDER OF PANELS
         StackPane stackPane = new StackPane(background,tokenPane);
@@ -1031,22 +1011,13 @@ public class GUIApplication extends Application{
         playerChair.setX(playerShelf.getX()-playerShelf.getFitWidth()*0.11);
         playerChair.setY(playerShelf.getY()+playerShelf.getFitHeight()*0.70);
 
-        othersChair.get(0).setFitHeight(Math.min(otherPlayerShelves.get(0).getFitWidth()/stdScreenRatio,otherPlayerShelves.get(0).getFitHeight())*0.25);
-        othersChair.get(0).setFitWidth(othersChair.get(0).getFitHeight()*0.935828877005348);
-        othersChair.get(0).setX(otherPlayerShelves.get(0).getX()-otherPlayerShelves.get(0).getFitWidth()*0.11);
-        othersChair.get(0).setY(otherPlayerShelves.get(0).getY()+otherPlayerShelves.get(0).getFitHeight()*0.74);
+        for(int i=0; i<state.getNumPlayers()-1; i++) {
+            othersChair.get(i).setFitHeight(Math.min(otherPlayerShelves.get(0).getFitWidth() / stdScreenRatio, otherPlayerShelves.get(0).getFitHeight()) * 0.25);
+            othersChair.get(i).setFitWidth(othersChair.get(0).getFitHeight() * 0.935828877005348);
+            othersChair.get(i).setX(otherPlayerShelves.get(i).getX() - otherPlayerShelves.get(i).getFitWidth() * 0.11);
+            othersChair.get(i).setY(otherPlayerShelves.get(i).getY() + otherPlayerShelves.get(i).getFitHeight() * 0.74);
 
-        othersChair.get(1).setFitHeight(Math.min(otherPlayerShelves.get(0).getFitWidth()/stdScreenRatio,otherPlayerShelves.get(0).getFitHeight())*0.25);
-        othersChair.get(1).setFitWidth(othersChair.get(1).getFitHeight()*0.935828877005348);
-        othersChair.get(1).setX(otherPlayerShelves.get(1).getX()-otherPlayerShelves.get(1).getFitWidth()*0.11);
-        othersChair.get(1).setY(otherPlayerShelves.get(1).getY()+otherPlayerShelves.get(1).getFitHeight()*0.74);
-
-        othersChair.get(2).setFitHeight(Math.min(otherPlayerShelves.get(0).getFitWidth()/stdScreenRatio,otherPlayerShelves.get(0).getFitHeight())*0.25);
-        othersChair.get(2).setFitWidth(othersChair.get(2).getFitHeight()*0.935828877005348);
-        othersChair.get(2).setX(otherPlayerShelves.get(2).getX()-otherPlayerShelves.get(2).getFitWidth()*0.11);
-        othersChair.get(2).setY(otherPlayerShelves.get(2).getY()+otherPlayerShelves.get(2).getFitHeight()*0.74);
-
-        //TODO: player names under shelves, current player showed somehow?
+        }
 
     }
 
