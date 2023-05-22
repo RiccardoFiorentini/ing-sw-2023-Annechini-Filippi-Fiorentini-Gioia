@@ -3,6 +3,7 @@ package main.java.it.polimi.ingsw.Client;
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -56,6 +57,7 @@ public class GUIApplication extends Application{
     private Stage stage;
     int numSeconds;
     private Stage chatStage;
+    TextArea chatArea = new TextArea();
     private boolean isChatOpen;
     private Parent root;
     private ImageView imageViewWallpaper;
@@ -123,7 +125,7 @@ public class GUIApplication extends Application{
     private ImageView tokenLastPlayerId;
 
     private Pane winnerPane;
-
+    private Boolean firsEnd;
     private ClientConnectionHandler cch;
     private ImageView finalPointsBg;
     private List<Popup> specificPointsPopups;
@@ -143,7 +145,7 @@ public class GUIApplication extends Application{
      * @author Fiorentini Riccardo
      */
     public void setupMenu(){
-
+        firsEnd = true;
         cState = BEFORE_LOGIN;
         Screen screen = Screen.getPrimary();
         bounds = screen.getVisualBounds();
@@ -398,6 +400,7 @@ public class GUIApplication extends Application{
                 state.setShelves((List<ShelfBean>)resp.getObjParameter("shelves"));
                 state.setNicknames((List<String>)resp.getObjParameter("nicknames"));
                 state.setTurnIds((List<Integer>)resp.getObjParameter("turnIds"));
+                state.setNumPlayers(state.getNicknames().size());
                 for(int i=0; i<state.getTurnIds().size(); i++){
                     if((state.getNicknames().get(i)).equals(playerNickname))
                         playerTurnId=state.getTurnIds().get(i);
@@ -414,17 +417,18 @@ public class GUIApplication extends Application{
 
             case NEW_MEX_CHAT:
                 state.setChat((ChatBean) resp.getObjParameter("chat"));
-                //TODO
+                updateChat();
                 break;
 
             case NEW_TURN:
                 state.setCurrPlayerId(resp.getIntParameter("CurrentPlayerId"));
+                Platform.runLater(()->updateNameColor());
                 if(playerTurnId==state.getCurrPlayerId()){
                     //TODO current player scene
                 }else{
                     //TODO other players scene
                 }
-                updateNameColor();
+                Platform.runLater(()->updateNameColor());
                 //TODO common scene
                 break;
 
@@ -468,13 +472,13 @@ public class GUIApplication extends Application{
 
             case UPDATE_BOARD:
                 state.setBoard((BoardBean)resp.getObjParameter("board"));
-                updateBoard();
+                Platform.runLater(()->updateBoard());
                 //TODO
                 break;
 
             case UPDATE_PLAYER_SHELF:
                 state.getShelves().set(resp.getIntParameter("playerid"),(ShelfBean)resp.getObjParameter("shelf"));
-                updateShelf(resp.getIntParameter("playerid"));
+                Platform.runLater(()->updateShelf(resp.getIntParameter("playerid")));
                 //TODO
                 break;
 
@@ -485,13 +489,14 @@ public class GUIApplication extends Application{
                 }else{
                     Platform.runLater(()->signal("Player disconnected","The player " + state.getNicknames().get(resp.getIntParameter("playerid")) + " is disconnected"));
                 }
-                updateNameColor();
+                Platform.runLater(()->updateNameColor());
                 break;
 
             case PLAYER_RECONNECTED:
                 state.getConnected().set(resp.getIntParameter("playerid"),true);
+                firsEnd = true;
                 Platform.runLater(()->signal("Player reconnected","The player " + state.getNicknames().get(resp.getIntParameter("playerid")) + " reconnected"));
-                updateNameColor();
+                Platform.runLater(()->updateNameColor());
                 break;
 
             case ONLY_ONE_CONNECTED:
@@ -499,7 +504,10 @@ public class GUIApplication extends Application{
                 break;
 
             case ONLY_ONE_CONNECTED_TIMER:
-                signalTimer(resp.getIntParameter("Timer"));
+                if(firsEnd == true){
+                    Platform.runLater(() ->signalTimer(resp.getIntParameter("timermilliseconds")));
+                    firsEnd = false;
+                }
                 break;
 
             case GAME_ENDED:
@@ -521,7 +529,7 @@ public class GUIApplication extends Application{
                     state.getCommonGoalPoints2().set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
                     state.setCommonGoalsRemainingPoint(1, resp.getIntParameter("remainingpoints"));
                 }
-                updateCommonGoalsPoints();
+                Platform.runLater(()->updateCommonGoalsPoints());
                 //TODO
                 break;
 
@@ -748,9 +756,6 @@ public class GUIApplication extends Application{
     public void setupGameScreen(){
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         stdScreenRatio = bounds.getWidth()/bounds.getHeight();
-
-
-
         board = new ImageView(new Image(getClass().getResource("/boards/livingroom.png").toString()));
         boardTiles = new ImageView[9][9];
         for(int i=0;i<9;i++){
@@ -789,6 +794,7 @@ public class GUIApplication extends Application{
         Pane tilePane = new Pane();
         Pane tokenPane = new Pane();
         bufferPane = new Pane();
+
         chatButtonPane = new Pane();
 
         shelfPane.getChildren().add(tilePane);
@@ -829,15 +835,11 @@ public class GUIApplication extends Application{
         String personalGoalPath = state.getPersonalGoalImagePath(personalGoalId);
         personalGoal = new ImageView(new Image(getClass().getResource(personalGoalPath).toString()));
 
-        state.setCommonGoalsRemainingPoint(0, 4);
-        state.setCommonGoalsRemainingPoint(1, 2);
         String remainingPoints1Path = state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[0]);
         tokenCommonGoal1 = new ImageView(new Image(getClass().getResource(remainingPoints1Path).toString()));
         String remainingPoints2Path = state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[1]);
         tokenCommonGoal2 = new ImageView(new Image(getClass().getResource(remainingPoints2Path).toString()));
         tokenLastPlayerId = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
-
-
 
         tile1Buffer = new ImageView(new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString()));
         tile2Buffer = new ImageView(new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString()));
@@ -846,7 +848,8 @@ public class GUIApplication extends Application{
 
         hboxBuffer.setPadding(new Insets(10));
         hboxBuffer.setSpacing(10);
-        hboxBuffer.setStyle("-fx-background-color: #000000; -fx-border-color: #003399;-fx-border-width: 2");
+        hboxBuffer.setStyle("-fx-border-color: #5E462B;-fx-border-width: 2");
+        hboxBuffer.setBackground(Background.EMPTY);
         bufferPane.getChildren().add(hboxBuffer);
 
         chat = new ImageView(new Image(getClass().getResource("/external/chat.png").toString()));
@@ -861,10 +864,8 @@ public class GUIApplication extends Application{
             boardPane.getChildren().add(othersChair.get(i));
         }
 
-
-
-
         allNickTexts = new ArrayList<>();
+
         for(int i=0; i<state.getNumPlayers(); i++) {
             Text playerNickText = new Text(state.getNicknames().get(i));
             shelfPane.getChildren().add(playerNickText);
@@ -903,7 +904,6 @@ public class GUIApplication extends Application{
                 openChatWindow();
                 isChatOpen = true;
             }
-
         });
 
         scene = new Scene(stackPane,bounds.getWidth(),bounds.getHeight());
@@ -945,7 +945,6 @@ public class GUIApplication extends Application{
                 t.setFitWidth(board.getFitWidth()*boardTileRatio/margin);
                 t.setX(board.getX()+board.getFitWidth()*0.041+t.getFitWidth()*j*margin + t.getFitWidth()*(margin-1)/2);
                 t.setY(board.getY()+board.getFitHeight()*0.046+t.getFitHeight()*i*margin + t.getFitHeight()*(margin-1)/2);
-                t.setVisible(false);
             }
         }
 
@@ -1390,8 +1389,22 @@ public class GUIApplication extends Application{
     }
 
     /**
+     * Update the chat when someone texts
+     * @author Fiorentini Riccardo
+     */
+    private void updateChat(){
+        ChatBean chat = state.getChat();
+        chatArea.setEditable(false);
+        String text = "";
+        for(int i=0; i<chat.getText().size(); i++){
+            text = text + "<" + chat.getSender().get(i) + "> " + chat.getText().get(i) + "\n";
+        }
+        chatArea.setText(text);
+    }
+
+    /**
      * This method creates a chat Stage
-     * @author Pasquale Gioia
+     * @author Pasquale Gioia, Fiorentini Riccardo
      */
     private void openChatWindow() {
         chatStage = new Stage();
@@ -1406,24 +1419,45 @@ public class GUIApplication extends Application{
         chatStage.setWidth(stage.getWidth()/4.5);
         chatStage.setHeight(stage.getHeight()*0.95);
 
-        //TODO: implement private sending message, implement message reading from chatBean, implement connection with Chat class
-
-        TextArea chatArea = new TextArea();
+        ChatBean chat = state.getChat();
         chatArea.setEditable(false);
+        String text = "";
+        for(int i=0; i<chat.getText().size(); i++){
+            text = text + "<" + chat.getSender().get(i) + "> " + chat.getText().get(i) + "\n";
+        }
+        chatArea.setText(text);
 
         TextField messageField = new TextField();
         messageField.setPromptText("Write a message...");
+        ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        choiceBox.setItems(FXCollections.observableArrayList("Broadcast"));
+        for(String s: state.getNicknames()){
+            if(!s.equals(playerNickname)){
+                choiceBox.getItems().add(s);
+            }
+        }
+        choiceBox.getSelectionModel().selectFirst();
+
         Button sendButton = new Button("Send");
         sendButton.setOnAction((e)-> {
             String message = messageField.getText().trim();
             if (!message.isEmpty()) {
-                chatArea.appendText(message + "\n");
+                if(choiceBox.getValue().equals("Broadcast")){
+                    doSendMex(message, null);
+                }else{
+                    doSendMex(message, choiceBox.getValue());
+                }
+
+                chatArea.appendText("<" + playerNickname + "> " + message + "\n");
                 //state.getChat().
                 messageField.clear();
             }
         });
 
         HBox inputBox = new HBox(messageField, sendButton);
+        VBox out = new VBox(choiceBox,inputBox);
+        out.setAlignment(Pos.CENTER);
+        choiceBox.setPrefWidth(chatStage.getWidth());
         HBox.setHgrow(messageField, Priority.ALWAYS);
         HBox.setHgrow(sendButton, Priority.ALWAYS);
         inputBox.setSpacing(10);
@@ -1431,13 +1465,12 @@ public class GUIApplication extends Application{
 
         BorderPane chatPane = new BorderPane();
         chatPane.setCenter(chatArea);
-        chatPane.setBottom(inputBox);
+        chatPane.setBottom(out);
         BorderPane.setMargin(chatArea, new Insets(10));
 
         chatScene = new Scene(chatPane, chatStage.getX(), chatStage.getY());
         chatStage.setScene(chatScene);
         chatStage.show();
-
     }
 
     /**
