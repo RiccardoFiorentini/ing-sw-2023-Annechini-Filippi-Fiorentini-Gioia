@@ -385,8 +385,6 @@ public class GUIApplication extends Application{
                 break;
 
             case GAME_STARTED:
-                Command command = new Command(CommandType.GAME_JOINED);
-                sendCommand(command);
                 state = new GameState();
                 state.setBuffer(new Tile[]{Tile.EMPTY,Tile.EMPTY,Tile.EMPTY});
                 state.setFirstPlayerId(resp.getIntParameter("firstPlayerId"));
@@ -410,6 +408,8 @@ public class GUIApplication extends Application{
                 state.setConnected((List<Boolean>)resp.getObjParameter("connected"));
                 state.setNumPlayers(state.getNicknames().size());
                 Platform.runLater(()->setupGameScreen());
+                Command command = new Command(CommandType.GAME_JOINED);
+                sendCommand(command);
                 break;
 
             case NEW_MEX_CHAT:
@@ -424,6 +424,7 @@ public class GUIApplication extends Application{
                 }else{
                     //TODO other players scene
                 }
+                updateNameColor();
                 //TODO common scene
                 break;
 
@@ -442,6 +443,7 @@ public class GUIApplication extends Application{
                     //if(first tile){}
                     //else{
                     //  buffer=(Tile[]) resp.getObjParameter("buffer");
+                    //  updateBuffer()
                     // }
                 }else{
                     //TODO
@@ -466,11 +468,13 @@ public class GUIApplication extends Application{
 
             case UPDATE_BOARD:
                 state.setBoard((BoardBean)resp.getObjParameter("board"));
+                updateBoard();
                 //TODO
                 break;
 
             case UPDATE_PLAYER_SHELF:
                 state.getShelves().set(resp.getIntParameter("playerid"),(ShelfBean)resp.getObjParameter("shelf"));
+                updateShelf(resp.getIntParameter("playerid"));
                 //TODO
                 break;
 
@@ -481,11 +485,13 @@ public class GUIApplication extends Application{
                 }else{
                     Platform.runLater(()->signal("Player disconnected","The player " + state.getNicknames().get(resp.getIntParameter("playerid")) + " is disconnected"));
                 }
+                updateNameColor();
                 break;
 
             case PLAYER_RECONNECTED:
                 state.getConnected().set(resp.getIntParameter("playerid"),true);
                 Platform.runLater(()->signal("Player reconnected","The player " + state.getNicknames().get(resp.getIntParameter("playerid")) + " reconnected"));
+                updateNameColor();
                 break;
 
             case ONLY_ONE_CONNECTED:
@@ -515,6 +521,7 @@ public class GUIApplication extends Application{
                     state.getCommonGoalPoints2().set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
                     state.setCommonGoalsRemainingPoint(1, resp.getIntParameter("remainingpoints"));
                 }
+                updateCommonGoalsPoints();
                 //TODO
                 break;
 
@@ -912,6 +919,11 @@ public class GUIApplication extends Application{
         setGameGraphicsProportions();
 
         updateNameColor();
+        updateCommonGoalsPoints();
+        updateChairs();
+        for(int i=0;i<state.getNumPlayers();i++) updateShelf(i);
+        updateBoard();
+        updateBuffer();
     }
 
     /**
@@ -1012,7 +1024,7 @@ public class GUIApplication extends Application{
         playerChair.setY(playerShelf.getY()+playerShelf.getFitHeight()*0.70);
 
         for(int i=0; i<state.getNumPlayers()-1; i++) {
-            othersChair.get(i).setFitHeight(Math.min(otherPlayerShelves.get(0).getFitWidth() / stdScreenRatio, otherPlayerShelves.get(0).getFitHeight()) * 0.25);
+            othersChair.get(i).setFitHeight(Math.min(otherPlayerShelves.get(i).getFitWidth() / stdScreenRatio, otherPlayerShelves.get(i).getFitHeight()) * 0.25);
             othersChair.get(i).setFitWidth(othersChair.get(0).getFitHeight() * 0.935828877005348);
             othersChair.get(i).setX(otherPlayerShelves.get(i).getX() - otherPlayerShelves.get(i).getFitWidth() * 0.11);
             othersChair.get(i).setY(otherPlayerShelves.get(i).getY() + otherPlayerShelves.get(i).getFitHeight() * 0.74);
@@ -1558,6 +1570,107 @@ public class GUIApplication extends Application{
                 }
             }
         }
+    }
+
+    /**
+     * Update board graphics
+     * @author Alessandro Annechini
+     */
+    public void updateBoard(){
+        for(int i=0; i<9; i++){
+            for(int j=0; j<9; j++){
+                ImageView tile = boardTiles[i][j];
+                if(state.getBoard().getTiles()[i][j].isFree()) tile.setVisible(false);
+                else{
+                    tile.setVisible(true);
+                    tile.setImage(new Image(getClass().getResource(state.getTileImagePath(state.getBoard().getTiles()[i][j])).toString()));
+                }
+            }
+        }
+    }
+
+    /**
+     * Update shelf graphics
+     * @author Alessandro Annechini
+     * @param toUpdate The shelf to be updated
+     */
+    public void updateShelf(int toUpdate){
+        ImageView[][] tiles = toUpdate == playerTurnId ? playerShelfTiles : otherPlayersTiles.get(toUpdate < playerTurnId ? toUpdate : toUpdate-1);
+        ShelfBean newShelf = state.getShelves().get(toUpdate);
+        for(int i=0;i<6;i++){
+            for(int j=0;j<5;j++){
+                if(newShelf.getTiles()[i][j].isFree()) tiles[i][j].setVisible(false);
+                else{
+                    tiles[i][j].setVisible(true);
+                    tiles[i][j].setImage(new Image(getClass().getResource(state.getTileImagePath(newShelf.getTiles()[i][j])).toString()));
+                }
+            }
+        }
+    }
+
+    /**
+     * Update buffer graphics
+     * @author Alessandro Annechini
+     */
+    public void updateBuffer(){
+        if(state.getCurrPlayerId()!=playerTurnId){
+            hboxBuffer.setVisible(false);
+        }else{
+            hboxBuffer.setVisible(true);
+            if(state.getBuffer()[0].isFree()) tile1Buffer.setVisible(false);
+            else{
+                tile1Buffer.setVisible(true);
+                tile1Buffer.setImage(new Image(getClass().getResource(state.getTileImagePath(state.getBuffer()[0])).toString()));
+            }
+            if(state.getBuffer()[1].isFree()) tile2Buffer.setVisible(false);
+            else{
+                tile2Buffer.setVisible(true);
+                tile2Buffer.setImage(new Image(getClass().getResource(state.getTileImagePath(state.getBuffer()[1])).toString()));
+            }
+            if(state.getBuffer()[2].isFree()) tile3Buffer.setVisible(false);
+            else{
+                tile3Buffer.setVisible(true);
+                tile3Buffer.setImage(new Image(getClass().getResource(state.getTileImagePath(state.getBuffer()[2])).toString()));
+            }
+        }
+    }
+
+    /**
+     * Update chairs graphics
+     * @author Alessandro Annechini
+     */
+    public void updateChairs(){
+        if(state.getFirstPlayerId()==playerTurnId){
+            playerChair.setVisible(true);
+            for(ImageView i : othersChair) i.setVisible(false);
+            return;
+        }
+        playerChair.setVisible(false);
+        for(int i=0;i<state.getNumPlayers()-1;i++){
+            if(i < playerTurnId){
+                if(state.getFirstPlayerId()==i) othersChair.get(i).setVisible(true);
+                else othersChair.get(i).setVisible(true);
+            }else{
+                if(state.getFirstPlayerId()==i+1) othersChair.get(i).setVisible(true);
+                else othersChair.get(i).setVisible(true);
+            }
+        }
+    }
+
+    /**
+     * Update common goals token graphics
+     * @author Alessandro Annechini
+     */
+    public void updateCommonGoalsPoints(){
+        if(state.getCommonGoalsRemainingPoint()[0] > 0){
+            tokenCommonGoal1.setVisible(true);
+            tokenCommonGoal1.setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[0])).toString()));
+        } else tokenCommonGoal1.setVisible(false);
+
+        if(state.getCommonGoalsRemainingPoint()[1] > 0){
+            tokenCommonGoal2.setVisible(true);
+            tokenCommonGoal2.setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[1])).toString()));
+        } else tokenCommonGoal2.setVisible(false);
     }
 
 }
