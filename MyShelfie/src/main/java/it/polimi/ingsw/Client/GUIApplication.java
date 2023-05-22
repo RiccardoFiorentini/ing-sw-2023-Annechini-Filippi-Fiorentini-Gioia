@@ -10,10 +10,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
@@ -35,14 +32,20 @@ import main.java.it.polimi.ingsw.Connection.ClientConnectionHandler;
 import main.java.it.polimi.ingsw.Controller.Command;
 import main.java.it.polimi.ingsw.Controller.CommandType;
 import main.java.it.polimi.ingsw.Controller.Response;
-import main.java.it.polimi.ingsw.Model.*;
+import main.java.it.polimi.ingsw.Model.BoardBean;
+import main.java.it.polimi.ingsw.Model.ChatBean;
+import main.java.it.polimi.ingsw.Model.ShelfBean;
+import main.java.it.polimi.ingsw.Model.Tile;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import static main.java.it.polimi.ingsw.Client.ClientState.*;
+import static main.java.it.polimi.ingsw.Client.ClientState.ASK_PLAYERS_NUM;
+import static main.java.it.polimi.ingsw.Client.ClientState.BEFORE_LOGIN;
 
 public class GUIApplication extends Application{
 
@@ -51,6 +54,7 @@ public class GUIApplication extends Application{
     private String playerNickname;
     private int playerTurnId;
     private Stage stage;
+    int numSeconds;
     private Stage chatStage;
     private boolean isChatOpen;
     private Parent root;
@@ -129,7 +133,8 @@ public class GUIApplication extends Application{
     @Override
     public void start(Stage stage) throws Exception {
         this.stage = stage;
-        setupInterruptedEndGameScreen();
+        setupMenu();
+        //signalTimer(40000);
     }
 
     /**
@@ -347,7 +352,6 @@ public class GUIApplication extends Application{
         textField.setMaxWidth(stage.getWidth()/3);
         imageViewTitle.setPreserveRatio(true);
         imageViewTitle.setFitHeight(stage.getHeight()/3.5);
-
     }
 
     /**
@@ -380,7 +384,6 @@ public class GUIApplication extends Application{
                 break;
 
             case GAME_STARTED:
-
                 Command command = new Command(CommandType.GAME_JOINED);
                 sendCommand(command);
                 state = new GameState();
@@ -406,8 +409,6 @@ public class GUIApplication extends Application{
                 state.setConnected((List<Boolean>)resp.getObjParameter("connected"));
                 Platform.runLater(()->setupGameScreen());
                 break;
-
-
 
             case NEW_MEX_CHAT:
                 state.setChat((ChatBean) resp.getObjParameter("chat"));
@@ -473,20 +474,24 @@ public class GUIApplication extends Application{
 
             case PLAYER_DISCONNECTED:
                 state.getConnected().set(resp.getIntParameter("playerid"),false);
-                //TODO
+                if(state.getNicknames().get(resp.getIntParameter("playerid")).equals(playerNickname)){
+                    Platform.runLater(()->signal("Player disconnected", "You are disconnected, reconnect with your current\n nickname to enter again in the same game"));
+                }else{
+                    Platform.runLater(()->signal("Player disconnected","The player " + state.getNicknames().get(resp.getIntParameter("playerid")) + " is disconnected"));
+                }
                 break;
 
             case PLAYER_RECONNECTED:
                 state.getConnected().set(resp.getIntParameter("playerid"),true);
-                //TODO
+                Platform.runLater(()->signal("Player reconnected","The player " + state.getNicknames().get(resp.getIntParameter("playerid")) + " reconnected"));
                 break;
 
             case ONLY_ONE_CONNECTED:
-                //TODO
+                Platform.runLater(()->signal("You are the only one connected", "You will win in seconds if nobody reconnects"));
                 break;
 
             case ONLY_ONE_CONNECTED_TIMER:
-                //TODO
+                signalTimer(resp.getIntParameter("Timer"));
                 break;
 
             case GAME_ENDED:
@@ -513,12 +518,10 @@ public class GUIApplication extends Application{
                         tmpPoints.remove((Integer)max);
                         tmpNick.remove(maxPos);
                     }
-                    //TODO
+                    Platform.runLater(()->setInterruptedEndGameGraphicsProportions());
+                } else {
+                    setInterruptedEndGameGraphicsProportions();
                 }
-                else{
-                    //TODO
-                }
-                //TODO
                 break;
 
             case COMMON_GOAL_WON:
@@ -538,6 +541,54 @@ public class GUIApplication extends Application{
         }
     }
 
+    /**
+     * Method used to signal disconnections and reconnections
+     * @param header title of the message
+     * @param message you want display
+     * @author Fiorentini Riccardo
+     */
+    public void signal(String header, String message){
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Attention!");
+        alert.setHeaderText(header);
+        alert.setContentText(message);
+        alert.setResizable(true);
+        alert.showAndWait();
+    }
+
+    /**
+     * Method used to signal disconnections and reconnections
+     * @param milliseconds you have to wait before winning
+     * @author Fiorentini Riccardo
+     */
+    public void signalTimer(int milliseconds){
+        numSeconds = (int)(milliseconds/1000);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Attention!");
+        alert.setHeaderText("You are the last one connected");
+        alert.setResizable(true);
+        alert.setContentText("Wait " + numSeconds + " to win");
+        Timer countdownTimer = new Timer();
+        countdownTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                numSeconds--;
+                if (numSeconds <= 0) {
+                    countdownTimer.cancel();
+                    countdownTimer.purge();
+                    Platform.runLater(() -> {
+                        alert.close();
+                    });
+                } else {
+                    Platform.runLater(() -> {
+                        alert.setContentText("Wait " + numSeconds + " to win");
+                    });
+                }
+            }
+        }, 1000, 1000);
+
+        alert.showAndWait();
+    }
 
     /**
      * Method that sends a given command to the server
@@ -636,7 +687,6 @@ public class GUIApplication extends Application{
         sendCommand(command);
     }
 
-
     /**
      * It handles the server's response when the user choose the nickname
      * @param valid true if the nickname is valid
@@ -701,8 +751,6 @@ public class GUIApplication extends Application{
         stage.show();
     }
 
-
-
     /**
      * This method prepares all the elements in the Game scene
      * @author Alessandro Annechini, Pasquale Gioia
@@ -751,13 +799,10 @@ public class GUIApplication extends Application{
         bufferPane = new Pane();
         chatButtonPane = new Pane();
 
-
         shelfPane.getChildren().add(tilePane);
         tilePane.getChildren().add(boardPane);
 
-
         tokenPane.getChildren().add(shelfPane);
-
 
         shelfPane.getChildren().add(playerShelf);
         for(ImageView im : otherPlayerShelves) shelfPane.getChildren().add(im);
@@ -795,17 +840,12 @@ public class GUIApplication extends Application{
         */
         tokenLastPlayerId = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
 
-
         //STATIC EXAMPLE
         personalGoal = new ImageView(new Image(getClass().getResource("/personal goal cards/Personal_Goals.png").toString()));
         commonGoal1 = new ImageView(new Image(getClass().getResource("/common goal cards/1.jpg").toString()));
         commonGoal2 = new ImageView(new Image(getClass().getResource("/common goal cards/2.jpg").toString()));
         tokenCommonGoal1 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
         tokenCommonGoal2 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
-
-
-
-
 
         tile1Buffer = new ImageView(new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString()));
         tile2Buffer = new ImageView(new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString()));
@@ -817,26 +857,18 @@ public class GUIApplication extends Application{
         hboxBuffer.setStyle("-fx-background-color: #F0F0F0; -fx-border-color: #000000;");
         bufferPane.getChildren().add(hboxBuffer);
 
-
         chat = new ImageView(new Image(getClass().getResource("/external/chat.png").toString()));
         chatButtonPane = new Pane(chat);
-
-
 
         tokenPane.getChildren().add(tokenLastPlayerId);
         tokenPane.getChildren().add(tokenCommonGoal1);
         tokenPane.getChildren().add(tokenCommonGoal2);
-
 
         boardPane.getChildren().add(commonGoal1);
         boardPane.getChildren().add(commonGoal2);
         boardPane.getChildren().add(personalGoal);
         boardPane.getChildren().add(bufferPane);
         boardPane.getChildren().add(chatButtonPane);
-
-
-
-
 
         //ORDER OF PANELS
         StackPane stackPane = new StackPane(background,tokenPane);
@@ -874,8 +906,6 @@ public class GUIApplication extends Application{
         stage.heightProperty().addListener((x)->setGameGraphicsProportions());
         setGameGraphicsProportions();
     }
-
-
 
     /**
      * This method sets the positions of the Game
@@ -969,8 +999,6 @@ public class GUIApplication extends Application{
         chat.setFitWidth(board.getFitHeight()*0.24);
         chat.setX(stage.getWidth()*0.27);
         chat.setY(board.getY()- board.getFitHeight()*0.156);
-
-
     }
 
     /**
@@ -1239,7 +1267,6 @@ public class GUIApplication extends Application{
         endStackPane.getChildren().add(endWallpaper);
         endStackPane.getChildren().add(finalPointsBg);
 
-
         resultPane = new GridPane();
 
         resultPane.setHgap(25);
@@ -1379,14 +1406,11 @@ public class GUIApplication extends Application{
         chatPane.setBottom(inputBox);
         BorderPane.setMargin(chatArea, new Insets(10));
 
-
-
         chatScene = new Scene(chatPane, chatStage.getX(), chatStage.getY());
         chatStage.setScene(chatScene);
         chatStage.show();
 
     }
-
 
     /**
      * Animation for the waiting room
