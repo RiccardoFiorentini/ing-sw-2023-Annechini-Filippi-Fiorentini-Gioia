@@ -96,7 +96,10 @@ public class GUIApplication extends Application{
 
     private Pane chatButtonPane;
     private ImageView chat;
-    private StackPane chatPane;
+    private ImageView playerChair;
+    private List<ImageView> othersChair;
+    private List<Text> allNickTexts;
+
     private FadeTransition fadeTransition1;
     private FadeTransition fadeTransition2;
     private FadeTransition fadeTransition3;
@@ -133,7 +136,7 @@ public class GUIApplication extends Application{
     @Override
     public void start(Stage stage) throws Exception {
         this.stage = stage;
-        setupMenu();
+        setupGameScreen();
         //signalTimer(40000);
     }
 
@@ -823,29 +826,29 @@ public class GUIApplication extends Application{
 
         //PersonalGoal, CommonGoals, Remaining points, Buffer, Chat
         //---------------------------------------------------------
+        //TODO: link with state
 
-        //TODO: make sure this is correct?
-        /*
-        String personalGoalPath = state.getPersonalGoalImagePath(personalGoalId);
+        state = new GameState();
+        state.setCommonGoalsId(0, 4);
+        state.setCommonGoalsId(1, 5);
         String commonGoal1Path = state.getCommonGoalImagePath(state.getCommonGoalsId()[0]);
         String commonGoal2Path = state.getCommonGoalImagePath(state.getCommonGoalsId()[1]);
-        String remainingPoints1Path = state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[0]);
-        String remainingPoints2Path = state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[1]);
-
-        personalGoal = new ImageView(new Image(getClass().getResource(personalGoalPath).toString()));
         commonGoal1 = new ImageView(new Image(getClass().getResource(commonGoal1Path).toString()));
         commonGoal2 = new ImageView(new Image(getClass().getResource(commonGoal2Path).toString()));
+
+        personalGoalId = 8;
+        String personalGoalPath = state.getPersonalGoalImagePath(personalGoalId);
+        personalGoal = new ImageView(new Image(getClass().getResource(personalGoalPath).toString()));
+
+        state.setCommonGoalsRemainingPoint(0, 4);
+        state.setCommonGoalsRemainingPoint(1, 2);
+        String remainingPoints1Path = state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[0]);
         tokenCommonGoal1 = new ImageView(new Image(getClass().getResource(remainingPoints1Path).toString()));
+        String remainingPoints2Path = state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[1]);
         tokenCommonGoal2 = new ImageView(new Image(getClass().getResource(remainingPoints2Path).toString()));
-        */
         tokenLastPlayerId = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
 
-        //STATIC EXAMPLE
-        personalGoal = new ImageView(new Image(getClass().getResource("/personal goal cards/Personal_Goals.png").toString()));
-        commonGoal1 = new ImageView(new Image(getClass().getResource("/common goal cards/1.jpg").toString()));
-        commonGoal2 = new ImageView(new Image(getClass().getResource("/common goal cards/2.jpg").toString()));
-        tokenCommonGoal1 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
-        tokenCommonGoal2 = new ImageView(new Image(getClass().getResource("/scoring tokens/scoring_2.jpg").toString()));
+
 
         tile1Buffer = new ImageView(new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString()));
         tile2Buffer = new ImageView(new Image(getClass().getResource("/item tiles/Cornici1.1.png").toString()));
@@ -854,12 +857,53 @@ public class GUIApplication extends Application{
 
         hboxBuffer.setPadding(new Insets(10));
         hboxBuffer.setSpacing(10);
-        hboxBuffer.setStyle("-fx-background-color: #F0F0F0; -fx-border-color: #000000;");
+        hboxBuffer.setStyle("-fx-background-color: #000000; -fx-border-color: #003399;-fx-border-width: 2");
         bufferPane.getChildren().add(hboxBuffer);
 
         chat = new ImageView(new Image(getClass().getResource("/external/chat.png").toString()));
         chatButtonPane = new Pane(chat);
 
+
+        playerChair = new ImageView(new Image(getClass().getResource("/misc/firstplayertoken.png").toString()));
+        othersChair = new ArrayList<>();
+        for(int i=0; i<3; i++){
+            ImageView chair = new ImageView(new Image(getClass().getResource("/misc/firstplayertoken.png").toString()));
+            othersChair.add(chair);
+        }
+        
+        /*STATIC EXAMPLE
+        allNickTexts = new ArrayList<>();
+        state = new GameState();
+        state.setNumPlayers(4);
+        List<Boolean> connection = new ArrayList<>();
+        connection.add(true);
+        connection.add(true);
+        connection.add(true);
+        connection.add(true);
+        List<Integer> turnids = new ArrayList<>();
+        turnids.add(0);
+        turnids.add(1);
+        turnids.add(2);
+        turnids.add(3);
+
+
+        state.setConnected(connection);
+        state.setTurnIds(turnids);
+        state.setCurrPlayerId(2);
+        List<String> tmp = new ArrayList<>();
+        tmp.add("Ale");
+        tmp.add("Pq");
+        tmp.add("Rik");
+        tmp.add("Dio");
+        state.setNicknames(tmp);
+*/
+
+        for(int i=0; i<state.getNumPlayers(); i++) {
+            Text playerNickText = new Text(state.getNicknames().get(i));
+            shelfPane.getChildren().add(playerNickText);
+            allNickTexts.add(playerNickText);
+        }
+        
         tokenPane.getChildren().add(tokenLastPlayerId);
         tokenPane.getChildren().add(tokenCommonGoal1);
         tokenPane.getChildren().add(tokenCommonGoal2);
@@ -869,6 +913,8 @@ public class GUIApplication extends Application{
         boardPane.getChildren().add(personalGoal);
         boardPane.getChildren().add(bufferPane);
         boardPane.getChildren().add(chatButtonPane);
+        boardPane.getChildren().add(playerChair);
+        boardPane.getChildren().addAll(othersChair.get(0), othersChair.get(1), othersChair.get(2));
 
         //ORDER OF PANELS
         StackPane stackPane = new StackPane(background,tokenPane);
@@ -905,6 +951,8 @@ public class GUIApplication extends Application{
         stage.widthProperty().addListener((x)->setGameGraphicsProportions());
         stage.heightProperty().addListener((x)->setGameGraphicsProportions());
         setGameGraphicsProportions();
+
+        updateNameColor();
     }
 
     /**
@@ -982,7 +1030,6 @@ public class GUIApplication extends Application{
         tokenCommonGoal2.setY(commonGoal2.getFitHeight()*0.225+commonGoal2.getY());
         tokenCommonGoal2.setRotate(-8.7);
 
-        //TODO: BUFFER HBOX, CHAT
         hboxBuffer.setPrefHeight(Math.min(board.getFitWidth()/stdScreenRatio,stage.getHeight())*0.25);
         hboxBuffer.setPrefWidth(board.getFitHeight()*0.37);
         hboxBuffer.setLayoutX(stage.getWidth()*0.44);
@@ -999,6 +1046,29 @@ public class GUIApplication extends Application{
         chat.setFitWidth(board.getFitHeight()*0.24);
         chat.setX(stage.getWidth()*0.27);
         chat.setY(board.getY()- board.getFitHeight()*0.156);
+
+        playerChair.setFitHeight(Math.min(playerShelf.getFitWidth()/stdScreenRatio,playerShelf.getFitHeight())*0.32);
+        playerChair.setFitWidth(playerChair.getFitHeight()*0.935828877005348);
+        playerChair.setX(playerShelf.getX()-playerShelf.getFitWidth()*0.11);
+        playerChair.setY(playerShelf.getY()+playerShelf.getFitHeight()*0.70);
+
+        othersChair.get(0).setFitHeight(Math.min(otherPlayerShelves.get(0).getFitWidth()/stdScreenRatio,otherPlayerShelves.get(0).getFitHeight())*0.25);
+        othersChair.get(0).setFitWidth(othersChair.get(0).getFitHeight()*0.935828877005348);
+        othersChair.get(0).setX(otherPlayerShelves.get(0).getX()-otherPlayerShelves.get(0).getFitWidth()*0.11);
+        othersChair.get(0).setY(otherPlayerShelves.get(0).getY()+otherPlayerShelves.get(0).getFitHeight()*0.74);
+
+        othersChair.get(1).setFitHeight(Math.min(otherPlayerShelves.get(0).getFitWidth()/stdScreenRatio,otherPlayerShelves.get(0).getFitHeight())*0.25);
+        othersChair.get(1).setFitWidth(othersChair.get(1).getFitHeight()*0.935828877005348);
+        othersChair.get(1).setX(otherPlayerShelves.get(1).getX()-otherPlayerShelves.get(1).getFitWidth()*0.11);
+        othersChair.get(1).setY(otherPlayerShelves.get(1).getY()+otherPlayerShelves.get(1).getFitHeight()*0.74);
+
+        othersChair.get(2).setFitHeight(Math.min(otherPlayerShelves.get(0).getFitWidth()/stdScreenRatio,otherPlayerShelves.get(0).getFitHeight())*0.25);
+        othersChair.get(2).setFitWidth(othersChair.get(2).getFitHeight()*0.935828877005348);
+        othersChair.get(2).setX(otherPlayerShelves.get(2).getX()-otherPlayerShelves.get(2).getFitWidth()*0.11);
+        othersChair.get(2).setY(otherPlayerShelves.get(2).getY()+otherPlayerShelves.get(2).getFitHeight()*0.74);
+
+        //TODO: player names under shelves, current player showed somehow?
+
     }
 
     /**
@@ -1018,6 +1088,11 @@ public class GUIApplication extends Application{
                 t.setY(shelf.getY()+shelf.getFitHeight()*0.065+t.getFitHeight()*i*1.082);
             }
         }
+        Text text = pos < 0 ? allNickTexts.get(playerTurnId) : allNickTexts.get(pos < playerTurnId ? pos : pos + 1);
+
+        text.setFont(new Font("Calibri",shelf.getFitWidth()*0.08));
+        text.setX(shelf.getX() + shelf.getFitWidth()/2 - text.getLayoutBounds().getWidth()/2);
+        text.setY(shelf.getY() + shelf.getFitHeight()*1.08);
     }
 
     /**
@@ -1084,7 +1159,7 @@ public class GUIApplication extends Application{
         Pane winnerPane = new Pane(winner);
         endStackPane.getChildren().add(winnerPane);
 
-        //TODO: ADJUST SIZES, MAKE EVERYTHING RESIZABLE
+
 
         String[] typeOfPointEntryNames = {"Personal goal:", "Common goal 1:", "Common goal 2:", "Group points:", "Final point:"};
         //TODO For each player (in arrival order) specific point array --
@@ -1097,6 +1172,7 @@ public class GUIApplication extends Application{
         //TODO A list of Popup pointsPopup ? one popup for each player
         state = new GameState();
         state.setNumPlayers(4);
+
         Popup[] pointsPopupList = new Popup[4];
 
         specificPointsPopups = new ArrayList<>();
@@ -1391,6 +1467,7 @@ public class GUIApplication extends Application{
             String message = messageField.getText().trim();
             if (!message.isEmpty()) {
                 chatArea.appendText(message + "\n");
+                //state.getChat().
                 messageField.clear();
             }
         });
@@ -1526,4 +1603,23 @@ public class GUIApplication extends Application{
         stage.show();
     }
 
+    /**
+     * This method updates the name of each player according to turn and connection
+     * @author Pasquale Gioia
+     **/
+    public void updateNameColor(){
+
+        for(int i=0; i<state.getNumPlayers(); i++){
+
+            if(state.getCurrPlayerId()==i)
+                allNickTexts.get(i).setFill(Color.GREEN);
+            else {
+                if (state.isConnected(i)) {
+                    allNickTexts.get(i).setFill(Color.WHITE);
+                }
+            }
+        }
+    }
+
 }
+

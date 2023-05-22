@@ -91,7 +91,7 @@ public class GameState {
      * @return The path of the common goal
      */
     public String getCommonGoalImagePath(int cGoalId){
-        if(cGoalId>=1 && cGoalId<=12) return "/common goal cards/" + cGoalId +".png";
+        if(cGoalId>=1 && cGoalId<=12) return "/common goal cards/" + cGoalId +".jpg";
         return null;
     }
 
