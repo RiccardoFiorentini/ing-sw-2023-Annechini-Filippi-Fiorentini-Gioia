@@ -159,6 +159,45 @@ public class GameState {
         return -1;
     }
 
+    /**
+     * method that returns a string that describes buffer state
+     * @author Nicole Filippi
+     * @return String that describes the buffer
+     */
+    public String getPickableTilesInBufferString(){
+        String res = "";
+        if(buffer[0].isFree()){
+            if(buffer[1].isFree()){
+                if(buffer[2].isFree()){
+
+                }else{
+                    res = "2";
+                }
+            }else{
+                if(buffer[2].isFree()){
+                    res = "1";
+                }else{
+                    res = "1 or 2";
+                }
+            }
+        }else{
+            if(buffer[1].isFree()){
+                if(buffer[2].isFree()){
+                    res = "0";
+                }else{
+                    res = "0 or 2";
+                }
+            }else{
+                if(buffer[2].isFree()){
+                    res = "0 or 1";
+                }else{
+                    res = "0, 1 or 2";
+                }
+            }
+        }
+        return res;
+    }
+
     public int getFirstPlayerId() {
         return firstPlayerId;
     }

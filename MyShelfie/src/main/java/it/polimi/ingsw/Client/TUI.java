@@ -17,24 +17,11 @@ public class TUI{
     Scanner scan = new Scanner(System.in);
     private String playerNickname;
     private int playerTurnId;
-    private ClientState state;
+    private TileColor[][] personalGoal;
+    private ClientState cState;
+    private GameState state;
 
     //GAME PARAMETERS
-    private int firstPlayerId;
-    private int[] commonGoalsId;
-    private int[] commonGoalsRemainingPoint;
-    private String[] commonGoalsDesc;
-    private int currPlayerId;
-    private BoardBean board;
-    private ChatBean chat;
-    private List<ShelfBean> shelves;
-    private List<String> nicknames;
-    private List<Integer> turnIds;
-    private TileColor[][] personalGoal; //6x5
-    private List<Integer> commonGoalPoints1;
-    private List<Integer> commonGoalPoints2;
-    private List<Boolean> connected;
-    private Tile[] buffer;
     private String phase=null;
 
     /**
@@ -45,10 +32,7 @@ public class TUI{
         this.cch=null;
         playerNickname = null;
         playerTurnId = -1;
-        commonGoalsId = new int[2];
-        commonGoalsRemainingPoint = new int[2];
-        commonGoalsDesc = new String[2];
-        buffer=new Tile[2];
+        personalGoal = new TileColor[6][5];
     }
 
     /**
@@ -95,7 +79,7 @@ public class TUI{
      * @author Nicole Filippi
      */
     public void onStartup() {
-        state=ClientState.BEFORE_LOGIN;
+        cState=ClientState.BEFORE_LOGIN;
         printTitle();
         clearConsole();
         printTitle();
@@ -126,10 +110,8 @@ public class TUI{
         switch(resp.getResponseType()) {
             case LOGIN_ERROR:
                 playerNickname = null;
-
                 clearConsole();
                 printTitle();
-
                 System.out.println("Nickname not valid.");
                 if (resp.getStrParameter("newnickname") != null)
                     System.out.println("A valid nickname is: " + resp.getStrParameter("newnickname"));
@@ -143,24 +125,24 @@ public class TUI{
                 System.out.println("Nickname accepted.");
                 playerNickname=resp.getStrParameter("nickname");
                 System.out.println("Your nickname is: " + playerNickname);
-                if(state.equals(ClientState.BEFORE_LOGIN))
-                    state=ClientState.QUEUE;
+                if(cState.equals(ClientState.BEFORE_LOGIN))
+                    cState=ClientState.QUEUE;
                 break;
 
             case ASK_PLAYERS_NUM:
-                if(state==ClientState.BEFORE_LOGIN || state==ClientState.QUEUE || state==ClientState.ASK_PLAYERS_NUM){
+                if(cState==ClientState.BEFORE_LOGIN || cState==ClientState.QUEUE || cState==ClientState.ASK_PLAYERS_NUM){
                     if (resp.getStrParameter("result") == null) { //first request
-                        state=ClientState.ASK_PLAYERS_NUM;
+                        cState=ClientState.ASK_PLAYERS_NUM;
                         System.out.println("How many players? ");
 
                     } else if (resp.getStrParameter("result").equals("success")) {  //accepted value
                         System.out.println("Okay, waiting other players to join...");
-                        state=ClientState.QUEUE;
+                        cState=ClientState.QUEUE;
                     } else { //not accepted value
                         clearConsole();
                         printTitle();
 
-                        state=ClientState.ASK_PLAYERS_NUM;
+                        cState=ClientState.ASK_PLAYERS_NUM;
                         System.out.println("Number not valid.");
                         System.out.println("Choose another answer: ");
                     }
@@ -169,33 +151,35 @@ public class TUI{
                 break;
 
             case GAME_STARTED:
-                if(state==ClientState.QUEUE || state==ClientState.BEFORE_LOGIN || state==ClientState.ASK_PLAYERS_NUM)
-                    state=ClientState.MATCH_IDLE;
+                if(cState==ClientState.QUEUE || cState==ClientState.BEFORE_LOGIN || cState==ClientState.ASK_PLAYERS_NUM)
+                    cState=ClientState.MATCH_IDLE;
 
+                state = new GameState();
                 Command command2 = new Command(CommandType.GAME_JOINED);
                 sendCommand(command2);
-                buffer = new Tile[]{Tile.EMPTY,Tile.EMPTY,Tile.EMPTY};
-                firstPlayerId=resp.getIntParameter("firstPlayerId");
-                commonGoalsId[0]=resp.getIntParameter("commongoal1");
-                commonGoalsId[1]=resp.getIntParameter("commongoal2");
-                commonGoalsRemainingPoint[0]=resp.getIntParameter("commongoalsremainingpoint1");
-                commonGoalsRemainingPoint[1]=resp.getIntParameter("commongoalsremainingpoint2");
-                currPlayerId=resp.getIntParameter("currentplayer");
-                board=(BoardBean) resp.getObjParameter("board");
-                chat=(ChatBean)resp.getObjParameter("chat");
-                shelves=(List<ShelfBean>)resp.getObjParameter("shelves");
-                nicknames=(List<String>)resp.getObjParameter("nicknames");
-                turnIds=(List<Integer>)resp.getObjParameter("turnIds");
-                for(int i=0; i<turnIds.size(); i++){
-                    if((nicknames).get(i).equals(playerNickname))
-                        playerTurnId=turnIds.get(i);
+                state.setBuffer(new Tile[]{Tile.EMPTY,Tile.EMPTY,Tile.EMPTY});
+                state.setFirstPlayerId(resp.getIntParameter("firstPlayerId"));
+                state.setCommonGoalsId(0, resp.getIntParameter("commongoal1"));
+                state.setCommonGoalsId(1, resp.getIntParameter("commongoal2"));
+                state.setCommonGoalsRemainingPoint(0, resp.getIntParameter("commongoalsremainingpoint1"));
+                state.setCommonGoalsRemainingPoint(1, resp.getIntParameter("commongoalsremainingpoint2"));
+                state.setCurrPlayerId(resp.getIntParameter("currentplayer"));
+                state.setBoard((BoardBean) resp.getObjParameter("board"));
+                state.setChat((ChatBean)resp.getObjParameter("chat"));
+                state.setShelves((List<ShelfBean>)resp.getObjParameter("shelves"));
+                state.setNicknames((List<String>)resp.getObjParameter("nicknames"));
+                state.setNumPlayers(state.getNicknames().size());
+                state.setTurnIds((List<Integer>)resp.getObjParameter("turnIds"));
+                for(int i=0; i<state.getNumPlayers(); i++){
+                    if((state.getNicknames().get(i)).equals(playerNickname))
+                        playerTurnId=state.getTurnIds().get(i);
                 }
                 personalGoal=(TileColor[][])resp.getObjParameter("personalgoalmatrix");
-                commonGoalPoints1=(List<Integer>)resp.getObjParameter("commongoalpoints1");
-                commonGoalPoints2=(List<Integer>)resp.getObjParameter("commongoalpoints2");
-                connected=(List<Boolean>)resp.getObjParameter("connected");
-                commonGoalsDesc[0]=resp.getStrParameter("commongoaldescription1");
-                commonGoalsDesc[1]=resp.getStrParameter("commongoaldescription2");
+                state.setCommonGoalPoints1((List<Integer>)resp.getObjParameter("commongoalpoints1"));
+                state.setCommonGoalPoints2((List<Integer>)resp.getObjParameter("commongoalpoints2"));
+                state.setConnected((List<Boolean>)resp.getObjParameter("connected"));
+                state.setCommonGoalsDesc(0, resp.getStrParameter("commongoaldescription1"));
+                state.setCommonGoalsDesc(1, resp.getStrParameter("commongoaldescription2"));
 
                 clearConsole();
                 printGameScreen();
@@ -203,61 +187,63 @@ public class TUI{
                 break;
 
             case NEW_MEX_CHAT:
-                chat=(ChatBean) resp.getObjParameter("chat") ;
+                state.setChat((ChatBean) resp.getObjParameter("chat"));
                 clearConsole();
                 printGameScreen();
                 break;
 
             case NEW_TURN:
-                currPlayerId=resp.getIntParameter("CurrentPlayerId");
+                state.setCurrPlayerId(resp.getIntParameter("CurrentPlayerId"));
 
-                if(playerTurnId==currPlayerId){
-                    state=ClientState.SELECT_COLUMN;
+                if(playerTurnId==state.getCurrPlayerId()){
+                    cState=ClientState.SELECT_COLUMN;
                     phase="IT'S YOUR TURN \nSelect the column where you want to put the tiles: \n";
                 }else{
-                    state=ClientState.MATCH_IDLE;
-                    phase="Player "+nicknames.get(currPlayerId)+" is playing...\n";
+                    cState=ClientState.MATCH_IDLE;
+                    phase="Player "+state.getNicknames().get(state.getCurrPlayerId())+" is playing...\n";
                 }
                 clearConsole();
                 printGameScreen();
                 break;
 
             case SELECT_COLUMN_RESULT:
-                if("success".equals(resp.getStrParameter("result"))){
-                    state=ClientState.SELECT_FIRST_TILE;
-                    phase="Now select the first tile you want to pick, writing row and column ('r c') desired using the indexing.\n";
+                if("success".equals(resp.getStrParameter("result"))) {
+                    cState = ClientState.SELECT_FIRST_TILE;
+                    phase = "Now select the first tile you want to pick, writing row and column ('r c') desired using the indexing.\n";
+                    System.out.print(phase);
+                }else if("Full column".equals(resp.getStrParameter("result"))){
+                    cState=ClientState.SELECT_COLUMN;
+                    phase="You chose an already full column, please select a column with at least one free slot: \n";
                     System.out.print(phase);
                 }else{
-                    state=ClientState.SELECT_COLUMN;
+                    cState=ClientState.SELECT_COLUMN;
                     phase="You chose a non-valid column, please select a number between 0 and 4: \n";
                     System.out.print(phase);
                 }
                 break;
 
             case SELECT_TILE_RESULT:
-                if("success".equals(resp.getStrParameter("result"))){
-                    if(state==ClientState.SELECT_FIRST_TILE) {
-                        state = ClientState.SELECT_SECOND_TILE;
-                        phase="Now select the last tile you want to pick, it has to be on the same row or on the same column\n" +
+                if("success".equals(resp.getStrParameter("result"))) {
+                    if (cState == ClientState.SELECT_FIRST_TILE) {
+                        cState = ClientState.SELECT_SECOND_TILE;
+                        phase = "Now select the last tile you want to pick, it has to be on the same row or on the same column\n" +
                                 "and with a max distance of 2. If you want to pick just one tile, select the same tile: \n";
                         System.out.print(phase);
-                    }else{
-                        state=ClientState.PUT_IN_COLUMN;
-                        buffer=(Tile[]) resp.getObjParameter("buffer");
-                        phase="Choose a tile you want to pick from the buffer: \n";
+                    } else {
+                        cState = ClientState.PUT_IN_COLUMN;
+                        state.setBuffer((Tile[]) resp.getObjParameter("buffer"));
+                        phase = "Choose a tile you want to pick from the buffer: \n";
                         clearConsole();
                         printGameScreen();
-
                     }
-
                 }else{
-                    if(state==ClientState.SELECT_FIRST_TILE) {
-                        state = ClientState.SELECT_FIRST_TILE;
-                        phase="Invalid coordinates, select another tile: \n";
+                    if(cState==ClientState.SELECT_FIRST_TILE) {
+                        cState = ClientState.SELECT_FIRST_TILE;
+                        phase="Invalid tile, select another one: \n";
                         System.out.print(phase);
                     }else{
-                        state=ClientState.SELECT_SECOND_TILE;
-                        phase="Invalid coordinates, select another tile: \n";
+                        cState=ClientState.SELECT_SECOND_TILE;
+                        phase="Invalid tile, select another one: \n";
                         System.out.print(phase);
                     }
                 }
@@ -265,42 +251,42 @@ public class TUI{
 
             case PUT_IN_COLUMN_RESULT:
                 if("success".equals(resp.getStrParameter("result"))){
-                    buffer=(Tile[]) resp.getObjParameter("buffer");
+                    state.setBuffer((Tile[]) resp.getObjParameter("buffer"));
                     if(resp.getIntParameter("turnFinished")==0) {
-                        state = ClientState.PUT_IN_COLUMN;
+                        cState = ClientState.PUT_IN_COLUMN;
                         phase="Choose another tile you want to pick from the buffer: \n";
                     }else{
-                        state=ClientState.MATCH_IDLE;
+                        cState=ClientState.MATCH_IDLE;
                     }
                     clearConsole();
                     printGameScreen();
                 }else{
-                    state=ClientState.PUT_IN_COLUMN;
-                    phase="You chose a non-valid position, please select a valid number between 0 and 2: \n";
+                    cState=ClientState.PUT_IN_COLUMN;
+                    phase="You chose a non-valid position, please select a valid number ("+state.getPickableTilesInBufferString()+"):\n";
                     System.out.print(phase);
                 }
                 break;
 
             case UPDATE_BOARD:
-                board=(BoardBean)resp.getObjParameter("board");
+                state.setBoard((BoardBean)resp.getObjParameter("board"));
                 clearConsole();
                 printGameScreen();
                 break;
 
             case UPDATE_PLAYER_SHELF:
-                shelves.set(resp.getIntParameter("playerid"),(ShelfBean)resp.getObjParameter("shelf"));
+                state.getShelves().set(resp.getIntParameter("playerid"),(ShelfBean)resp.getObjParameter("shelf"));
                 clearConsole();
                 printGameScreen();
                 break;
 
             case PLAYER_DISCONNECTED:
-                connected.set(resp.getIntParameter("playerid"),false);
-                System.out.print("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has disconnected. \n");
+                state.getConnected().set(resp.getIntParameter("playerid"),false);
+                System.out.print("The player "+state.getNicknames().get(resp.getIntParameter("playerid"))+" has disconnected. \n");
                 break;
 
             case PLAYER_RECONNECTED:
-                connected.set(resp.getIntParameter("playerid"),true);
-                System.out.print("The player "+nicknames.get(resp.getIntParameter("playerid"))+" has reconnected. \n");
+                state.getConnected().set(resp.getIntParameter("playerid"),true);
+                System.out.print("The player "+state.getNicknames().get(resp.getIntParameter("playerid"))+" has reconnected. \n");
                 break;
 
             case ONLY_ONE_CONNECTED:
@@ -313,7 +299,6 @@ public class TUI{
 
             case GAME_ENDED:
                 clearConsole();
-                List<Integer> points;
                 System.out.println(" ██████╗  █████╗ ███╗   ███╗███████╗    ███████╗███╗   ██╗██████╗ ███████╗██████╗ \n" +
                                    "██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔════╝████╗  ██║██╔══██╗██╔════╝██╔══██╗\n" +
                                    "██║  ███╗███████║██╔████╔██║█████╗      █████╗  ██╔██╗ ██║██║  ██║█████╗  ██║  ██║\n" +
@@ -322,28 +307,10 @@ public class TUI{
                                    " ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝    ╚══════╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═════╝");
                 if(resp.getIntParameter("interrupted")==0){ //finished correctly
                     System.out.println("RESULTS: ");
-                    points=(List<Integer>)resp.getObjParameter("finalPoints");
-                    List<Integer> tmpPoints = new ArrayList<>(points);
-                    List<String> tmpNick = new ArrayList<>(nicknames);
-                    List<Integer> resPoints = new ArrayList<>();
-                    List<String> resNick = new ArrayList<>();
-                    int max, maxPos;
-                    while(tmpNick.size()>0){
-                        max=-1;
-                        maxPos=-1;
-                        for(int i=0; i<tmpNick.size(); i++){
-                            if(tmpPoints.get(i)>max) {
-                                max = tmpPoints.get(i);
-                                maxPos = i;
-                            }
-                        }
-                        resPoints.add(max);
-                        resNick.add(tmpNick.get(maxPos));
-                        tmpPoints.remove((Integer)max);
-                        tmpNick.remove(maxPos);
-                    }
-                    for(int i=0; i<resPoints.size(); i++){
-                        System.out.println((i+1) +") " + resNick.get(i) + ": " + resPoints.get(i));
+                    state.setFinalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
+
+                    for(int i=0; i<state.getNumPlayers(); i++){
+                        System.out.println((i+1) +") " + state.getNicknames().get(state.getTurnIdInPosition(i+1)) + ": " + state.getFinalPoints().get(state.getTurnIdInPosition(i+1)));
                     }
                 }
                 else{
@@ -353,18 +320,18 @@ public class TUI{
 
             case COMMON_GOAL_WON:
                 if(resp.getIntParameter("commongoalid")==0) {
-                    commonGoalPoints1.set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
-                    commonGoalsRemainingPoint[0]=resp.getIntParameter("remainingpoints");
+                    state.getCommonGoalPoints1().set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
+                    state.setCommonGoalsRemainingPoint(0, resp.getIntParameter("remainingpoints"));
                 }else{
-                    commonGoalPoints2.set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
-                    commonGoalsRemainingPoint[1]=resp.getIntParameter("remainingpoints");
+                    state.getCommonGoalPoints2().set(resp.getIntParameter("playerid"), resp.getIntParameter("pointswon"));
+                    state.setCommonGoalsRemainingPoint(1, resp.getIntParameter("remainingpoints"));
                 }
                 clearConsole();
                 printGameScreen();
                 break;
 
             case SHELF_COMPLETED:
-                //
+                state.setLastPlayerId(resp.getIntParameter("PlayerId"));
         }
     }
 
@@ -399,7 +366,7 @@ public class TUI{
                 sendCommand(command);
             }
             else{
-                switch (state){
+                switch (cState){
                     case BEFORE_LOGIN:
                         playerNickname = input;
                         Command command = new Command(CommandType.LOGIN);
@@ -412,9 +379,9 @@ public class TUI{
                             int num=Integer.parseInt(input);
                             command2.setIntParameter("num", num);
                             sendCommand(command2);
-                            state=ClientState.QUEUE;
+                            cState=ClientState.QUEUE;
                         }catch(Exception e){
-                            state=ClientState.ASK_PLAYERS_NUM;
+                            cState=ClientState.ASK_PLAYERS_NUM;
                             System.out.println("Invalid number, choose a number between 2 and 4");
                         }
                         break;
@@ -422,12 +389,12 @@ public class TUI{
                     case SELECT_COLUMN:
                         Command command3 = new Command(CommandType.SELECT_COLUMN);
                         try{
-                            state=ClientState.MATCH_IDLE;
+                            cState=ClientState.MATCH_IDLE;
                             int num=Integer.parseInt(input);
                             command3.setIntParameter("value", num);
                             sendCommand(command3);
                         }catch(Exception e){
-                            state=ClientState.SELECT_COLUMN;
+                            cState=ClientState.SELECT_COLUMN;
                             System.out.println("Invalid number, choose a number between 0 and 4");
                         }
                         break;
@@ -464,11 +431,11 @@ public class TUI{
                         Command command6 = new Command(CommandType.PUT_IN_COLUMN);
                         try{
                             int index=Integer.parseInt(input);
-                            state=ClientState.MATCH_IDLE;
+                            cState=ClientState.MATCH_IDLE;
                             command6.setIntParameter("index", index);
                             sendCommand(command6);
                         }catch(Exception e){
-                            state=ClientState.PUT_IN_COLUMN;
+                            cState=ClientState.PUT_IN_COLUMN;
                             System.out.println("Invalid position number");
                         }
                         break;
@@ -485,7 +452,7 @@ public class TUI{
      * @author Nicole Filippi
      */
     public void printGameScreen(){
-        printAll(board, chat, shelves, nicknames, playerNickname, commonGoalPoints1, commonGoalPoints2, commonGoalsDesc[0], commonGoalsDesc[1], Arrays.stream(buffer).toList(), personalGoal, commonGoalsRemainingPoint[0], commonGoalsRemainingPoint[1], currPlayerId, connected, phase);
+        printAll(state.getBoard(), state.getChat(), state.getShelves(), state.getNicknames(), playerNickname, state.getCommonGoalPoints1(), state.getCommonGoalPoints2(), state.getCommonGoalsDesc()[0], state.getCommonGoalsDesc()[1], Arrays.stream(state.getBuffer()).toList(), personalGoal, state.getCommonGoalsRemainingPoint()[0], state.getCommonGoalsRemainingPoint()[1], state.getCurrPlayerId(), state.getConnected(), phase);
     }
 
 

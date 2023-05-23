@@ -124,7 +124,7 @@ public class GameController {
                     virtualView.sendResponse(result2);
                 } catch(Exception e){
                     Response result2 = new Response(SELECT_TILE_RESULT);
-                    result2.setStrParameter("result", "Error: "+e.getMessage());
+                    result2.setStrParameter("result", "Error");
                     virtualView.sendResponse(result2);
                 }
 
@@ -142,7 +142,7 @@ public class GameController {
                     virtualView.sendResponse(result3);
                 } catch(Exception e){
                     Response result3 = new Response(PUT_IN_COLUMN_RESULT);
-                    result3.setStrParameter("result", "Error: "+e.getMessage());
+                    result3.setStrParameter("result", "Error");
                     virtualView.sendResponse(result3);
                 }
                 break;
