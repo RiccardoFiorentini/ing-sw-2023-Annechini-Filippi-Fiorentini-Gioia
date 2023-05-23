@@ -459,9 +459,11 @@ public class Model {
      * @param turnId Player who reconnected
      */
     public void updatePlayerReconnected(int turnId){
-        Response disc = new Response(PLAYER_RECONNECTED);
-        disc.setIntParameter("playerId", turnId);
-        broadcast(disc);
+        Response rec = new Response(PLAYER_RECONNECTED);
+        rec.setIntParameter("playerId", turnId);
+        for(Player p: players){
+            if(p.getTurnId()!=turnId) p.update(rec);
+        }
     }
 
     /**
@@ -499,7 +501,7 @@ public class Model {
             turnIds.add(p.getTurnId());
             commonGoalPoints1.add(p.getPointsCommonGoal()[0]);
             commonGoalPoints2.add(p.getPointsCommonGoal()[1]);
-            connected.add(p.getConnected());
+            connected.add(p.getConnected() || p.getTurnId() == player.getTurnId());
         }
 
         recon.setObjParameter("connected", connected);

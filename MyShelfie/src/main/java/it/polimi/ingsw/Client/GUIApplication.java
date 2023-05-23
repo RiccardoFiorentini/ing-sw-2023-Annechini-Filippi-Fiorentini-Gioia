@@ -87,7 +87,6 @@ public class GUIApplication extends Application{
     private HBox hBoxNet;
     private HBox hBoxWaiting;
     private HBox hboxBuffer;
-    private Pane columns;
     private Pane bufferPane;
 
     private ImageView tile1Buffer;
@@ -326,6 +325,10 @@ public class GUIApplication extends Application{
                     new Thread(() -> handleResponse(response)).start();
 
                 }
+                stage.setOnCloseRequest((e)->{
+                    sendCommand(new Command(CommandType.DISCONNECT));
+                    System.exit(1);
+                });
             }
         }).start();
     }
@@ -365,6 +368,7 @@ public class GUIApplication extends Application{
         if(resp == null) return;
         switch(resp.getResponseType()) {
             case LOGIN_ERROR:
+                playerNickname = null;
                 Platform.runLater(() ->nicknameResponse(false, resp.getStrParameter("newnickname")));
                 break;
 
@@ -399,9 +403,9 @@ public class GUIApplication extends Application{
                 state.setShelves((List<ShelfBean>)resp.getObjParameter("shelves"));
                 state.setNicknames((List<String>)resp.getObjParameter("nicknames"));
                 state.setTurnIds((List<Integer>)resp.getObjParameter("turnIds"));
-                for(int i=0; i<state.getTurnIds().size(); i++){
+                for(int i=0; i<state.getNicknames().size(); i++){
                     if((state.getNicknames().get(i)).equals(playerNickname))
-                        playerTurnId=state.getTurnIds().get(i);
+                        playerTurnId = state.getTurnIds().get(i);
                 }
                 personalGoalId = resp.getIntParameter("personalgoal");
                 state.setCommonGoalPoints1((List<Integer>)resp.getObjParameter("commongoalpoints1"));
@@ -424,6 +428,7 @@ public class GUIApplication extends Application{
                 if(playerTurnId==state.getCurrPlayerId()){
                     cState = SELECT_COLUMN;
                     Platform.runLater(()->updateBoard());
+                    Platform.runLater(()->updateBuffer());
                     Platform.runLater(()->updateShelf(playerTurnId));
                 }else{
                     cState = MATCH_IDLE;
@@ -510,8 +515,8 @@ public class GUIApplication extends Application{
             case GAME_ENDED:
                 if(resp.getIntParameter("interrupted")==0){ //finished correctly
                     state.setFinalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
-                    state.setFinalPersonalGoalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
-                    state.setFinalColorGroupPoints((List<Integer>)resp.getObjParameter("finalPoints"));
+                    state.setFinalPersonalGoalPoints((List<Integer>)resp.getObjParameter("finalPersonalGoalPoints"));
+                    state.setFinalColorGroupPoints((List<Integer>)resp.getObjParameter("finalColorGroupPoints"));
                     Platform.runLater(()-> setupEndGameScreen());
                 } else {
                     Platform.runLater(()-> setupInterruptedEndGameScreen());
@@ -606,6 +611,7 @@ public class GUIApplication extends Application{
         if (nickname == null || nickname.equals("")) {
             return;
         }
+        playerNickname = nickname;
         Command command = new Command(CommandType.LOGIN);
         command.setStrParameter("nickname", nickname);
         sendCommand(command);
@@ -800,16 +806,15 @@ public class GUIApplication extends Application{
         for(ImageView im : otherPlayerShelves) shelfPane.getChildren().add(im);
 
         rectangles = new ArrayList<>();
-        columns = new Pane();
+
         for(int i=0; i<5; i++){
             rectangles.add(new Rectangle());
             rectangles.get(i).setFill(Color.TRANSPARENT);
             rectangles.get(i).setStroke(Color.ANTIQUEWHITE);
             rectangles.get(i).setStrokeWidth(3);
-            columns.getChildren().add(rectangles.get(i));
+            shelfPane.getChildren().add(rectangles.get(i));
         }
-        columns.setVisible(false);
-        shelfPane.getChildren().add(columns);
+
 
         for(ImageView[] el : boardTiles){
             for(ImageView i : el) tilePane.getChildren().add(i);
@@ -900,11 +905,6 @@ public class GUIApplication extends Application{
             }
         });
 
-        playerShelf.setOnMouseClicked((e)->System.out.println("CLICK SHELF!!!"));
-        board.setOnMouseClicked((e)->System.out.println("CLICK BOARD!!!"));
-        tile1Buffer.setOnMouseClicked((e)->System.out.println("CLICK BUFFER1 TILE!!"));
-        tile2Buffer.setOnMouseClicked((e)->System.out.println("CLICK BUFFER2 TILE!!"));
-        tile3Buffer.setOnMouseClicked((e)->System.out.println("CLICK BUFFER3 TILE!!"));
         chat.setOnMouseClicked((e) -> {
             if(!isChatOpen){
                 openChatWindow();
@@ -938,6 +938,7 @@ public class GUIApplication extends Application{
      * @author Alessandro Annechini, Pasquale Gioia
      */
     public void setGameGraphicsProportions(){
+        double stdHeightRatio = Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight())/bounds.getHeight();
         board.setFitWidth(Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight()) * 0.8 );
         board.setFitHeight(board.getFitWidth());
         board.setX(stage.getWidth()*0.44 - board.getFitWidth()/2);
@@ -1006,10 +1007,12 @@ public class GUIApplication extends Application{
         tokenCommonGoal2.setY(commonGoal2.getFitHeight()*0.225+commonGoal2.getY());
         tokenCommonGoal2.setRotate(-8.7);
 
-        hboxBuffer.setPrefHeight(Math.min(board.getFitWidth()/stdScreenRatio,stage.getHeight())*0.25);
-        hboxBuffer.setPrefWidth(board.getFitHeight()*0.37);
+        hboxBuffer.setPrefHeight(Math.min(stage.getWidth()/stdScreenRatio,stage.getHeight())*0.1);
+        hboxBuffer.setPrefWidth(hboxBuffer.getPrefHeight()/0.37);
         hboxBuffer.setLayoutX(stage.getWidth()*0.44);
         hboxBuffer.setLayoutY(board.getY()- board.getFitHeight()*0.156);
+        hboxBuffer.setPadding(new Insets(10*stdHeightRatio));
+        hboxBuffer.setSpacing(10*stdHeightRatio);
 
         tile1Buffer.setFitWidth(hboxBuffer.getPrefWidth()*0.3333333);
         tile1Buffer.setFitHeight(hboxBuffer.getPrefHeight()*0.87);
@@ -1034,7 +1037,6 @@ public class GUIApplication extends Application{
             othersChair.get(i).setX(otherPlayerShelves.get(i).getX() - otherPlayerShelves.get(i).getFitWidth() * 0.11);
             othersChair.get(i).setY(otherPlayerShelves.get(i).getY() + otherPlayerShelves.get(i).getFitHeight() * 0.74);
         }
-
     }
 
     /**
@@ -1063,16 +1065,16 @@ public class GUIApplication extends Application{
             for(int i=0; i<5; i++){
                 rectangles.get(i).setX(matrix[0][i].getX());
                 rectangles.get(i).setY(matrix[0][i].getY());
-                rectangles.get(i).setWidth(matrix[0][i].getFitWidth());
-                rectangles.get(i).setHeight(playerShelf.getFitHeight()*0.85);
+                rectangles.get(i).setWidth(matrix[0][i].getFitWidth()*0.95);
+                rectangles.get(i).setHeight(playerShelf.getFitHeight()*0.815);
             }
         }
 
         ImageView[] tokens = pos < 0 ? playerPointsTokens : otherPlayersPointsTokens.get(pos);
         for(int i=0;i<3;i++){
-            tokens[i].setFitHeight(shelf.getFitHeight()*shelfTileRatio*0.6);
+            tokens[i].setFitHeight(shelf.getFitHeight()*shelfTileRatio*0.8);
             tokens[i].setFitWidth(tokens[i].getFitHeight());
-            tokens[i].setX(shelf.getX() - shelf.getFitWidth()*0.1);
+            tokens[i].setX(shelf.getX() - shelf.getFitWidth()*0.08);
             tokens[i].setY(shelf.getY() + shelf.getFitHeight()*(i*0.15 + 0.2));
         }
     }
@@ -1471,6 +1473,20 @@ public class GUIApplication extends Application{
                 messageField.clear();
             }
         });
+        messageField.setOnAction((e) -> {
+            String message = messageField.getText().trim();
+            if (!message.isEmpty()) {
+                if(choiceBox.getValue().equals("Broadcast")){
+                    doSendMex(message, null);
+                }else{
+                    doSendMex(message, choiceBox.getValue());
+                }
+
+                chatArea.appendText("<" + playerNickname + "> " + message + "\n");
+                //state.getChat().
+                messageField.clear();
+            }
+        });
 
         HBox inputBox = new HBox(messageField, sendButton);
         VBox out = new VBox(choiceBox,inputBox);
@@ -1610,13 +1626,14 @@ public class GUIApplication extends Application{
      * @author Pasquale Gioia
      **/
     public void updateNameColor(){
-
         for(int i=0; i<state.getNumPlayers(); i++){
 
-            if(state.getCurrPlayerId()==i)
-                allNickTexts.get(i).setFill(Color.GREEN);
+            if(!state.isConnected(i))
+                allNickTexts.get(i).setFill(Color.RED);
             else {
-                if (state.isConnected(i)) {
+                if (state.getCurrPlayerId()==i) {
+                    allNickTexts.get(i).setFill(Color.GREEN);
+                }else{
                     allNickTexts.get(i).setFill(Color.WHITE);
                 }
             }
@@ -1647,31 +1664,33 @@ public class GUIApplication extends Application{
                                 tile.setOpacity(1);
                                 tile.setOnMouseMoved((e)->{});
                                 tile.setOnMouseClicked((e) -> {
-                                    doSelectTile(i2,j2);
                                     cState = MATCH_IDLE;
                                     updateBoard();
+                                    doSelectTile(i2,j2);
                                 });
                             }
                             else{
-                                tile.setOpacity(0.8);
+                                tile.setOpacity(0.5);
                                 tile.setOnMouseClicked((e)->{});
                                 tile.setOnMouseMoved((e)->{});
                             }
+                            break;
                         case SELECT_SECOND_TILE:
                             if(state.getPickableTiles()[i][j]){
                                 tile.setOpacity(1);
                                 tile.setOnMouseMoved((e)->{});
                                 tile.setOnMouseClicked((e) -> {
-                                    doSelectTile(i2,j2);
                                     cState = MATCH_IDLE;
                                     updateBoard();
+                                    doSelectTile(i2,j2);
                                 });
                             }
                             else{
-                                tile.setOpacity(0.8);
+                                tile.setOpacity(0.5);
                                 tile.setOnMouseClicked((e)->{});
                                 tile.setOnMouseMoved((e)->{});
                             }
+                            break;
                         default:
                             if(state.getCurrPlayerId()==playerTurnId){
                                 if(state.getPickableTiles()[i][j]){
@@ -1680,7 +1699,7 @@ public class GUIApplication extends Application{
                                     tile.setOnMouseClicked((e) -> {});
                                 }
                                 else{
-                                    tile.setOpacity(0.8);
+                                    tile.setOpacity(0.5);
                                     tile.setOnMouseClicked((e)->{});
                                     tile.setOnMouseMoved((e)->{});
                                 }
@@ -1714,22 +1733,26 @@ public class GUIApplication extends Application{
         }
         if(toUpdate==playerTurnId){
             if(cState==SELECT_COLUMN){
-                columns.setVisible(true);
                 for(int i=0; i<5; i++){
-                    int finalI = i;
-                    rectangles.get(i).setOpacity(0);
-                    rectangles.get(i).setOnMouseEntered((e)->rectangles.get(finalI).setOpacity(1));
-                    rectangles.get(i).setOnMouseExited((e)->rectangles.get(finalI).setOpacity(0));
-                    rectangles.get(i).setOnMouseClicked((e)-> {
-                        rectangles.get(finalI).setVisible(true);
-                        cState=MATCH_IDLE;
-                        doSelectColumn(finalI);
-                        updateShelf(playerTurnId);
-                    });
+                    if(state.getShelves().get(playerTurnId).getTiles()[0][i].isFree()){
+                        rectangles.get(i).setVisible(true);
+                        int finalI = i;
+                        rectangles.get(i).setOpacity(0);
+                        rectangles.get(i).setOnMouseEntered((e)->rectangles.get(finalI).setOpacity(1));
+                        rectangles.get(i).setOnMouseExited((e)->rectangles.get(finalI).setOpacity(0));
+                        rectangles.get(i).setOnMouseClicked((e)-> {
+                            rectangles.get(finalI).setVisible(true);
+                            cState=MATCH_IDLE;
+                            updateShelf(playerTurnId);
+                            doSelectColumn(finalI);
+                        });
+                    }
                 }
             }else if(cState == MATCH_IDLE){
                 if(state.getCurrPlayerId()!=playerTurnId){
-                    columns.setVisible(false);
+                    for(int i=0; i<5; i++){
+                        rectangles.get(i).setVisible(false);
+                    }
                 }else {
                     for (int i = 0; i < 5; i++) {
                         int finalI = i;
@@ -1842,6 +1865,10 @@ public class GUIApplication extends Application{
             tokenCommonGoal2.setVisible(true);
             tokenCommonGoal2.setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[1])).toString()));
         } else tokenCommonGoal2.setVisible(false);
+
+        if(!(state.getLastPlayerId()<0)) tokenLastPlayerId.setVisible(false);
+        else tokenLastPlayerId.setVisible(true);
+
         for(int i=0;i<state.getNumPlayers();i++){
             ImageView[] tokens = i==playerTurnId ? playerPointsTokens : otherPlayersPointsTokens.get(i<playerTurnId ? i : i-1);
             if(state.getCommonGoalPoints1().get(i)==0){

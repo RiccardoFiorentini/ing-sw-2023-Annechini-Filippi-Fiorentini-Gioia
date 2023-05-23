@@ -340,9 +340,9 @@ public class Player {
      * @param virtualView The new virtual view of the player
      */
     public void reconnect(VirtualView virtualView){
-        connected = true;
         this.virtualView = virtualView;
         update(model.createGameStartedResponse(this,0));
+        connected = true;
         model.updatePlayerReconnected(turnId);
     }
 
