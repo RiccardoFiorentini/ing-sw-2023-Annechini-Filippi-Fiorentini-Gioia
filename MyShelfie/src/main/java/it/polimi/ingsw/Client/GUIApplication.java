@@ -89,6 +89,7 @@ public class GUIApplication extends Application{
     private HBox hBoxNet;
     private HBox hBoxWaiting;
     private HBox hboxBuffer;
+    private HBox columns;
     private Pane bufferPane;
 
     private ImageView tile1Buffer;
@@ -100,6 +101,7 @@ public class GUIApplication extends Application{
     private ImageView playerChair;
     private List<ImageView> othersChair;
     private List<Text> allNickTexts;
+    private List<Rectangle> rectangles;
 
     private FadeTransition fadeTransition1;
     private FadeTransition fadeTransition2;
@@ -661,7 +663,7 @@ public class GUIApplication extends Application{
      * @author Nicole Filippi
      * @param index the index of the buffer chosen by the user
      */
-    public void doPutInColumn(int index) {
+   public void doPutInColumn(int index) {
         if(playerTurnId==state.getCurrPlayerId()){
             Command command = new Command(CommandType.PUT_IN_COLUMN);
             command.setIntParameter("index", index);
@@ -806,6 +808,18 @@ public class GUIApplication extends Application{
         shelfPane.getChildren().add(playerShelf);
         for(ImageView im : otherPlayerShelves) shelfPane.getChildren().add(im);
 
+        rectangles = new ArrayList<>();
+        columns = new HBox();
+        for(int i=0; i<5; i++){
+            rectangles.add(new Rectangle());
+            rectangles.get(i).setFill(Color.TRANSPARENT);
+            rectangles.get(i).setStroke(Color.ANTIQUEWHITE);
+            rectangles.get(i).setStrokeWidth(3);
+            columns.getChildren().add(rectangles.get(i));
+        }
+        columns.setVisible(false);
+        shelfPane.getChildren().add(columns);
+
         for(ImageView[] el : boardTiles){
             for(ImageView i : el) tilePane.getChildren().add(i);
         }
@@ -818,12 +832,6 @@ public class GUIApplication extends Application{
             }
         }
         ImageView background = new ImageView(new Image(getClass().getResource("/misc/sfondo parquet.jpg").toString()));
-
-
-        //PersonalGoal, CommonGoals, Remaining points, Buffer, Chat
-        //---------------------------------------------------------
-        //TODO: link with state
-
 
         state.setCommonGoalsId(0, 4);
         state.setCommonGoalsId(1, 5);
@@ -855,7 +863,6 @@ public class GUIApplication extends Application{
 
         chat = new ImageView(new Image(getClass().getResource("/external/chat.png").toString()));
         chatButtonPane = new Pane(chat);
-
 
         playerChair = new ImageView(new Image(getClass().getResource("/misc/firstplayertoken.png").toString()));
 
@@ -1061,6 +1068,15 @@ public class GUIApplication extends Application{
         text.setFont(new Font("Calibri",shelf.getFitWidth()*0.08));
         text.setX(shelf.getX() + shelf.getFitWidth()/2 - text.getLayoutBounds().getWidth()/2);
         text.setY(shelf.getY() + shelf.getFitHeight()*1.08);
+
+        if(pos<0){
+            for(int i=0; i<5; i++){
+                rectangles.get(i).setX(matrix[0][i].getX());
+                rectangles.get(i).setY(matrix[0][i].getY());
+                rectangles.get(i).setWidth(matrix[0][i].getFitWidth());
+                rectangles.get(i).setHeight(playerShelf.getFitHeight()*0.8);
+            }
+        }
 
         ImageView[] tokens = pos < 0 ? playerPointsTokens : otherPlayersPointsTokens.get(pos);
         for(int i=0;i<3;i++){
@@ -1709,6 +1725,38 @@ public class GUIApplication extends Application{
                 }
             }
         }
+        if(toUpdate==playerTurnId){
+            if(cState==SELECT_COLUMN){
+                columns.setVisible(true);
+                for(int i=0; i<5; i++){
+                    int finalI = i;
+                    rectangles.get(i).setVisible(false);
+                    rectangles.get(i).setOnMouseEntered((e)->rectangles.get(finalI).setVisible(true));
+                    rectangles.get(i).setOnMouseExited((e)->rectangles.get(finalI).setVisible(false));
+                    rectangles.get(i).setOnMouseClicked((e)-> {
+                        rectangles.get(finalI).setVisible(true);
+                        cState=MATCH_IDLE;
+                        doSelectColumn(finalI);
+                        updateShelf(-1);
+                    });
+                }
+            }else if(cState == MATCH_IDLE){
+                if(state.getCurrPlayerId()!=playerTurnId){
+                    columns.setVisible(false);
+                }else {
+                    for (int i = 0; i < 5; i++) {
+                        int finalI = i;
+                        rectangles.get(i).setOnMouseEntered((e) -> {
+                        });
+                        rectangles.get(i).setOnMouseExited((e) -> {
+                        });
+                        rectangles.get(i).setOnMouseClicked((e) -> {
+                        });
+                    }
+                }
+
+            }
+        }
     }
 
     /**
@@ -1793,7 +1841,6 @@ public class GUIApplication extends Application{
         }
     }
 
-
     /**
      * Update common goals token graphics
      * @author Alessandro Annechini
@@ -1803,6 +1850,7 @@ public class GUIApplication extends Application{
             tokenCommonGoal1.setVisible(true);
             tokenCommonGoal1.setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[0])).toString()));
         } else tokenCommonGoal1.setVisible(false);
+
         if(state.getCommonGoalsRemainingPoint()[1] > 0){
             tokenCommonGoal2.setVisible(true);
             tokenCommonGoal2.setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[1])).toString()));
