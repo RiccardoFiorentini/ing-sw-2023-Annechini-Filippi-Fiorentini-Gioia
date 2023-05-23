@@ -8,7 +8,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
@@ -58,7 +57,6 @@ public class GUIApplication extends Application{
     private Stage chatStage;
     TextArea chatArea = new TextArea();
     private boolean isChatOpen;
-    private Parent root;
     private ImageView imageViewWallpaper;
     private ImageView endWallpaper;
     private StackPane endStackPane;
@@ -126,8 +124,6 @@ public class GUIApplication extends Application{
     private ImageView tokenLastPlayerId;
     private ImageView[] playerPointsTokens;
     private List<ImageView[]> otherPlayersPointsTokens;
-
-    private Pane winnerPane;
     private Boolean firsEnd;
     private ClientConnectionHandler cch;
     private ImageView finalPointsBg;
@@ -306,7 +302,7 @@ public class GUIApplication extends Application{
         try {
             cch = Client.createConnection(type);
         } catch (RemoteException ex) {
-            //TODO
+            System.exit(1);
         }
         nicknameLabel.setText("Choose the nickname");
         textField.setVisible(true);
@@ -321,7 +317,7 @@ public class GUIApplication extends Application{
                 try {
                     resp = cch.getNextResponse();
                 } catch (Exception e) {
-                    //TODO
+                    System.exit(1);
                 }
 
                 final Response response = resp;
@@ -403,7 +399,6 @@ public class GUIApplication extends Application{
                 state.setShelves((List<ShelfBean>)resp.getObjParameter("shelves"));
                 state.setNicknames((List<String>)resp.getObjParameter("nicknames"));
                 state.setTurnIds((List<Integer>)resp.getObjParameter("turnIds"));
-                state.setNumPlayers(state.getNicknames().size());
                 for(int i=0; i<state.getTurnIds().size(); i++){
                     if((state.getNicknames().get(i)).equals(playerNickname))
                         playerTurnId=state.getTurnIds().get(i);
@@ -425,64 +420,64 @@ public class GUIApplication extends Application{
 
             case NEW_TURN:
                 state.setCurrPlayerId(resp.getIntParameter("CurrentPlayerId"));
-                Platform.runLater(()->updateNameColor());
+                state.setPickableTiles((Boolean[][]) resp.getObjParameter("pickableTiles"));
                 if(playerTurnId==state.getCurrPlayerId()){
-                    //TODO current player scene
+                    cState = SELECT_COLUMN;
+                    Platform.runLater(()->updateBoard());
+                    Platform.runLater(()->updateShelf(playerTurnId));
                 }else{
-                    //TODO other players scene
+                    cState = MATCH_IDLE;
                 }
                 Platform.runLater(()->updateNameColor());
-                //TODO common scene
                 break;
 
             case SELECT_COLUMN_RESULT:
                 if("success".equals(resp.getStrParameter("result"))){ //andato a buon fine
-                    //TODO
+                    cState = SELECT_FIRST_TILE;
+                    Platform.runLater(()->updateBoard());
+                    Platform.runLater(()->updateShelf(playerTurnId));
                 }else{
-                    //TODO
+                    cState = SELECT_COLUMN;
                 }
-                //TODO
                 break;
 
             case SELECT_TILE_RESULT:
-                if("success".equals(resp.getStrParameter("result"))){ //andato a buon fine
-                    //TODO
-                    //if(first tile){}
-                    //else{
-                    //  buffer=(Tile[]) resp.getObjParameter("buffer");
-                    //  updateBuffer()
-                    // }
-                }else{
-                    //TODO
+                if("success".equals(resp.getStrParameter("result"))){
+                    if(resp.getObjParameter("buffer") == null){
+                        cState = SELECT_SECOND_TILE;
+                        state.setPickableTiles((Boolean[][]) resp.getObjParameter("pickableTiles"));
+                        Platform.runLater(()->updateBoard());
+                    }else{
+                        cState = PUT_IN_COLUMN;
+                        state.setBuffer((Tile[]) resp.getObjParameter("buffer"));
+
+                        Platform.runLater(()->updateBuffer());
+                    }
                 }
-                //TODO
                 break;
 
             case PUT_IN_COLUMN_RESULT:
                 if("success".equals(resp.getStrParameter("result"))){ //andato a buon fine
-                    //TODO
                     state.setBuffer((Tile[]) resp.getObjParameter("buffer"));
                     if(resp.getIntParameter("turnFinished")==0) {
-                        //TODO
+                        cState = PUT_IN_COLUMN;
                     }else{
-                        //TODO
+                        cState = MATCH_IDLE;
                     }
                 }else{
-                    //TODO
+                    cState = PUT_IN_COLUMN;
                 }
-                //TODO
+                Platform.runLater(()->updateBuffer());
                 break;
 
             case UPDATE_BOARD:
                 state.setBoard((BoardBean)resp.getObjParameter("board"));
                 Platform.runLater(()->updateBoard());
-                //TODO
                 break;
 
             case UPDATE_PLAYER_SHELF:
                 state.getShelves().set(resp.getIntParameter("playerid"),(ShelfBean)resp.getObjParameter("shelf"));
                 Platform.runLater(()->updateShelf(resp.getIntParameter("playerid")));
-                //TODO
                 break;
 
             case PLAYER_DISCONNECTED:
@@ -503,7 +498,6 @@ public class GUIApplication extends Application{
                 break;
 
             case ONLY_ONE_CONNECTED:
-                Platform.runLater(()->signal("You are the only one connected", "You will win in seconds if nobody reconnects"));
                 break;
 
             case ONLY_ONE_CONNECTED_TIMER:
@@ -533,12 +527,11 @@ public class GUIApplication extends Application{
                     state.setCommonGoalsRemainingPoint(1, resp.getIntParameter("remainingpoints"));
                 }
                 Platform.runLater(()->updateCommonGoalsPoints());
-                //TODO
                 break;
 
             case SHELF_COMPLETED:
                 state.setLastPlayerId(resp.getIntParameter("playerid"));
-                //TODO
+                Platform.runLater(()->updateCommonGoalsPoints());
         }
     }
 
@@ -611,7 +604,6 @@ public class GUIApplication extends Application{
      */
     public void doLogin(String nickname) {
         if (nickname == null || nickname.equals("")) {
-            //TODO handle error
             return;
         }
         Command command = new Command(CommandType.LOGIN);
@@ -679,7 +671,6 @@ public class GUIApplication extends Application{
      */
     public void doSendMex(String message, String receiver) {
         if (message == null || message.equals("")) {
-            //TODO handle error
             return;
         }
         Command command = new Command(CommandType.SEND_MEX_CHAT);
@@ -833,14 +824,11 @@ public class GUIApplication extends Application{
         }
         ImageView background = new ImageView(new Image(getClass().getResource("/misc/sfondo parquet.jpg").toString()));
 
-        state.setCommonGoalsId(0, 4);
-        state.setCommonGoalsId(1, 5);
         String commonGoal1Path = state.getCommonGoalImagePath(state.getCommonGoalsId()[0]);
         String commonGoal2Path = state.getCommonGoalImagePath(state.getCommonGoalsId()[1]);
         commonGoal1 = new ImageView(new Image(getClass().getResource(commonGoal1Path).toString()));
         commonGoal2 = new ImageView(new Image(getClass().getResource(commonGoal2Path).toString()));
 
-        personalGoalId = 8;
         String personalGoalPath = state.getPersonalGoalImagePath(personalGoalId);
         personalGoal = new ImageView(new Image(getClass().getResource(personalGoalPath).toString()));
 
@@ -1124,7 +1112,6 @@ public class GUIApplication extends Application{
         endStackPane.getChildren().add(endWallpaper);
         endStackPane.getChildren().add(finalPointsBg);
 
-
         resultPane = new GridPane();
 
         resultPane.setHgap(25);
@@ -1197,7 +1184,6 @@ public class GUIApplication extends Application{
             popup.getContent().add(specificPointsPopup);
             pointsPopupList.add(popup);
             specificPointsPopups.add(popup);
-
         }
 
         //List of arrival nicknames (in descending order)
@@ -1207,7 +1193,6 @@ public class GUIApplication extends Application{
         }
 
         // List of arrival scoring points (in descending order)
-
         List<Integer> finalPoints = new ArrayList<>();
         for(int i=0; i<state.getNumPlayers(); i++){
             finalPoints.add(state.getFinalPoints().get(state.getTurnIdInPosition(i+1)));
