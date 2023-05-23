@@ -45,8 +45,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import static main.java.it.polimi.ingsw.Client.ClientState.ASK_PLAYERS_NUM;
-import static main.java.it.polimi.ingsw.Client.ClientState.BEFORE_LOGIN;
+import static main.java.it.polimi.ingsw.Client.ClientState.*;
 
 public class GUIApplication extends Application{
 
@@ -123,6 +122,8 @@ public class GUIApplication extends Application{
     private ImageView tokenCommonGoal1;
     private ImageView tokenCommonGoal2;
     private ImageView tokenLastPlayerId;
+    private ImageView[] playerPointsTokens;
+    private List<ImageView[]> otherPlayersPointsTokens;
 
     private Pane winnerPane;
     private Boolean firsEnd;
@@ -857,11 +858,18 @@ public class GUIApplication extends Application{
 
 
         playerChair = new ImageView(new Image(getClass().getResource("/misc/firstplayertoken.png").toString()));
+
+        playerPointsTokens = new ImageView[3];
+        for(int i=0;i<3;i++) playerPointsTokens[i] = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
+
         othersChair = new ArrayList<>();
+        otherPlayersPointsTokens = new ArrayList<>();
         for(int i=0; i<state.getNumPlayers()-1; i++){
             ImageView chair = new ImageView(new Image(getClass().getResource("/misc/firstplayertoken.png").toString()));
+            for(int j=0;j<3;j++) otherPlayersPointsTokens.get(i)[j] = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
             othersChair.add(chair);
             boardPane.getChildren().add(othersChair.get(i));
+            for(int j=0;j<3;j++) boardPane.getChildren().add(otherPlayersPointsTokens.get(i)[j]);
         }
 
         allNickTexts = new ArrayList<>();
@@ -882,6 +890,7 @@ public class GUIApplication extends Application{
         boardPane.getChildren().add(bufferPane);
         boardPane.getChildren().add(chatButtonPane);
         boardPane.getChildren().add(playerChair);
+        for(int i=0;i<3;i++) boardPane.getChildren().add(playerPointsTokens[i]);
 
         //ORDER OF PANELS
         StackPane stackPane = new StackPane(background,tokenPane);
@@ -1027,7 +1036,6 @@ public class GUIApplication extends Application{
             othersChair.get(i).setFitWidth(othersChair.get(0).getFitHeight() * 0.935828877005348);
             othersChair.get(i).setX(otherPlayerShelves.get(i).getX() - otherPlayerShelves.get(i).getFitWidth() * 0.11);
             othersChair.get(i).setY(otherPlayerShelves.get(i).getY() + otherPlayerShelves.get(i).getFitHeight() * 0.74);
-
         }
 
     }
@@ -1050,10 +1058,17 @@ public class GUIApplication extends Application{
             }
         }
         Text text = pos < 0 ? allNickTexts.get(playerTurnId) : allNickTexts.get(pos < playerTurnId ? pos : pos + 1);
-
         text.setFont(new Font("Calibri",shelf.getFitWidth()*0.08));
         text.setX(shelf.getX() + shelf.getFitWidth()/2 - text.getLayoutBounds().getWidth()/2);
         text.setY(shelf.getY() + shelf.getFitHeight()*1.08);
+
+        ImageView[] tokens = pos < 0 ? playerPointsTokens : otherPlayersPointsTokens.get(pos);
+        for(int i=0;i<3;i++){
+            tokens[i].setFitHeight(shelf.getFitHeight()*shelfTileRatio*0.6);
+            tokens[i].setFitWidth(tokens[i].getFitHeight());
+            tokens[i].setX(shelf.getX() - shelf.getFitWidth()*0.1);
+            tokens[i].setY(shelf.getY() + shelf.getFitHeight()*(i*0.15 + 0.2));
+        }
     }
 
     /**
@@ -1613,10 +1628,65 @@ public class GUIApplication extends Application{
         for(int i=0; i<9; i++){
             for(int j=0; j<9; j++){
                 ImageView tile = boardTiles[i][j];
-                if(state.getBoard().getTiles()[i][j].isFree()) tile.setVisible(false);
+                if(state.getBoard().getTiles()[i][j].isFree()){
+                    tile.setVisible(false);
+                    tile.setOnMouseClicked((e)->{});
+                    tile.setOnMouseMoved((e)->{});
+                }
                 else{
                     tile.setVisible(true);
                     tile.setImage(new Image(getClass().getResource(state.getTileImagePath(state.getBoard().getTiles()[i][j])).toString()));
+                    tile.setOpacity(1);
+                    final int i2 = i, j2 = j;
+                    switch(cState){
+                        case SELECT_FIRST_TILE:
+                            if(state.getPickableTiles()[i][j]){
+                                tile.setOpacity(1);
+                                tile.setOnMouseMoved((e)->{});
+                                tile.setOnMouseClicked((e) -> {
+                                    doSelectTile(i2,j2);
+                                    cState = MATCH_IDLE;
+                                    updateBoard();
+                                });
+                            }
+                            else{
+                                tile.setOpacity(0.8);
+                                tile.setOnMouseClicked((e)->{});
+                                tile.setOnMouseMoved((e)->{});
+                            }
+                        case SELECT_SECOND_TILE:
+                            if(state.getPickableTiles()[i][j]){
+                                tile.setOpacity(1);
+                                tile.setOnMouseMoved((e)->{});
+                                tile.setOnMouseClicked((e) -> {
+                                    doSelectTile(i2,j2);
+                                    cState = MATCH_IDLE;
+                                    updateBoard();
+                                });
+                            }
+                            else{
+                                tile.setOpacity(0.8);
+                                tile.setOnMouseClicked((e)->{});
+                                tile.setOnMouseMoved((e)->{});
+                            }
+                        default:
+                            if(state.getCurrPlayerId()==playerTurnId){
+                                if(state.getPickableTiles()[i][j]){
+                                    tile.setOpacity(1);
+                                    tile.setOnMouseMoved((e)->{});
+                                    tile.setOnMouseClicked((e) -> {});
+                                }
+                                else{
+                                    tile.setOpacity(0.8);
+                                    tile.setOnMouseClicked((e)->{});
+                                    tile.setOnMouseMoved((e)->{});
+                                }
+                            }else{
+                                tile.setOpacity(1);
+                                tile.setOnMouseClicked((e)->{});
+                                tile.setOnMouseMoved((e)->{});
+                            }
+                    }
                 }
             }
         }
@@ -1648,22 +1718,55 @@ public class GUIApplication extends Application{
     public void updateBuffer(){
         if(state.getCurrPlayerId()!=playerTurnId){
             hboxBuffer.setVisible(false);
+            tile1Buffer.setOnMouseClicked((e) -> {});
+            tile2Buffer.setOnMouseClicked((e) -> {});
+            tile3Buffer.setOnMouseClicked((e) -> {});
         }else{
             hboxBuffer.setVisible(true);
-            if(state.getBuffer()[0].isFree()) tile1Buffer.setVisible(false);
+            if(state.getBuffer()[0].isFree()){
+                tile1Buffer.setVisible(false);
+                tile1Buffer.setOnMouseClicked((e) -> {});
+            }
             else{
                 tile1Buffer.setVisible(true);
                 tile1Buffer.setImage(new Image(getClass().getResource(state.getTileImagePath(state.getBuffer()[0])).toString()));
+                tile1Buffer.setOnMouseClicked((e)->{
+                    doPutInColumn(0);
+                    cState = MATCH_IDLE;
+                    tile1Buffer.setOnMouseClicked((ee) -> {});
+                    tile2Buffer.setOnMouseClicked((ee) -> {});
+                    tile3Buffer.setOnMouseClicked((ee) -> {});
+                });
             }
-            if(state.getBuffer()[1].isFree()) tile2Buffer.setVisible(false);
+            if(state.getBuffer()[1].isFree()){
+                tile2Buffer.setVisible(false);
+                tile2Buffer.setOnMouseClicked((e) -> {});
+            }
             else{
                 tile2Buffer.setVisible(true);
                 tile2Buffer.setImage(new Image(getClass().getResource(state.getTileImagePath(state.getBuffer()[1])).toString()));
+                tile2Buffer.setOnMouseClicked((e)->{
+                    doPutInColumn(1);
+                    cState = MATCH_IDLE;
+                    tile1Buffer.setOnMouseClicked((ee) -> {});
+                    tile2Buffer.setOnMouseClicked((ee) -> {});
+                    tile3Buffer.setOnMouseClicked((ee) -> {});
+                });
             }
-            if(state.getBuffer()[2].isFree()) tile3Buffer.setVisible(false);
+            if(state.getBuffer()[2].isFree()){
+                tile3Buffer.setVisible(false);
+                tile3Buffer.setOnMouseClicked((e) -> {});
+            }
             else{
                 tile3Buffer.setVisible(true);
                 tile3Buffer.setImage(new Image(getClass().getResource(state.getTileImagePath(state.getBuffer()[2])).toString()));
+                tile3Buffer.setOnMouseClicked((e)->{
+                    doPutInColumn(2);
+                    cState = MATCH_IDLE;
+                    tile1Buffer.setOnMouseClicked((ee) -> {});
+                    tile2Buffer.setOnMouseClicked((ee) -> {});
+                    tile3Buffer.setOnMouseClicked((ee) -> {});
+                });
             }
         }
     }
@@ -1699,11 +1802,30 @@ public class GUIApplication extends Application{
             tokenCommonGoal1.setVisible(true);
             tokenCommonGoal1.setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[0])).toString()));
         } else tokenCommonGoal1.setVisible(false);
-
         if(state.getCommonGoalsRemainingPoint()[1] > 0){
             tokenCommonGoal2.setVisible(true);
             tokenCommonGoal2.setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[1])).toString()));
         } else tokenCommonGoal2.setVisible(false);
+        for(int i=0;i<state.getNumPlayers();i++){
+            ImageView[] tokens = i==playerTurnId ? playerPointsTokens : otherPlayersPointsTokens.get(i<playerTurnId ? i : i-1);
+            if(state.getCommonGoalPoints1().get(i)==0){
+                tokens[0].setVisible(false);
+            }else{
+                tokens[0].setVisible(true);
+                tokens[0].setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalPoints1().get(i))).toString()));
+            }
+            if(state.getCommonGoalPoints2().get(i)==0){
+                tokens[1].setVisible(false);
+            }else{
+                tokens[1].setVisible(true);
+                tokens[1].setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalPoints2().get(i))).toString()));
+            }
+            if(state.getLastPlayerId()!=i){
+                tokens[2].setVisible(false);
+            }else{
+                tokens[2].setVisible(true);
+            }
+        }
     }
 
 }
