@@ -19,7 +19,7 @@ public class GameState {
     private List<String> nicknames;
     private List<Integer> turnIds;
     private TileColor[][] personalGoal;
-    private Boolean[][] pickableTiles;
+    private boolean[][] pickableTiles;
     private int numPlayers;
 
     private List<Integer> commonGoalPoints1;
@@ -183,10 +183,10 @@ public class GameState {
         this.commonGoalsRemainingPoint[pos] = remainingPoints;
     }
 
-    public void setPickableTiles(Boolean[][] pickableTiles){
+    public void setPickableTiles(boolean[][] pickableTiles){
         this.pickableTiles = pickableTiles;
     }
-    public Boolean[][] getPickableTiles(){
+    public boolean[][] getPickableTiles(){
         return this.pickableTiles;
     }
     public String[] getCommonGoalsDesc() {

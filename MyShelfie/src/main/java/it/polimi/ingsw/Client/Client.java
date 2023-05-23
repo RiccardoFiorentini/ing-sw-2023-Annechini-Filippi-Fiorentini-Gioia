@@ -28,22 +28,19 @@ public class Client {
     public void start() throws RemoteException {
         int interfaceType=0;
         Scanner scan = new Scanner(System.in);
-
         while(interfaceType!=1 && interfaceType!=2){
             System.out.println("Select the interface: \n1. Command Line \n2. Graphic");
             try {
                 interfaceType = scan.nextInt();
-                if(interfaceType==1){
-                    TUI view = new TUI();
-                    view.start();
-                }
-                else{
-                    GUIApplication.main(null);
-                }
             }
             catch(Exception e){
                 interfaceType=0;
             }
+        }if(interfaceType==1){
+            TUI view = new TUI();
+            view.start();
+        }else{
+            GUIApplication.main(null);
         }
     }
 

@@ -87,7 +87,7 @@ public class GUIApplication extends Application{
     private HBox hBoxNet;
     private HBox hBoxWaiting;
     private HBox hboxBuffer;
-    private HBox columns;
+    private Pane columns;
     private Pane bufferPane;
 
     private ImageView tile1Buffer;
@@ -420,7 +420,7 @@ public class GUIApplication extends Application{
 
             case NEW_TURN:
                 state.setCurrPlayerId(resp.getIntParameter("CurrentPlayerId"));
-                state.setPickableTiles((Boolean[][]) resp.getObjParameter("pickableTiles"));
+                state.setPickableTiles((boolean[][]) resp.getObjParameter("pickableTiles"));
                 if(playerTurnId==state.getCurrPlayerId()){
                     cState = SELECT_COLUMN;
                     Platform.runLater(()->updateBoard());
@@ -445,7 +445,7 @@ public class GUIApplication extends Application{
                 if("success".equals(resp.getStrParameter("result"))){
                     if(resp.getObjParameter("buffer") == null){
                         cState = SELECT_SECOND_TILE;
-                        state.setPickableTiles((Boolean[][]) resp.getObjParameter("pickableTiles"));
+                        state.setPickableTiles((boolean[][]) resp.getObjParameter("pickableTiles"));
                         Platform.runLater(()->updateBoard());
                     }else{
                         cState = PUT_IN_COLUMN;
@@ -800,7 +800,7 @@ public class GUIApplication extends Application{
         for(ImageView im : otherPlayerShelves) shelfPane.getChildren().add(im);
 
         rectangles = new ArrayList<>();
-        columns = new HBox();
+        columns = new Pane();
         for(int i=0; i<5; i++){
             rectangles.add(new Rectangle());
             rectangles.get(i).setFill(Color.TRANSPARENT);
@@ -861,7 +861,9 @@ public class GUIApplication extends Application{
         otherPlayersPointsTokens = new ArrayList<>();
         for(int i=0; i<state.getNumPlayers()-1; i++){
             ImageView chair = new ImageView(new Image(getClass().getResource("/misc/firstplayertoken.png").toString()));
-            for(int j=0;j<3;j++) otherPlayersPointsTokens.get(i)[j] = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
+            otherPlayersPointsTokens.add(new ImageView[3]);
+            for(int j=0;j<3;j++)
+                otherPlayersPointsTokens.get(i)[j] = new ImageView(new Image(getClass().getResource("/scoring tokens/end game.jpg").toString()));
             othersChair.add(chair);
             boardPane.getChildren().add(othersChair.get(i));
             for(int j=0;j<3;j++) boardPane.getChildren().add(otherPlayersPointsTokens.get(i)[j]);
@@ -1062,7 +1064,7 @@ public class GUIApplication extends Application{
                 rectangles.get(i).setX(matrix[0][i].getX());
                 rectangles.get(i).setY(matrix[0][i].getY());
                 rectangles.get(i).setWidth(matrix[0][i].getFitWidth());
-                rectangles.get(i).setHeight(playerShelf.getFitHeight()*0.8);
+                rectangles.get(i).setHeight(playerShelf.getFitHeight()*0.85);
             }
         }
 
@@ -1715,14 +1717,14 @@ public class GUIApplication extends Application{
                 columns.setVisible(true);
                 for(int i=0; i<5; i++){
                     int finalI = i;
-                    rectangles.get(i).setVisible(false);
-                    rectangles.get(i).setOnMouseEntered((e)->rectangles.get(finalI).setVisible(true));
-                    rectangles.get(i).setOnMouseExited((e)->rectangles.get(finalI).setVisible(false));
+                    rectangles.get(i).setOpacity(0);
+                    rectangles.get(i).setOnMouseEntered((e)->rectangles.get(finalI).setOpacity(1));
+                    rectangles.get(i).setOnMouseExited((e)->rectangles.get(finalI).setOpacity(0));
                     rectangles.get(i).setOnMouseClicked((e)-> {
                         rectangles.get(finalI).setVisible(true);
                         cState=MATCH_IDLE;
                         doSelectColumn(finalI);
-                        updateShelf(-1);
+                        updateShelf(playerTurnId);
                     });
                 }
             }else if(cState == MATCH_IDLE){
