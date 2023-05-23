@@ -473,6 +473,7 @@ public class GUIApplication extends Application{
                     cState = PUT_IN_COLUMN;
                 }
                 Platform.runLater(()->updateBuffer());
+                Platform.runLater(()->updateBoard());
                 break;
 
             case UPDATE_BOARD:
@@ -1843,10 +1844,10 @@ public class GUIApplication extends Application{
         for(int i=0;i<state.getNumPlayers()-1;i++){
             if(i < playerTurnId){
                 if(state.getFirstPlayerId()==i) othersChair.get(i).setVisible(true);
-                else othersChair.get(i).setVisible(true);
+                else othersChair.get(i).setVisible(false);
             }else{
                 if(state.getFirstPlayerId()==i+1) othersChair.get(i).setVisible(true);
-                else othersChair.get(i).setVisible(true);
+                else othersChair.get(i).setVisible(false);
             }
         }
     }
