@@ -1793,6 +1793,7 @@ public class GUIApplication extends Application{
         }
     }
 
+
     /**
      * Update common goals token graphics
      * @author Alessandro Annechini
