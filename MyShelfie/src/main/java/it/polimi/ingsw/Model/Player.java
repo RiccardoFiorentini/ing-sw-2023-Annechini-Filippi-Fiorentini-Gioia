@@ -72,7 +72,7 @@ public class Player {
                         pickableTiles[i][j] = true;
                     }else if((i>0 && tmp[i-1][j].isFree()) || (j>0 && tmp[i][j-1].isFree())){
                         pickableTiles[i][j] = true;
-                    }
+                    }else pickableTiles[i][j] = false;
                 }else{
                     pickableTiles[i][j] = false;
                 }
