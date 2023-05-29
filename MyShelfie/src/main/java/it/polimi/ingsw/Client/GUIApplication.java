@@ -288,6 +288,7 @@ public class GUIApplication extends Application{
         stage.setTitle("Access");
         stage.setScene(scene);
         stage.sizeToScene();
+        stage.getIcons().add(new Image(getClass().getResource("/Publisher material/Icon 50x50px.png").toString()));
         fadeTransitionRMI.play();
         fadeTransitionSocket.play();
         stage.show();
@@ -747,6 +748,7 @@ public class GUIApplication extends Application{
         button3.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->  doAskNumberPlayer(4));
 
         stage.setScene(scene);
+        stage.getIcons().add(new Image(getClass().getResource("/Publisher material/Icon 50x50px.png").toString()));
         stage.show();
     }
 
@@ -919,6 +921,8 @@ public class GUIApplication extends Application{
         stage.setHeight(bounds.getHeight());
         stage.setX(bounds.getMinX());
         stage.setY(bounds.getMinY());
+        stage.getIcons().add(new Image(getClass().getResource("/Publisher material/Icon 50x50px.png").toString()));
+        stage.setTitle("Game");
         stage.show();
 
         stage.widthProperty().addListener((x)->setGameGraphicsProportions());
@@ -1246,6 +1250,7 @@ public class GUIApplication extends Application{
         stage.setScene(scene);
         stage.sizeToScene();
         stage.show();
+        stage.getIcons().add(new Image(getClass().getResource("/Publisher material/Icon 50x50px.png").toString()));
         stage.setTitle("Game has ended");
 
         stage.widthProperty().addListener( (x)->setEndGameGraphicsProportions() );
@@ -1372,8 +1377,10 @@ public class GUIApplication extends Application{
         scene = new Scene(endStackPane, bounds.getWidth(), bounds.getHeight());
         stage.setScene(scene);
         stage.sizeToScene();
-        stage.show();
+        stage.getIcons().add(new Image(getClass().getResource("/Publisher material/Icon 50x50px.png").toString()));
         stage.setTitle("Game has ended");
+        stage.show();
+
 
         stage.widthProperty().addListener( (x)->setInterruptedEndGameGraphicsProportions() );
         stage.heightProperty().addListener( (x)->setInterruptedEndGameGraphicsProportions() );
@@ -1505,6 +1512,8 @@ public class GUIApplication extends Application{
 
         chatScene = new Scene(chatPane, chatStage.getX(), chatStage.getY());
         chatStage.setScene(chatScene);
+        chatStage.setTitle("Chat");
+        chatStage.getIcons().add(new Image(getClass().getResource("/Publisher material/Icon 50x50px.png").toString()));
         chatStage.show();
     }
 
