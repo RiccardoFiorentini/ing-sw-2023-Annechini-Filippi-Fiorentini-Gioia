@@ -299,11 +299,11 @@ public class TUI{
             case GAME_ENDED:
                 clearConsole();
                 System.out.println(" ██████╗  █████╗ ███╗   ███╗███████╗    ███████╗███╗   ██╗██████╗ ███████╗██████╗ \n" +
-                                   "██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔════╝████╗  ██║██╔══██╗██╔════╝██╔══██╗\n" +
-                                   "██║  ███╗███████║██╔████╔██║█████╗      █████╗  ██╔██╗ ██║██║  ██║█████╗  ██║  ██║\n" +
-                                   "██║   ██║██╔══██║██║╚██╔╝██║██╔══╝      ██╔══╝  ██║╚██╗██║██║  ██║██╔══╝  ██║  ██║\n" +
-                                   "╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗    ███████╗██║ ╚████║██████╔╝███████╗██████╔╝\n" +
-                                   " ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝    ╚══════╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═════╝");
+                        "██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔════╝████╗  ██║██╔══██╗██╔════╝██╔══██╗\n" +
+                        "██║  ███╗███████║██╔████╔██║█████╗      █████╗  ██╔██╗ ██║██║  ██║█████╗  ██║  ██║\n" +
+                        "██║   ██║██╔══██║██║╚██╔╝██║██╔══╝      ██╔══╝  ██║╚██╗██║██║  ██║██╔══╝  ██║  ██║\n" +
+                        "╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗    ███████╗██║ ╚████║██████╔╝███████╗██████╔╝\n" +
+                        " ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝    ╚══════╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═════╝");
                 if(resp.getIntParameter("interrupted")==0){ //finished correctly
                     System.out.println("RESULTS: ");
                     state.setFinalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
@@ -517,28 +517,28 @@ public class TUI{
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 5; j++) {
                 if (!shelf.getTiles()[i][j].isFree()) {
-                        switch (shelf.getTiles()[i][j].getColor()) {
-                            case GREEN:
-                                System.out.print("║ G ");
-                                break;
-                            case BLUE:
-                                System.out.print("║ B ");
-                                break;
-                            case CYAN:
-                                System.out.print("║ C ");
-                                break;
-                            case PINK:
-                                System.out.print("║ P ");
-                                break;
-                            case WHITE:
-                                System.out.print("║ W ");
-                                break;
-                            case ORANGE:
-                                System.out.print("║ O ");
-                                break;
-                        }
-                    } else
-                        System.out.print("║   ");
+                    switch (shelf.getTiles()[i][j].getColor()) {
+                        case GREEN:
+                            System.out.print("║ G ");
+                            break;
+                        case BLUE:
+                            System.out.print("║ B ");
+                            break;
+                        case CYAN:
+                            System.out.print("║ C ");
+                            break;
+                        case PINK:
+                            System.out.print("║ P ");
+                            break;
+                        case WHITE:
+                            System.out.print("║ W ");
+                            break;
+                        case ORANGE:
+                            System.out.print("║ O ");
+                            break;
+                    }
+                } else
+                    System.out.print("║   ");
             }
             System.out.println("║");
             if(i!=5)
@@ -714,8 +714,6 @@ public class TUI{
                 }
                 if(tmpId==currPlayerId){
                     output = output  + "║" + (char)27 + "[33m" + "\t@" + nickPlayer + (char)27 + "[37m" + "\n";
-                }else if(tmpId==state.getFirstPlayerId()){
-                    output = output  + "║" + (char)27 + "[44m" + "\t@" + nickPlayer + (char)27 + "[37m" + "\n";
                 }else{
                     output = output + "║" + "\t@" + nickPlayer + "\n";
                 }
@@ -1352,10 +1350,8 @@ public class TUI{
         }
         output = output + "\n";
         if(!nicknames.get(0).equals(nickPlayer)){
-            if(connected.get(0) && currPlayerId!=0 && 0 != state.getFirstPlayerId()){
+            if(connected.get(0) && currPlayerId!=0){
                 output = output + "  @" + nicknames.get(0);
-            }else if(connected.get(0) && currPlayerId!=0 && 0 == state.getFirstPlayerId()) {
-                output = output + "║" + (char) 27 + "[44m" + "\t@" + nickPlayer + (char) 27 + "[37m" + "\n";
             }else if(connected.get(0) && currPlayerId==0){
                 output = output + (char)27 + "[33m" + "  @" + nicknames.get(0) + (char)27 + "[37m";
             }else{
@@ -1366,10 +1362,8 @@ public class TUI{
             }
         }
         if(!nicknames.get(1).equals(nickPlayer)){
-            if(connected.get(1) && currPlayerId!=1 && 1 != state.getFirstPlayerId()){
+            if(connected.get(1) && currPlayerId!=1){
                 output = output + "  @" + nicknames.get(1);
-            }else if(connected.get(1) && currPlayerId!=1 && 1 == state.getFirstPlayerId()) {
-                output = output + "║" + (char) 27 + "[44m" + "\t@" + nickPlayer + (char) 27 + "[37m" + "\n";
             }else if(connected.get(1) && currPlayerId==1){
                 output = output + (char)27 + "[33m" + "  @" + nicknames.get(1) + (char)27 + "[37m";
             }else{
@@ -1380,10 +1374,8 @@ public class TUI{
         }
         if(numPlay == 4){
             if(!nicknames.get(2).equals(nickPlayer)){
-                if(connected.get(2) && currPlayerId!=2 && 2 != state.getFirstPlayerId()){
+                if(connected.get(2) && currPlayerId!=2){
                     output = output + "  @" + nicknames.get(2);
-                }else if(connected.get(2) && currPlayerId!=2 && 2 == state.getFirstPlayerId()) {
-                    output = output + "║" + (char) 27 + "[44m" + "\t@" + nickPlayer + (char) 27 + "[37m" + "\n";
                 }else if(connected.get(2) && currPlayerId==2){
                     output = output + (char)27 + "[33m" + "  @" + nicknames.get(2) + (char)27 + "[37m";
                 }else{
@@ -1394,10 +1386,8 @@ public class TUI{
                 }
             }
             if(!nicknames.get(3).equals(nickPlayer)){
-                if(connected.get(3) && currPlayerId!=3 && 3 != state.getFirstPlayerId()){
+                if(connected.get(3) && currPlayerId!=3){
                     output = output + "  @" + nicknames.get(3);
-                }else if(connected.get(3) && currPlayerId!=3 && 3 == state.getFirstPlayerId()) {
-                    output = output + "║" + (char) 27 + "[44m" + "\t@" + nickPlayer + (char) 27 + "[37m" + "\n";
                 }else if(connected.get(3) && currPlayerId==3){
                     output = output + (char)27 + "[33m" + "  @" + nicknames.get(3) + (char)27 + "[37m";
                 }else{
@@ -1409,10 +1399,8 @@ public class TUI{
             }
         }else if(numPlay == 3){
             if(!nicknames.get(2).equals(nickPlayer)){
-                if(connected.get(2) && currPlayerId!=2 && 2 == state.getFirstPlayerId()){
+                if(connected.get(2) && currPlayerId!=2){
                     output = output + "  @" + nicknames.get(2);
-                }else if(connected.get(2) && currPlayerId!=2 && 2 == state.getFirstPlayerId()) {
-                    output = output + "║" + (char) 27 + "[44m" + "\t@" + nickPlayer + (char) 27 + "[37m" + "\n";
                 }else if(connected.get(2) && currPlayerId==2){
                     output = output + (char)27 + "[33m" + "  @" + nicknames.get(2) + (char)27 + "[37m";
                 }else{

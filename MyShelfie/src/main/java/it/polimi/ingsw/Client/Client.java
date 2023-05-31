@@ -73,6 +73,7 @@ public class Client {
                 }catch(Exception e){
                     return null;
                 }
+                break;
             case 2:
                 try{
                     Socket socket = new Socket(serverIp, 54321);
@@ -81,6 +82,7 @@ public class Client {
                 }catch(Exception e){
                     return null;
                 }
+                break;
         }
 
         final ClientConnectionHandler threadCch = ret;
