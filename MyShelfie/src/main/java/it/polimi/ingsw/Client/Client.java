@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Client {
     ClientConnectionHandler cch;
-
+    private static String serverIp;
     public static void main(String[] args) throws RemoteException {
         new Client().start();
     }
@@ -28,6 +28,15 @@ public class Client {
     public void start() throws RemoteException {
         int interfaceType=0;
         Scanner scan = new Scanner(System.in);
+
+        System.out.println("Insert server ip address:");
+        try {
+            serverIp = scan.nextLine();
+        }
+        catch(Exception e){
+            serverIp="localhost";
+        }
+
         while(interfaceType!=1 && interfaceType!=2){
             System.out.println("Select the interface: \n1. Command Line \n2. Graphic");
             try {
@@ -36,7 +45,8 @@ public class Client {
             catch(Exception e){
                 interfaceType=0;
             }
-        }if(interfaceType==1){
+        }
+        if(interfaceType==1){
             TUI view = new TUI();
             view.start();
         }else{
@@ -56,7 +66,7 @@ public class Client {
             case 1:
                 ClientConnectionHandlerRMI cch = new ClientConnectionHandlerRMI();
                 try{
-                    Registry registry = LocateRegistry.getRegistry();
+                    Registry registry = LocateRegistry.getRegistry(serverIp);
                     RMIWelcomeServer srv = (RMIWelcomeServer) registry.lookup("MyShelfieRMIServer");
                     srv.setConnection(cch);
                     ret=cch;
@@ -65,7 +75,7 @@ public class Client {
                 }
             case 2:
                 try{
-                    Socket socket = new Socket("localhost", 54321);
+                    Socket socket = new Socket(serverIp, 54321);
                     ClientConnectionHandlerSocket cchs = new ClientConnectionHandlerSocket(socket);
                     ret=cchs;
                 }catch(Exception e){
