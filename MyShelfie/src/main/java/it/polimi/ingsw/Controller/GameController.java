@@ -74,8 +74,8 @@ public class GameController {
                         List<Player> toUpdate = new ArrayList<>();
                         toUpdate.add(virtualView.getPlayer());
                         for(Player p : players){
-                            if(p.getNickname().equals(command.getStrParameter("receiver"))){
-                                model.getChat().writeMessage(virtualView.getPlayer(), p, command.getStrParameter("text"));
+                            if(p.getNickname().equals(command.getStrParameter("receiver")) && !p.getNickname().equals(virtualView.getNickname())){
+                                model.getChat().writeMessage(virtualView.getPlayer(), p, "to" + " <" + command.getStrParameter("receiver") +"> " + command.getStrParameter("text"));
                                 toUpdate.add(p);
                             }
                         }

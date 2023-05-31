@@ -62,9 +62,6 @@ public class GUIApplication extends Application{
     private StackPane endStackPane;
     private GridPane resultPane;
     private Text winner;
-
-    private GridPane specificPointsPopup;
-
     private int personalGoalId;
     private Label nicknameLabel;
     private Image wallpaper;
@@ -413,6 +410,7 @@ public class GUIApplication extends Application{
                 state.setCommonGoalPoints2((List<Integer>)resp.getObjParameter("commongoalpoints2"));
                 state.setConnected((List<Boolean>)resp.getObjParameter("connected"));
                 state.setNumPlayers(state.getNicknames().size());
+                cState = MATCH_IDLE;
                 Platform.runLater(()->setupGameScreen());
                 Command command = new Command(CommandType.GAME_JOINED);
                 sendCommand(command);
@@ -502,6 +500,9 @@ public class GUIApplication extends Application{
                 firsEnd = true;
                 Platform.runLater(()->signal("Player reconnected","The player " + state.getNicknames().get(resp.getIntParameter("playerid")) + " reconnected"));
                 Platform.runLater(()->updateNameColor());
+                Platform.runLater(()->updateBuffer());
+                Platform.runLater(()->updateBoard());
+                Platform.runLater(()->updateShelf(playerTurnId));
                 break;
 
             case ONLY_ONE_CONNECTED:
