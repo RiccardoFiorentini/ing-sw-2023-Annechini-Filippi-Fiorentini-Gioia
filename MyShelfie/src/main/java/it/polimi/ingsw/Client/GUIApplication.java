@@ -426,13 +426,13 @@ public class GUIApplication extends Application{
                 state.setPickableTiles((boolean[][]) resp.getObjParameter("pickableTiles"));
                 if(playerTurnId==state.getCurrPlayerId()){
                     cState = SELECT_COLUMN;
-                    Platform.runLater(()->updateBoard());
-                    Platform.runLater(()->updateBuffer());
-                    Platform.runLater(()->updateShelf(playerTurnId));
                 }else{
                     cState = MATCH_IDLE;
                 }
                 Platform.runLater(()->updateNameColor());
+                Platform.runLater(()->updateBoard());
+                Platform.runLater(()->updateBuffer());
+                Platform.runLater(()->updateShelf(playerTurnId));
                 break;
 
             case SELECT_COLUMN_RESULT:
