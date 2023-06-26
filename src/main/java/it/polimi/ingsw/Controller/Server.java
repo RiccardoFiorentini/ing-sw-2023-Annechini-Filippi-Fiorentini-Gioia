@@ -3,6 +3,7 @@ package it.polimi.ingsw.Controller;
 import it.polimi.ingsw.Connection.*;
 import it.polimi.ingsw.Model.Player;
 
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.registry.LocateRegistry;
@@ -37,6 +38,10 @@ public class Server {
      * @author Alessandro Annechini
      */
     public void start(){
+        try{
+            System.out.println("SERVER IP: " + InetAddress.getLocalHost().getHostAddress());
+        }catch(Exception e){}
+
         ServerSocket listener=null;
         try{
             listener = new ServerSocket(54321);

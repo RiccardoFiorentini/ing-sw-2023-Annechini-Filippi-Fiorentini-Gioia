@@ -7,6 +7,7 @@ import it.polimi.ingsw.ModelExceptions.NotToRefillException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class Board{
@@ -27,7 +28,7 @@ public class Board{
 
         //Board initialization
         int dimR, dimC;
-        BufferedReader reader = new BufferedReader(new FileReader("src/config/Board.txt"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/config/Board.txt")));
         String line;
         int[] tmpArr;
         int i,j;

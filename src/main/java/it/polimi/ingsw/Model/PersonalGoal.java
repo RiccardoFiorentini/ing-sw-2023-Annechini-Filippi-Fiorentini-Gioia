@@ -4,6 +4,7 @@ package it.polimi.ingsw.Model;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 
 public class PersonalGoal {
@@ -21,7 +22,7 @@ public class PersonalGoal {
      */
     public PersonalGoal(int index) throws IOException {
         this.index=index;
-        BufferedReader reader = new BufferedReader(new FileReader("src/config/PersonalGoal.txt"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/config/PersonalGoal.txt")));
         String line = "";
         for (int i = 0; line != null && i < 2 * (index - 1); i++) {
             line = reader.readLine();
