@@ -1,17 +1,18 @@
 # Prova Finale (Ingegneria del software)
 
-## Gruppo PSP004
+## Group PSP004
 
-### Membri del gruppo:
+### Members:
 - __Annechini Alessandro__
 - __Filippi Nicole__
 - __Fiorentini Riccardo__
-- __Pasquale Gioia__
+- __Gioia Pasquale__
 
 ---
-### Istruzioni per l’uso:
+### How to play:
+The game can be played on the command line or the GUI, the user can select the interface once the program is launched.
 
-### Funzionalità implementate: 
+### Implemented functionalities: 
 - __Regole complete;__
 - __RMI + Socket;__
 - __TUI + GUI;__
@@ -19,7 +20,7 @@
 - __Resilienza alle disconnessioni;__
 - __Partite Multiple.__
 
-### Istruzioni per lanciare l'applicazione:
+### How to run:
 
 
 
