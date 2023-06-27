@@ -696,12 +696,12 @@ public class TUI{
                         com2 = commonGoalPoints2.get(k);
                     }
                 }
-                output = output + "║" + "\tCommon Goal 1: " + com1 + "\t\t\t\t\t\t\t\tChat:\n";
+                output = output + "║" + "\tCommon Goal 1: " + com1 + "\t\t\t\tChat:\n";
                 output = output + "╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣\tCommon Goal 2: " + com2;
                 if(sizeChat > 9){
-                    output = output + "\t\t\t\t\t\t\t\t<@" + chat.getSender().get(sizeChat-10) + "> " + chat.getText().get(sizeChat-10) + "\n";
+                    output = output + "\t\t\t\t<@" + chat.getSender().get(sizeChat-10) + "> " + chat.getText().get(sizeChat-10) + "\n";
                 }else if(sizeChat!=0){
-                    output = output + "\t\t\t\t\t\t\t\t<@" + chat.getSender().get(0) + "> " + chat.getText().get(0) + "\n";
+                    output = output + "\t\t\t\t<@" + chat.getSender().get(0) + "> " + chat.getText().get(0) + "\n";
                 }else{
                     output = output + "\n";
                 }
@@ -717,11 +717,11 @@ public class TUI{
                 }else{
                     output = output + "║" + "\t@" + nickPlayer + "\n";
                 }
-                output = output + "╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣\t\t\t╔═══╦═══╦═══╗";
+                output = output + "╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣\t\t╔═══╦═══╦═══╗";
                 if(sizeChat > 9){
-                    output = output + "\t\t\t\t\t\t\t<@" + chat.getSender().get(sizeChat-9) + "> " + chat.getText().get(sizeChat-9) + "\n";
+                    output = output + "\t\t\t\t<@" + chat.getSender().get(sizeChat-9) + "> " + chat.getText().get(sizeChat-9) + "\n";
                 }else if(sizeChat>=2){
-                    output = output + "\t\t\t\t\t\t\t<@" + chat.getSender().get(1) + "> " + chat.getText().get(1) + "\n";
+                    output = output + "\t\t\t\t<@" + chat.getSender().get(1) + "> " + chat.getText().get(1) + "\n";
                 }else{
                     output = output + "\n";
                 }
@@ -797,11 +797,11 @@ public class TUI{
                         break;
                 }
                 output = output + "║   Personal Goal:\n";
-                output = output + "╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣\t\t\t╚═══╩═══╩═══╝";
+                output = output + "╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣\t\t╚═══╩═══╩═══╝";
                 if(sizeChat > 9){
-                    output = output + "\t\t\t\t\t\t\t<@" + chat.getSender().get(sizeChat-8) + "> " + chat.getText().get(sizeChat-8) + "\n";
+                    output = output + "\t\t\t\t<@" + chat.getSender().get(sizeChat-8) + "> " + chat.getText().get(sizeChat-8) + "\n";
                 }else if(sizeChat>=3){
-                    output = output + "\t\t\t\t\t\t\t<@" + chat.getSender().get(2) + "> " + chat.getText().get(2) + "\n";
+                    output = output + "\t\t\t\t<@" + chat.getSender().get(2) + "> " + chat.getText().get(2) + "\n";
                 }else{
                     output = output + "\n";
                 }
