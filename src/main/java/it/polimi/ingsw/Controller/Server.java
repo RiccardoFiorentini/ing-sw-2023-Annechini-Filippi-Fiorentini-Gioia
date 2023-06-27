@@ -73,7 +73,6 @@ public class Server {
                     listener.close();
                 }catch (Exception ex){}
             }
-            e.printStackTrace();
         }
     }
 
@@ -235,7 +234,7 @@ public class Server {
                             try{
                                 new GameController(this,gamers,0);
                             } catch(Exception e){
-                                e.printStackTrace();
+                                System.exit(1);
                             }
 
                         }).start();
@@ -243,7 +242,7 @@ public class Server {
                     }
                 }
             } catch (Exception e){
-                e.printStackTrace();
+                System.exit(1);
             }
         }
     }
@@ -284,7 +283,7 @@ public class Server {
                 TimeUnit.SECONDS.sleep( timeout % 2==0 ? timeout/2 : timeout/2 +1);
 
             } catch(Exception e){
-                e.printStackTrace();
+                System.exit(1);
             }
         }
     }

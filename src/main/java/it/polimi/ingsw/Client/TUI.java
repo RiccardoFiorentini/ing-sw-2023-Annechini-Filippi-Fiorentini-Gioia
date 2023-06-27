@@ -53,7 +53,7 @@ public class TUI{
         try{
             cch = Client.createConnection(connectionType);
         }catch(Exception e ){
-            e.printStackTrace();
+            System.exit(1);
         }
 
         new Thread(()->onStartup()).start();
@@ -62,7 +62,7 @@ public class TUI{
             try {
                 resp = cch.getNextResponse();
             }catch(Exception e){
-                //e.printStackTrace();
+                System.exit(1);
             }
 
             final Response response=resp;
@@ -95,7 +95,7 @@ public class TUI{
         try{
             cch.sendCommand(command);
         }catch(Exception e){
-            e.printStackTrace();
+            System.exit(1);
         }
     }
 

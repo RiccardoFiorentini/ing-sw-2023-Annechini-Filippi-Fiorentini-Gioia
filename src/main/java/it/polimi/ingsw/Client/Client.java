@@ -95,7 +95,7 @@ public class Client {
                 try {
                     threadCch.sendCommand(new Command(CommandType.PING));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.exit(1);
                 }
             }
         }).start();

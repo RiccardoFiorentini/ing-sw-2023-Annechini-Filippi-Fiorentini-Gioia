@@ -603,7 +603,7 @@ public class GUIApplication extends Application {
         try{
             cch.sendCommand(command);
         }catch(Exception e){
-            e.printStackTrace();
+            System.exit(1);
         }
     }
 
