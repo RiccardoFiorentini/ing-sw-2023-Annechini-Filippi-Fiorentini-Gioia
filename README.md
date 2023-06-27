@@ -10,7 +10,7 @@
 
   
 ### Implemented functionalities: 
-- __Whole rules__
+- __Complete rules__
 - __RMI + Socket Protocols__
 - __TUI + GUI__
 - __Group and private chat__
