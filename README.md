@@ -23,7 +23,7 @@ First of all, is requested to the user to write the server's IP, which can be re
 
 __CLI:__ The players choose the connection protocol they want to use following the instructions. After that, they need to type a username to play. The username can't contain spaces and cannot be already used by a connected player (if a not valid username is chosen, it will be suggested a valid username). The first player entering the waiting room can select the number of players for the match, typing a number between 2 and 4. After that, if enough players are waiting, the match starts. Once the match starts, the player whose turn is will be notified so they can play their turn by following the instructions. Every turn is divided into 3 phases: selection of the column, selection of the tiles, and buffer pickup. 
 
-__Selection of the column:__ the player has to type a number that corresponds to one of the shelf's columns, are not accepted values that are not numbers, that are not between 0 and 4 or that correspond to a column.
+__Selection of the column:__ the player has to type a number that corresponds to one of the shelf's columns; values that are not numbers, that are not between 0 and 4 or that correspond to a full column are not accepted.
 
 __Selection of the tiles:__ the player has to type twice two numbers separated by a space, the first numbers are referred to the first chosen tile, which has to be a pickable one. The second couple of numbers need to be referring to a tile that can be: the same as the first (one tile picked), adjacent to the first, and pickable (two tiles picked), on the same column or row with a maximum distance of two (three tiles picked), the selected tiles and the one between needs to be pickable. 
 
