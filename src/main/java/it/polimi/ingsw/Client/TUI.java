@@ -651,6 +651,8 @@ public class TUI{
         String output = "╔═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╗\n";
         int sizeChat = chat.getSender().size();
 
+        int Coff = 9;
+
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 if (i == 0) {
@@ -699,7 +701,7 @@ public class TUI{
                 output = output + "║" + "\tCommon Goal 1: " + com1 + "\t\t\t\tChat:\n";
                 output = output + "╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣\tCommon Goal 2: " + com2;
                 if(sizeChat > 9){
-                    output = output + "\t\t\t\t<@" + chat.getSender().get(sizeChat-10) + "> " + chat.getText().get(sizeChat-10) + "\n";
+                    output = output + "\t\t\t\t<@" + chat.getSender().get(sizeChat-Coff) + "> " + chat.getText().get(sizeChat-Coff) + "\n";
                 }else if(sizeChat!=0){
                     output = output + "\t\t\t\t<@" + chat.getSender().get(0) + "> " + chat.getText().get(0) + "\n";
                 }else{
@@ -719,7 +721,7 @@ public class TUI{
                 }
                 output = output + "╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣\t\t╔═══╦═══╦═══╗";
                 if(sizeChat > 9){
-                    output = output + "\t\t\t\t<@" + chat.getSender().get(sizeChat-9) + "> " + chat.getText().get(sizeChat-9) + "\n";
+                    output = output + "\t\t\t\t<@" + chat.getSender().get(sizeChat-Coff+1) + "> " + chat.getText().get(sizeChat-Coff+1) + "\n";
                 }else if(sizeChat>=2){
                     output = output + "\t\t\t\t<@" + chat.getSender().get(1) + "> " + chat.getText().get(1) + "\n";
                 }else{
@@ -799,7 +801,7 @@ public class TUI{
                 output = output + "║   Personal Goal:\n";
                 output = output + "╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣\t\t╚═══╩═══╩═══╝";
                 if(sizeChat > 9){
-                    output = output + "\t\t\t\t<@" + chat.getSender().get(sizeChat-8) + "> " + chat.getText().get(sizeChat-8) + "\n";
+                    output = output + "\t\t\t\t<@" + chat.getSender().get(sizeChat-Coff+2) + "> " + chat.getText().get(sizeChat-Coff+2) + "\n";
                 }else if(sizeChat>=3){
                     output = output + "\t\t\t\t<@" + chat.getSender().get(2) + "> " + chat.getText().get(2) + "\n";
                 }else{
@@ -866,7 +868,7 @@ public class TUI{
                 }
                 output = output + "║";
                 if(sizeChat > 9){
-                    output = output + "\t<@" + chat.getSender().get(sizeChat-7) + "> " + chat.getText().get(sizeChat-7) + "\n";
+                    output = output + "\t<@" + chat.getSender().get(sizeChat-Coff+3) + "> " + chat.getText().get(sizeChat-Coff+3) + "\n";
                 }else if(sizeChat>=4){
                     output = output + "\t<@" + chat.getSender().get(3) + "> " + chat.getText().get(3) + "\n";
                 }else{
@@ -933,7 +935,7 @@ public class TUI{
                 }
                 output = output + "║";
                 if(sizeChat > 9){
-                    output = output + "\t<@" + chat.getSender().get(sizeChat-6) + "> " + chat.getText().get(sizeChat-6) + "\n";
+                    output = output + "\t<@" + chat.getSender().get(sizeChat-Coff+4) + "> " + chat.getText().get(sizeChat-Coff+4) + "\n";
                 }else if(sizeChat>=5){
                     output = output + "\t<@" + chat.getSender().get(4)+ "> " + chat.getText().get(4) + "\n";
                 }else{
@@ -1000,7 +1002,7 @@ public class TUI{
                 }
                 output = output + "║";
                 if(sizeChat > 9){
-                    output = output + "\t<@" +  chat.getSender().get(sizeChat-5) + "> " + chat.getText().get(sizeChat-5) + "\n";
+                    output = output + "\t<@" +  chat.getSender().get(sizeChat-Coff+5) + "> " + chat.getText().get(sizeChat-Coff+5) + "\n";
                 }else if(sizeChat>=6){
                     output = output + "\t<@" +  chat.getSender().get(5) + "> " + chat.getText().get(5) + "\n";
                 }else{
@@ -1067,7 +1069,7 @@ public class TUI{
                 }
                 output = output + "║";
                 if(sizeChat > 9){
-                    output = output + "\t<@" + chat.getSender().get(sizeChat-4) + "> " + chat.getText().get(sizeChat-4) + "\n";
+                    output = output + "\t<@" + chat.getSender().get(sizeChat-Coff+6) + "> " + chat.getText().get(sizeChat-Coff+6) + "\n";
                 }else if(sizeChat>=7){
                     output = output + "\t<@" + chat.getSender().get(6) + "> " + chat.getText().get(6) + "\n";
                 }else{
@@ -1134,7 +1136,7 @@ public class TUI{
                 }
                 output = output + "║";
                 if(sizeChat > 9){
-                    output = output + "\t<@" + chat.getSender().get(sizeChat-3) + "> " + chat.getText().get(sizeChat-3) + "\n";
+                    output = output + "\t<@" + chat.getSender().get(sizeChat-Coff+7) + "> " + chat.getText().get(sizeChat-Coff+7) + "\n";
                 }else if(sizeChat>=8){
                     output = output + "\t<@" + chat.getSender().get(7) + "> " + chat.getText().get(7) + "\n";
                 }else{
@@ -1201,7 +1203,7 @@ public class TUI{
                 }
                 output = output + "║";
                 if(sizeChat > 9){
-                    output = output + "\t<@" + chat.getSender().get(sizeChat-2) + "> " + chat.getText().get(sizeChat-2) + "\n";
+                    output = output + "\t<@" + chat.getSender().get(sizeChat-Coff+8) + "> " + chat.getText().get(sizeChat-Coff+8) + "\n";
                 }else if(sizeChat == 9){
                     output = output + "\t<@" + chat.getSender().get(8) + "> " + chat.getText().get(8) + "\n";
                 }else{
