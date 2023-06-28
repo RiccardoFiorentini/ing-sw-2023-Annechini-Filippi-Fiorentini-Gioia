@@ -9,7 +9,7 @@ import java.io.IOException;
 public class VirtualView {
     private ServerConnectionHandler sch;
     private Player player;
-    private Server server;
+    private final Server server;
     private GameController gameController;
     private String nickname;
     private boolean safeConnection;
@@ -46,14 +46,7 @@ public class VirtualView {
             try{
                 command = sch.getNextCommand();
                 if(command.getCommandType()!=CommandType.PING) System.out.println("New command! "+command.getCommandType());
-            } catch (IOException e) {
-                disconnect();
-                break;
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch(Exception e){
+            }catch(Exception e){
                 disconnect();
                 break;
             }
@@ -98,9 +91,6 @@ public class VirtualView {
         return player;
     }
 
-    public GameController getGameController(){
-        return gameController;
-    }
 
     public void setNickname(String nickname){
         this.nickname = nickname;

@@ -11,8 +11,8 @@ import java.net.Socket;
 public class ServerConnectionHandlerSocket implements ServerConnectionHandler {
 
     private Socket socket;
-    private ObjectInputStream ois;
-    private ObjectOutputStream oos;
+    private final ObjectInputStream ois;
+    private final ObjectOutputStream oos;
 
     /**
      * Class' constructor

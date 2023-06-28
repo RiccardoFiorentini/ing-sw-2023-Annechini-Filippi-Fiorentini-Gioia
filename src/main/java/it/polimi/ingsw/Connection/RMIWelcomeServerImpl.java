@@ -6,14 +6,14 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 public class RMIWelcomeServerImpl extends UnicastRemoteObject implements RMIWelcomeServer {
-    private Server server;
+    private final Server server;
 
     public RMIWelcomeServerImpl(Server server) throws RemoteException {
         this.server = server;
     }
 
     public void setConnection(RMIClientConnection rmiClient) throws RemoteException {
-        ServerConnectionHandlerRMI rmiServer = null;
+        ServerConnectionHandlerRMI rmiServer;
         rmiServer = new ServerConnectionHandlerRMI(rmiClient);
         VirtualView virtualView = new VirtualView(server);
 

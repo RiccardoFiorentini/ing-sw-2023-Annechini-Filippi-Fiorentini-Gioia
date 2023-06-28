@@ -7,8 +7,7 @@ public interface RMIWelcomeServer extends Remote {
     /**
      * This method instantiates the RMI server corresponding to the
      * rmiClient callee, al well as the VirtualView.
-     * @param rmiClient
-     * @throws RemoteException
+     * @param rmiClient The RMI client
      */
-    public void setConnection(RMIClientConnection rmiClient) throws RemoteException;
+    void setConnection(RMIClientConnection rmiClient) throws RemoteException;
 }

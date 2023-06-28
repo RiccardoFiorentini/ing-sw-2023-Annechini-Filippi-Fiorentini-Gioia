@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ServerConnectionHandlerRMI extends UnicastRemoteObject implements ServerConnectionHandler, RMIServerConnection {
     final List<Command> queue;
-    private transient RMIClientConnection rmiClient;
+    private transient final RMIClientConnection rmiClient;
 
     /**
      * Class' constructor
