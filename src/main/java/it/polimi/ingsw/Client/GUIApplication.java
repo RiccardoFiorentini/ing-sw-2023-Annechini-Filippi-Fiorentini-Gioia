@@ -107,8 +107,8 @@ public class GUIApplication extends Application {
     private ImageView board;
     private ImageView playerShelf;
     private double stdScreenRatio;
-    private double boardTileRatio = 0.1008;
-    private double shelfTileRatio = 0.127;
+    private final double boardTileRatio = 0.1008;
+    private final double shelfTileRatio = 0.127;
     private ImageView[][] boardTiles;
     private ImageView[][] playerShelfTiles;
     private List<ImageView> otherPlayerShelves;
@@ -132,7 +132,7 @@ public class GUIApplication extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage){
         this.stage = stage;
         setupMenu();
     }
@@ -262,7 +262,7 @@ public class GUIApplication extends Application {
         textField.setEditable(false);
         textField.setOnMouseClicked((event)->{textField.setEditable(true);});
         textField.setMaxWidth(bounds.getWidth()/3);
-        vBox = new VBox(10.0, (Node) nicknameLabel);
+        vBox = new VBox(10.0, nicknameLabel);
         vBox.setMaxWidth(bounds.getWidth());
         vBox.setMaxHeight(bounds.getHeight()/3);
         vBox.getChildren().add(textField);
@@ -511,7 +511,7 @@ public class GUIApplication extends Application {
                 break;
 
             case ONLY_ONE_CONNECTED_TIMER:
-                if(firsEnd == true){
+                if(firsEnd){
                     Platform.runLater(() ->signalTimer(resp.getIntParameter("timermilliseconds")));
                     firsEnd = false;
                 }
@@ -566,7 +566,7 @@ public class GUIApplication extends Application {
      * @author Fiorentini Riccardo
      */
     public void signalTimer(int milliseconds){
-        numSeconds = (int)(milliseconds/1000);
+        numSeconds = (milliseconds/1000);
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Attention!");
         alert.setHeaderText("You are the last one connected");
@@ -697,7 +697,6 @@ public class GUIApplication extends Application {
      * @author Fiorentini Riccardo
      */
     public void nicknameResponse(Boolean valid, String newNick){
-        Font font = new Font("Calibri", 33);
         textField.setEditable(false);
         nicknameLabel.setVisible(true);
         vBox.setVisible(true);
@@ -1768,7 +1767,6 @@ public class GUIApplication extends Application {
                     }
                 }else {
                     for (int i = 0; i < 5; i++) {
-                        int finalI = i;
                         rectangles.get(i).setOnMouseEntered((e) -> {
                         });
                         rectangles.get(i).setOnMouseExited((e) -> {
@@ -1855,11 +1853,9 @@ public class GUIApplication extends Application {
         playerChair.setVisible(false);
         for(int i=0;i<state.getNumPlayers()-1;i++){
             if(i < playerTurnId){
-                if(state.getFirstPlayerId()==i) othersChair.get(i).setVisible(true);
-                else othersChair.get(i).setVisible(false);
+                othersChair.get(i).setVisible(state.getFirstPlayerId() == i);
             }else{
-                if(state.getFirstPlayerId()==i+1) othersChair.get(i).setVisible(true);
-                else othersChair.get(i).setVisible(false);
+                othersChair.get(i).setVisible(state.getFirstPlayerId() == i + 1);
             }
         }
     }
@@ -1879,8 +1875,7 @@ public class GUIApplication extends Application {
             tokenCommonGoal2.setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalsRemainingPoint()[1])).toString()));
         } else tokenCommonGoal2.setVisible(false);
 
-        if(!(state.getLastPlayerId()<0)) tokenLastPlayerId.setVisible(false);
-        else tokenLastPlayerId.setVisible(true);
+        tokenLastPlayerId.setVisible(state.getLastPlayerId() < 0);
 
         for(int i=0;i<state.getNumPlayers();i++){
             ImageView[] tokens = i==playerTurnId ? playerPointsTokens : otherPlayersPointsTokens.get(i<playerTurnId ? i : i-1);
@@ -1896,11 +1891,7 @@ public class GUIApplication extends Application {
                 tokens[1].setVisible(true);
                 tokens[1].setImage(new Image(getClass().getResource(state.getScoringTokenImagePath(state.getCommonGoalPoints2().get(i))).toString()));
             }
-            if(state.getLastPlayerId()!=i){
-                tokens[2].setVisible(false);
-            }else{
-                tokens[2].setVisible(true);
-            }
+            tokens[2].setVisible(state.getLastPlayerId() == i);
         }
     }
 

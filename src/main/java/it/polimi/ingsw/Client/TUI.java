@@ -237,7 +237,6 @@ public class TUI{
                     }
                 }else{
                     if(cState==ClientState.SELECT_FIRST_TILE) {
-                        cState = ClientState.SELECT_FIRST_TILE;
                         phase="Invalid tile, select another one: \n";
                         System.out.print(phase);
                     }else{

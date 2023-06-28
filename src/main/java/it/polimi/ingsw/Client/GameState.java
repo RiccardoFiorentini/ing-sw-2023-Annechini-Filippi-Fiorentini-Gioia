@@ -9,16 +9,15 @@ public class GameState {
     //GAME PARAMETERS
     private int firstPlayerId;
     private int lastPlayerId;
-    private int[] commonGoalsId;
-    private int[] commonGoalsRemainingPoint;
-    private String[] commonGoalsDesc;
+    private final int[] commonGoalsId;
+    private final int[] commonGoalsRemainingPoint;
+    private final String[] commonGoalsDesc;
     private int currPlayerId;
     private BoardBean board;
     private ChatBean chat;
     private List<ShelfBean> shelves;
     private List<String> nicknames;
     private List<Integer> turnIds;
-    private TileColor[][] personalGoal;
     private boolean[][] pickableTiles;
     private int numPlayers;
 
@@ -30,6 +29,10 @@ public class GameState {
     private List<Integer> finalColorGroupPoints;
     private List<Integer> finalPoints;
 
+    /**
+     * Class' constructor
+     * @author Alessandro Annechini
+    */
     public GameState(){
         firstPlayerId = -1;
         lastPlayerId = -1;
@@ -117,17 +120,6 @@ public class GameState {
     }
 
     /**
-     * Method that returns if a player with the corresponding nickname is connected
-     * @author Alessandro Annechini
-     * @param player The nickname of the player
-     * @return true if connected, false otherwise
-     */
-    public boolean isConnected(String player){
-        int turnId = nicknames.indexOf(player);
-        return turnId>=0 && turnId<this.connected.size() ? this.connected.get(turnId) : false;
-    }
-
-    /**
      * This method returns, after the game has finished, the id of the player in the specified positions
      * @param pos The position of the requested player
      * @return The turnId of the player (-1 if the position is not valid)
@@ -168,9 +160,7 @@ public class GameState {
         String res = "";
         if(buffer[0].isFree()){
             if(buffer[1].isFree()){
-                if(buffer[2].isFree()){
-
-                }else{
+                if(!buffer[2].isFree()){
                     res = "2";
                 }
             }else{
@@ -282,14 +272,6 @@ public class GameState {
 
     public void setTurnIds(List<Integer> turnIds) {
         this.turnIds = turnIds;
-    }
-
-    public TileColor[][] getPersonalGoal() {
-        return personalGoal;
-    }
-
-    public void setPersonalGoal(TileColor[][] personalGoal) {
-        this.personalGoal = personalGoal;
     }
 
     public List<Integer> getCommonGoalPoints1() {

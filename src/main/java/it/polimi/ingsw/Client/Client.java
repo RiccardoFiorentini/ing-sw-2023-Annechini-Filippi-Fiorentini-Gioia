@@ -15,9 +15,8 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class Client {
-    ClientConnectionHandler cch;
     private static String serverIp;
-    public static void main(String[] args) throws RemoteException {
+    public static void main(String[] args){
         new Client().start();
     }
 
@@ -25,7 +24,7 @@ public class Client {
      * Method that is called at Client's start, asks the player which kind of connection and interface they want to use
      * @author Nicole Filippi
      */
-    public void start() throws RemoteException {
+    public void start(){
         int interfaceType=0;
         Scanner scan = new Scanner(System.in);
 
