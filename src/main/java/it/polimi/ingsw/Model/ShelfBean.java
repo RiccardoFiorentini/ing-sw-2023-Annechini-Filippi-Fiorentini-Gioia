@@ -3,9 +3,9 @@ package it.polimi.ingsw.Model;
 import java.io.Serializable;
 
 public class ShelfBean implements Serializable {
-    private Tile[][] tiles;
-    private int[] spacesForCol;
-    private int spacesLeft;
+    private final Tile[][] tiles;
+    private final int[] spacesForCol;
+    private final int spacesLeft;
 
     /**
      * Class' constructor

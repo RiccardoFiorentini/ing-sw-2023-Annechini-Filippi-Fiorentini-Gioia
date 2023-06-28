@@ -5,8 +5,8 @@ import it.polimi.ingsw.ModelExceptions.IncorrectMessageException;
 import java.util.ArrayList;
 import java.util.List;
 public class Chat {
-    private List<Message> messages;
-    private List<Player> players;
+    private final List<Message> messages;
+    private final List<Player> players;
 
     /**
      * Class' constructor
@@ -49,12 +49,11 @@ public class Chat {
         messages.add(m);
     }
 
-    public List<Message> getMessages() {
-        return messages;
-    }
-
     public ChatBean toBean(Player beanReceiver){
         return new ChatBean(messages, beanReceiver);
     }
 
+    public List<Message> getMessages(){
+        return messages;
+    }
 }

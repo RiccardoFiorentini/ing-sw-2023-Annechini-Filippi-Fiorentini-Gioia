@@ -62,7 +62,7 @@ public class ShelfTest {
         try{
             shelf.putTile(Tile.PINK1,0);
             fail();
-        } catch(FullColumnException e){
+        } catch(FullColumnException ignored){
 
         }
     }

@@ -5,15 +5,14 @@ import it.polimi.ingsw.ModelExceptions.NotPickableException;
 import it.polimi.ingsw.ModelExceptions.NotToRefillException;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
 public class Board{
-    private Map<Tile, Integer> tilesRemaining;
-    private Tile[][] tiles;
-    private int numPlayers;
+    private final Map<Tile, Integer> tilesRemaining;
+    private final Tile[][] tiles;
+    private final int numPlayers;
 
     /**
      * Class' constructor
@@ -161,10 +160,6 @@ public class Board{
         tiles[x_Tile][y_Tile] = Tile.EMPTY;
 
         return pickedTile;
-    }
-
-    public Map<Tile, Integer> getTilesRemaining() {
-        return tilesRemaining;
     }
 
     public Tile[][] getTiles() {

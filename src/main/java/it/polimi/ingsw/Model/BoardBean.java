@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BoardBean implements Serializable {
-    private Map<Tile, Integer> tilesRemaining;
-    private Tile[][] tiles;
+    private final Map<Tile, Integer> tilesRemaining;
+    private final Tile[][] tiles;
 
     /**
      * Class' constructor
@@ -20,8 +20,6 @@ public class BoardBean implements Serializable {
     }
 
     public Tile[][] getTiles(){ return tiles; }
-
-    public Map<Tile, Integer> getTilesRemaining(){ return tilesRemaining; }
 
 }
 

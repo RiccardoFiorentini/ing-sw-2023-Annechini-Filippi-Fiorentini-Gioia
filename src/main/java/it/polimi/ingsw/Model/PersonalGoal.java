@@ -2,13 +2,12 @@ package it.polimi.ingsw.Model;
 
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 
 public class PersonalGoal {
-    private int index;
+    private final int index;
     private int[] rowGoals;
     private int[] colGoals;
     private final TileColor[] colorGoals =

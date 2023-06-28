@@ -90,7 +90,7 @@ public class BoardTest {
         try{
             pickedTile = board.pickTile(3,3);
             fail();
-        } catch (NotPickableException e) {
+        } catch (NotPickableException ignored) {
         }
     }
 
@@ -101,7 +101,7 @@ public class BoardTest {
         try{
             pickedTile = board.pickTile(2,2);
             fail();
-        } catch (NotPickableException e){
+        } catch (NotPickableException ignored){
         }
     }
 
@@ -143,7 +143,7 @@ public class BoardTest {
         try{
             board.refill();
             fail();
-        } catch (NotToRefillException e){
+        } catch (NotToRefillException ignored){
         }
     }
 

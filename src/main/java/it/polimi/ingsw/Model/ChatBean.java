@@ -6,9 +6,9 @@ import java.util.List;
 
 public class ChatBean implements Serializable {
 
-    private List<String> sender;
-    private List<String> text;
-    private List<Boolean> privateMessage;
+    private final List<String> sender;
+    private final List<String> text;
+    private final List<Boolean> privateMessage;
 
     /**
      * Class' constructor
@@ -40,6 +40,4 @@ public class ChatBean implements Serializable {
         return sender;
     }
     public List<String> getText(){ return text; }
-    public List<Boolean> getPrivateMessage(){ return privateMessage; }
-
 }

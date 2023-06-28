@@ -44,7 +44,7 @@ public class ChatTest {
         try{
             chat.writeMessage(players.get(0), "");
             fail();
-        }catch(IncorrectMessageException e){
+        }catch(IncorrectMessageException ignored){
         }
     }
 
@@ -63,7 +63,7 @@ public class ChatTest {
         try{
             chat.writeMessage(players.get(0), players.get(1), "");
             fail();
-        }catch(IncorrectMessageException e){
+        }catch(IncorrectMessageException ignored){
         }
     }
 
@@ -72,7 +72,7 @@ public class ChatTest {
         try{
             chat.writeMessage(players.get(0), new Player("Pippo", null), "message");
             fail();
-        }catch(IncorrectMessageException e){
+        }catch(IncorrectMessageException ignored){
         }
     }
 

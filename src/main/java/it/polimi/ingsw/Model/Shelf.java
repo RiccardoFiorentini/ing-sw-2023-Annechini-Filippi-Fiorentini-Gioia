@@ -3,8 +3,8 @@ package it.polimi.ingsw.Model;
 import it.polimi.ingsw.ModelExceptions.FullColumnException;
 
 public class Shelf{
-    private Tile[][] tiles;
-    private int[] spacesForCol;
+    private final Tile[][] tiles;
+    private final int[] spacesForCol;
     private int spacesLeft;
 
     /**

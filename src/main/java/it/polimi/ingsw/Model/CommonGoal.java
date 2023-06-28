@@ -2,7 +2,7 @@ package it.polimi.ingsw.Model;
 
 public abstract class CommonGoal {
     private int pointsLeft;
-    private int numPlayers;
+    private final int numPlayers;
     /**
      * Class's constructor
      * @author Alessandro Annechini

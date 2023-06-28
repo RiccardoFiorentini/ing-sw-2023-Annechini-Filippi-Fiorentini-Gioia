@@ -8,23 +8,23 @@ import static it.polimi.ingsw.Model.Tile.EMPTY;
 
 public class Player {
     private int turnId;
-    private GameController gameController;
+    private final GameController gameController;
     //coordinates of first and last tiles selected
     private int x1;
     private int y1;
     private int x2;
     private int y2;
 
-    private String nickname;
+    private final String nickname;
     private boolean connected;
-    private int[] pointsCommonGoal;
-    private Tile[] pickedTiles;
+    private final int[] pointsCommonGoal;
+    private final Tile[] pickedTiles;
     private int selectedColumn;
-    private Shelf shelf;
+    private final Shelf shelf;
     private Model model;
     private PersonalGoal personalGoal;
     private int numPickableTiles;
-    private boolean[][] pickableTiles;
+    private final boolean[][] pickableTiles;
     private VirtualView virtualView;
 
     /**
@@ -242,10 +242,6 @@ public class Player {
         return pickedTiles;
     }
 
-    public int getSelectedColumn() {
-        return selectedColumn;
-    }
-
     public Shelf getShelf() {
         return shelf;
     }
@@ -264,25 +260,6 @@ public class Player {
 
     public void setTurnId(int turnId) {
         this.turnId = turnId;
-    }
-
-    public int getX1(){
-        return x1;
-    }
-
-    public int getX2(){
-        return x2;
-    }
-
-    public int getY1(){
-        return y1;
-    }
-    public int getY2(){
-        return y2;
-    }
-
-    public int getNumPickableTiles(){
-        return numPickableTiles;
     }
 
     public boolean[][] getPickableTiles() {
@@ -359,6 +336,30 @@ public class Player {
         if(virtualView!=null){
             virtualView.sendResponse(response);
         }
+    }
+
+    public int getNumPickableTiles() {
+        return numPickableTiles;
+    }
+
+    public int getSelectedColumn() {
+        return  selectedColumn;
+    }
+
+    public int getX1() {
+        return x1;
+    }
+
+    public int getX2() {
+        return x2;
+    }
+
+    public int getY1() {
+        return y1;
+    }
+
+    public int getY2() {
+        return y2;
     }
 
 }
