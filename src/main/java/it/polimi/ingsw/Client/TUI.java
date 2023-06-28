@@ -20,6 +20,8 @@ public class TUI{
     private ClientState cState;
     private GameState state;
 
+    private final Object printLock = new Object();
+
     //GAME PARAMETERS
     private String phase=null;
 
@@ -296,24 +298,26 @@ public class TUI{
                 break;
 
             case GAME_ENDED:
-                cState = ClientState.GAME_ENDED;
-                clearConsole();
-                System.out.println(" ██████╗  █████╗ ███╗   ███╗███████╗    ███████╗███╗   ██╗██████╗ ███████╗██████╗ \n" +
-                        "██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔════╝████╗  ██║██╔══██╗██╔════╝██╔══██╗\n" +
-                        "██║  ███╗███████║██╔████╔██║█████╗      █████╗  ██╔██╗ ██║██║  ██║█████╗  ██║  ██║\n" +
-                        "██║   ██║██╔══██║██║╚██╔╝██║██╔══╝      ██╔══╝  ██║╚██╗██║██║  ██║██╔══╝  ██║  ██║\n" +
-                        "╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗    ███████╗██║ ╚████║██████╔╝███████╗██████╔╝\n" +
-                        " ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝    ╚══════╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═════╝");
-                if(resp.getIntParameter("interrupted")==0){ //finished correctly
-                    System.out.println("RESULTS: ");
-                    state.setFinalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
+                synchronized (printLock){
+                    cState = ClientState.GAME_ENDED;
+                    clearConsole();
+                    System.out.println(" ██████╗  █████╗ ███╗   ███╗███████╗    ███████╗███╗   ██╗██████╗ ███████╗██████╗ \n" +
+                            "██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔════╝████╗  ██║██╔══██╗██╔════╝██╔══██╗\n" +
+                            "██║  ███╗███████║██╔████╔██║█████╗      █████╗  ██╔██╗ ██║██║  ██║█████╗  ██║  ██║\n" +
+                            "██║   ██║██╔══██║██║╚██╔╝██║██╔══╝      ██╔══╝  ██║╚██╗██║██║  ██║██╔══╝  ██║  ██║\n" +
+                            "╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗    ███████╗██║ ╚████║██████╔╝███████╗██████╔╝\n" +
+                            " ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝    ╚══════╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═════╝");
+                    if(resp.getIntParameter("interrupted")==0){ //finished correctly
+                        System.out.println("RESULTS: ");
+                        state.setFinalPoints((List<Integer>)resp.getObjParameter("finalPoints"));
 
-                    for(int i=0; i<state.getNumPlayers(); i++){
-                        System.out.println((i+1) +") " + state.getNicknames().get(state.getTurnIdInPosition(i+1)) + ": " + state.getFinalPoints().get(state.getTurnIdInPosition(i+1)));
+                        for(int i=0; i<state.getNumPlayers(); i++){
+                            System.out.println((i+1) +") " + state.getNicknames().get(state.getTurnIdInPosition(i+1)) + ": " + state.getFinalPoints().get(state.getTurnIdInPosition(i+1)));
+                        }
                     }
-                }
-                else{
-                    System.out.println("You are the only one remained... YOU WIN!");
+                    else{
+                        System.out.println("You are the only one remained... YOU WIN!");
+                    }
                 }
                 break;
 
@@ -451,8 +455,10 @@ public class TUI{
      * @author Nicole Filippi
      */
     public void printGameScreen(){
-        if(cState!=ClientState.GAME_ENDED){
-            printAll(state.getBoard(), state.getChat(), state.getShelves(), state.getNicknames(), playerNickname, state.getCommonGoalPoints1(), state.getCommonGoalPoints2(), state.getCommonGoalsDesc()[0], state.getCommonGoalsDesc()[1], Arrays.stream(state.getBuffer()).toList(), personalGoal, state.getCommonGoalsRemainingPoint()[0], state.getCommonGoalsRemainingPoint()[1], state.getCurrPlayerId(), state.getConnected(), phase);
+        synchronized (printLock){
+            if(cState!=ClientState.GAME_ENDED){
+                printAll(state.getBoard(), state.getChat(), state.getShelves(), state.getNicknames(), playerNickname, state.getCommonGoalPoints1(), state.getCommonGoalPoints2(), state.getCommonGoalsDesc()[0], state.getCommonGoalsDesc()[1], Arrays.stream(state.getBuffer()).toList(), personalGoal, state.getCommonGoalsRemainingPoint()[0], state.getCommonGoalsRemainingPoint()[1], state.getCurrPlayerId(), state.getConnected(), phase);
+            }
         }
     }
 
@@ -1428,7 +1434,9 @@ public class TUI{
     public void clearConsole(){
         //System.out.print((char)27 + "[{9};{0}H");
         //escape command doesn't work
-        for(int i=0;i<100;i++) System.out.println("\n");
+        synchronized (printLock) {
+            for (int i = 0; i < 100; i++) System.out.println("\n");
+        }
     }
 
 }
