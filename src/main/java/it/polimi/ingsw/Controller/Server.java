@@ -280,7 +280,7 @@ public class Server {
                     else vv.sendResponse(new Response(ResponseType.PONG));
                 }
 
-                TimeUnit.SECONDS.sleep( timeout % 2==0 ? timeout/2 : timeout/2 +1);
+                TimeUnit.SECONDS.sleep(timeout/2);
 
             } catch(Exception e){
                 System.exit(1);

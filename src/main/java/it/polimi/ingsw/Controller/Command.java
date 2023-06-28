@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Command implements Serializable {
-    private CommandType commandType;
+    private final CommandType commandType;
     Map<String,String> strArgs;
     Map<String,Integer> intArgs;
     Map<String,Object> objArgs;

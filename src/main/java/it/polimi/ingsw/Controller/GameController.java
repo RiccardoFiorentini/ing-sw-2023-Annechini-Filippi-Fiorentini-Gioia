@@ -172,10 +172,6 @@ public class GameController {
         return players;
     }
 
-    public int getJoined() {
-        return joined;
-    }
-
     public Model getModel() {
         return model;
     }
