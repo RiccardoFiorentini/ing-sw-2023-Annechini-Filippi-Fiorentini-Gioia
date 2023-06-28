@@ -10,4 +10,6 @@ public enum ClientState {
     SELECT_SECOND_TILE,
     PUT_IN_COLUMN,
 
+    GAME_ENDED,
+
 }

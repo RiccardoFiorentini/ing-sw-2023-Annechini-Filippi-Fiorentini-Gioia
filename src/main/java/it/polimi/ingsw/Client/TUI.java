@@ -296,6 +296,7 @@ public class TUI{
                 break;
 
             case GAME_ENDED:
+                cState = ClientState.GAME_ENDED;
                 clearConsole();
                 System.out.println(" ██████╗  █████╗ ███╗   ███╗███████╗    ███████╗███╗   ██╗██████╗ ███████╗██████╗ \n" +
                         "██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔════╝████╗  ██║██╔══██╗██╔════╝██╔══██╗\n" +
@@ -345,7 +346,7 @@ public class TUI{
             input = scan.nextLine();
             words=input.split(" ");
             String message = "";
-            if("-m".equals(words[0])){
+            if("-m".equals(words[0]) && cState!=ClientState.BEFORE_LOGIN && cState!=ClientState.ASK_PLAYERS_NUM && cState!=ClientState.GAME_ENDED && cState!=ClientState.QUEUE ){
                 Command command = new Command(CommandType.SEND_MEX_CHAT);
                 for(int i=1; i<words.length; i++){
                     message=message+words[i]+" ";
@@ -353,7 +354,7 @@ public class TUI{
                 command.setStrParameter("text", message);
                 sendCommand(command);
             }
-            else if("-pm".equals(words[0])){
+            else if("-pm".equals(words[0])  && cState!=ClientState.BEFORE_LOGIN && cState!=ClientState.ASK_PLAYERS_NUM && cState!=ClientState.GAME_ENDED && cState!=ClientState.QUEUE){
                 Command command = new Command(CommandType.SEND_MEX_CHAT);
 
                 for(int i=2; i<words.length; i++){
@@ -450,7 +451,9 @@ public class TUI{
      * @author Nicole Filippi
      */
     public void printGameScreen(){
-        printAll(state.getBoard(), state.getChat(), state.getShelves(), state.getNicknames(), playerNickname, state.getCommonGoalPoints1(), state.getCommonGoalPoints2(), state.getCommonGoalsDesc()[0], state.getCommonGoalsDesc()[1], Arrays.stream(state.getBuffer()).toList(), personalGoal, state.getCommonGoalsRemainingPoint()[0], state.getCommonGoalsRemainingPoint()[1], state.getCurrPlayerId(), state.getConnected(), phase);
+        if(cState!=ClientState.GAME_ENDED){
+            printAll(state.getBoard(), state.getChat(), state.getShelves(), state.getNicknames(), playerNickname, state.getCommonGoalPoints1(), state.getCommonGoalPoints2(), state.getCommonGoalsDesc()[0], state.getCommonGoalsDesc()[1], Arrays.stream(state.getBuffer()).toList(), personalGoal, state.getCommonGoalsRemainingPoint()[0], state.getCommonGoalsRemainingPoint()[1], state.getCurrPlayerId(), state.getConnected(), phase);
+        }
     }
 
 
