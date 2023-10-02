@@ -1,4 +1,7 @@
 # Prova Finale (Ingegneria del software)
+### Copyright
+### My Shelfie is a board game developed and published by Cranio Creations Srl. The graphic content of this project related to the board game product is used with the prior approval of Cranio Creations Srl for educational purposes only. Distribution, copying, or reproduction of the content and images in any form outside of the project, as well as the redistribution and publication of the content and images for purposes other than the aforementioned, are prohibited. Commercial use of such content is also prohibited.
+---
 
 ## Group PSP004
 
@@ -55,4 +58,4 @@ They can be also opened on different machines.
 
 ### Requisites:
 You need to have a version of JRE equal or superior to 19.
-For the CLI to run properly, you need to use a Windows 11 command prompt or Hyper, a third part command prompt.
+To ensure that the CLI is displayed correctly, it is necessary to have an updated version of command prompt.
